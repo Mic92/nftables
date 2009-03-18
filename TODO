@@ -3,9 +3,7 @@ nftables frontend
 - Define lexical distinction between keywords, symbolic constants and
   identifiers
 - Define syntax for changing data (connmark, meta etc.)
-- shorter syntax for specifying rules: entire chains without repeating "rule add ..."
 - payload syntax for matching on IP headers of IPIP/GRE tunnels etc.
-
 - netlink monitor for CLI
 
 Kernel
