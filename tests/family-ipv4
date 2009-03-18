@@ -1,0 +1,10 @@
+#! nft -f
+
+table add ip filter
+chain add ip filter output NF_INET_LOCAL_OUT 0
+
+# IP address
+rule add ip filter output ip daddr 192.168.0.1 counter
+
+# TCP ports
+rule add ip filter output ip protocol 6 tcp dport 22 counter

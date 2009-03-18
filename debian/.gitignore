@@ -1,0 +1,4 @@
+debhelper.log
+nftables.debhelper.log
+nftables/
+tmp/

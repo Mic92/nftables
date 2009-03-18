@@ -1,0 +1,20 @@
+#! /usr/bin/make -f
+
+configure_opts	:= --prefix=/ --datarootdir=/usr
+install_opts	:=
+
+%:
+	dh $@
+
+build:	build-stamp
+build-stamp:
+	dh build --before dh_auto_configure
+	autoreconf
+	dh_auto_configure -- $(configure_opts)
+	dh build --after dh_auto_configure
+	touch $@
+
+install: build
+	dh_install $(install_opts)
+
+binary: install

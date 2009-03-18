@@ -1,0 +1,7 @@
+#! nft -f
+
+table ip6 security {
+	chain input		{ hook NF_INET_LOCAL_IN		50; }
+	chain forward		{ hook NF_INET_FORWARD		50; }
+	chain output		{ hook NF_INET_LOCAL_OUT	50; }
+}

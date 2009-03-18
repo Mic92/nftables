@@ -1,0 +1,4 @@
+install:
+	@echo -e "  INSTALL\tfiles"
+	$(MKDIR_P) $(DESTDIR)/$(confdir)
+	$(INSTALL) -m 755 -o root -g root $(SUBDIR)nftables/* $(DESTDIR)/$(confdir)/

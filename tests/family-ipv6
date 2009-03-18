@@ -1,0 +1,10 @@
+#! nft -f
+
+table add ip6 filter
+chain add ip6 filter output NF_INET_LOCAL_OUT 0
+
+# IP address
+rule add ip6 filter output ip6 daddr 2001:6f8:974::1 counter
+
+# TCP ports
+rule add ip6 filter output ip6 nexthdr 6 tcp dport 22 counter

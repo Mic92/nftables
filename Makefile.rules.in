@@ -1,0 +1,85 @@
+include Makefile.defs
+
+makedeps		+= $(SUBDIR)Makefile
+makedeps		+= Makefile
+makedeps		+= Makefile.defs
+makedeps		+= Makefile.rules
+
+configure:		configure.ac
+			sh autogen.sh
+
+%:			%.in	configure
+			sh configure
+
+%.o:			%.c	$(makedeps)
+			@echo -e "  CC\t\t$<"
+			$(CC) $(CFLAGS) -c -o $@ $<
+
+.%.d:			%.c	$(makedeps)
+			@echo -e "  DEP\t\t$<"
+			$(RM) $@
+			$(CC) -M $(CFLAGS) $< | sed 's,$(*F)\.o[ :]*,$*.o $@ : ,g' > $@
+
+%.c %.h:		%.y	$(makedeps)
+			@echo -e "  YACC\t\t$<"
+			$(YACC) $(YACCFLAGS) -d -o $@ $<
+
+%.c %.h:		%.l	$(makedeps)
+			@echo -e "  LEX\t\t$<"
+			$(LEX) -t --header-file=$(<:.l=.h) $< > $@
+
+%.8:			%.xml	$(makedeps)
+			@echo -e "  MAN\t\t$@"
+			docbook2x-man $<
+
+%.pdf:			%.xml	$(makedeps)
+			@echo -e "  PDF\t\t$@"
+			db2pdf -o $(SUBDIR) $<
+
+define program_template
+$(1)-obj		:= $$(patsubst %,$(SUBDIR)%,$$($(1)-obj))
+$(1)-extra-clean-files	:= $$(patsubst %,$(SUBDIR)%,$$($(1)-extra-clean-files))
+
+depfiles		:= $$(patsubst $(SUBDIR)%.o,$(SUBDIR).%.d,$$($(1)-obj))
+
+$(SUBDIR)$(1):		$$($(1)-extra-targets) $$($(1)-obj)
+			@echo -e "  LD\t\t$$(SUBDIR)$$@"
+			$$(CC) $$($(1)-obj) $$(LDFLAGS) -o $$@
+all_targets		+= $(SUBDIR)$(1)
+
+.PHONY:			$(1)-clean
+$(1)-clean:
+			@echo -e "  CLEAN\t\t$(1)"
+			$$(RM) $$($(1)-obj) $$(depfiles) $$($(1)-extra-clean-files) $(SUBDIR)$(1)
+clean_targets		+= $(1)-clean
+
+.PHONY:			$(1)-install
+$(1)-install:
+			@echo -e "  INSTALL\t$1"
+			$(MKDIR_P) $$(DESTDIR)/$$($(1)-destdir)
+			$(INSTALL) -m 755 -o root -g root \
+				$(SUBDIR)$(1) \
+				$$(DESTDIR)/$$($(1)-destdir)/$(1)
+install_targets		+= $(1)-install
+
+ifneq ($(MAKECMDGOALS),clean)
+-include $$(depfiles)
+endif
+endef
+
+ifneq ($(SUBDIR),)
+include $(SUBDIR)/Makefile
+$(foreach prog,$(PROGRAMS),$(eval $(call program_template,$(prog))))
+endif
+
+.DEFAULT_GOAL		:= all
+
+.PHONY:			all clean install
+all:			$(SUBDIRS) $(all_targets)
+clean:			$(SUBDIRS) $(clean_targets)
+install:		all $(SUBDIRS) $(install_targets)
+
+.PHONY: $(SUBDIRS)
+$(SUBDIRS):
+			@echo -e "  SUBDIR\t$@/"
+			@$(MAKE) -s -f Makefile.rules $(MAKECMDGOALS) SUBDIR="$@/"

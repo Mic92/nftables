@@ -1,0 +1,13 @@
+#! nft -f
+
+table add bridge filter
+chain add bridge filter output NF_INET_LOCAL_OUT 0
+
+# LL protocol
+rule add bridge filter output eth type 0x0800 counter
+
+# IP address
+rule add bridge filter output eth type 0x0800 ip daddr 20.0.0.2 counter
+
+# IPv6 address
+rule add bridge filter output eth type 0x86DD ip6 daddr 2001:6f8:974:3::2 counter

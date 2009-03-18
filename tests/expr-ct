@@ -1,0 +1,26 @@
+#! nft -f
+
+table add ip filter
+chain add ip filter output NF_INET_LOCAL_OUT 0
+
+# ct: state
+rule add ip filter output ct state 0 counter
+
+# ct: direction original/reply
+rule add ip filter output ct direction 0 counter
+rule add ip filter output ct direction 1 counter
+
+# ct: status
+rule add ip filter output ct status 0 counter
+
+# ct: mark
+rule add ip filter output ct mark 0 counter
+
+# ct: secmark
+rule add ip filter output ct secmark 0 counter
+
+# ct: expiration
+rule add ip filter output ct expiration 30 counter
+
+# ct: helper ftp
+rule add ip filter output ct helper "ftp" counter

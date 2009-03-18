@@ -1,0 +1,6 @@
+nftables (0.01-alpha1) unstable; urgency=low
+
+  * initial alpha version
+
+ -- Patrick McHardy <kaber@trash.net>  Wed,  3 Dec 2008 14:00:00 +0100
+

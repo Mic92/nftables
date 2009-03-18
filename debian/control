@@ -1,0 +1,13 @@
+Source: nftables
+Section: net
+Priority: optional
+Maintainer: Patrick McHardy <kaber@trash.net>
+Build-Depends: libnl-dev (>= 2.0)
+Standards-Version: 3.8.0
+
+Package: nftables
+Architecture: any
+Priority: optional
+Section: net
+Depends: ${shlibs:Depends}
+Description: Program to control packet filtering rules

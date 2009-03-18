@@ -1,0 +1,27 @@
+nftables frontend
+-----------------
+- Define lexical distinction between keywords, symbolic constants and
+  identifiers
+- Define syntax for changing data (connmark, meta etc.)
+- shorter syntax for specifying rules: entire chains without repeating "rule add ..."
+- payload syntax for matching on IP headers of IPIP/GRE tunnels etc.
+
+- netlink monitor for CLI
+
+Kernel
+------
+- netlink set API
+- kernel set implementation selection
+- TC hookup - use dummy classifier or hook "natively" ?
+- kill mangle table, make rerouting a configurable table/chain property
+- kill nat table? harder because of more special handling
+- multi-family tables
+
+- IPv6 ext header matching
+- IP style options (IP/TCP/DCCP) matching
+- IPsec policy matching
+- hashlimit
+- quota
+- recent(?)
+- TCPMSS target - generic packet editor?
+- include NLM_F_ ... flags in notifications?

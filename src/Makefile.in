@@ -1,0 +1,30 @@
+PROGRAMS		+= nft
+YACCFLAGS               += --skeleton=../../..$(shell pwd)/src/parser-skeleton.c
+
+nft-destdir		:= @sbindir@
+
+nft-obj			+= main.o
+nft-obj			+= cli.o
+nft-obj			+= rule.o
+nft-obj			+= statement.o
+nft-obj			+= datatype.o
+nft-obj			+= expression.o
+nft-obj			+= evaluate.o
+nft-obj			+= payload.o
+nft-obj			+= exthdr.o
+nft-obj			+= meta.o
+nft-obj			+= ct.o
+nft-obj			+= netlink.o
+nft-obj			+= netlink_linearize.o
+nft-obj			+= netlink_delinearize.o
+nft-obj			+= segtree.o
+nft-obj			+= rbtree.o
+nft-obj			+= gmputil.o
+nft-obj			+= utils.o
+nft-obj			+= erec.o
+
+nft-obj			+= parser.o
+nft-extra-clean-files	+= parser.c parser.h
+
+nft-obj			+= scanner.o
+nft-extra-clean-files	+= scanner.c scanner.h

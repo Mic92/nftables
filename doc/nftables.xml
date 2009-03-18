@@ -1,0 +1,966 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE refentry PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
+ "/usr/share/xml/docbook/schema/dtd/4.5/docbookx.dtd">
+
+<refentry>
+	<refentryinfo>
+		<author>
+			<firstname>Patrick</firstname>
+			<surname>McHardy</surname>
+			<email>kaber@trash.net</email>
+		</author>
+		<copyright>
+			<year>2008</year>
+			<holder>Patrick McHardy</holder>
+		</copyright>
+	</refentryinfo>
+
+	<refmeta>
+		<refentrytitle>nftables</refentrytitle>
+		<manvolnum>8</manvolnum>
+	</refmeta>
+
+	<refnamediv>
+		<refname>nftables</refname>
+		<refpurpose>
+			Administration tool for packet filtering and classification
+		</refpurpose>
+	</refnamediv>
+
+	<refsynopsisdiv>
+		<cmdsynopsis>
+			<command>nftables</command>
+			<arg choice="opt">
+				<option>-n/--numeric</option>
+			</arg>
+			<arg choice="opt">
+				<option>-I/--includepath</option>
+				<replaceable>directory</replaceable>
+			</arg>
+			<group>
+				<arg choice="opt">
+					<option>-f/--file</option>
+					<replaceable>filename</replaceable>
+				</arg>
+				<arg choice="opt">
+					<option>-i/--interactive</option>
+				</arg>
+				<arg choice="opt" rep="repeat">
+					<replaceable>cmd</replaceable>
+				</arg>
+			</group>
+		</cmdsynopsis>
+		<cmdsynopsis>
+			<command>nftables</command>
+			<arg choice="opt">
+				<option>-h/--help</option>
+			</arg>
+			<arg choice="opt">
+				<option>-v/--version</option>
+			</arg>
+		</cmdsynopsis>
+	</refsynopsisdiv>
+
+	<refsect1>
+		<title>Description</title>
+		<para>
+			nftables is used to set up, maintain and inspect packet
+			filtering and classification rules in the Linux kernel.
+		</para>
+	</refsect1>
+
+	<refsect1>
+		<title>Options</title>
+		<para>
+			For a full summary of options, run <command>nftables --help</command>.
+		</para>
+
+		<variablelist>
+			<varlistentry>
+				<term><option>-h/--help</option></term>
+				<listitem>
+					<para>
+						Show help message and all options.
+					</para>
+				</listitem>
+			</varlistentry>
+			<varlistentry>
+				<term><option>-v/--version</option></term>
+				<listitem>
+					<para>
+						Show version.
+					</para>
+				</listitem>
+			</varlistentry>
+			<varlistentry>
+				<term><option>-n/--numeric</option></term>
+				<listitem>
+					<para>
+						Numeric output: IP addresses and other information
+						that might need network traffic to resolve to symbolic names
+						are shown numerically.
+					</para>
+				</listitem>
+			</varlistentry>
+			<varlistentry>
+				<term><option>-I/--includepath <replaceable>directory</replaceable></option></term>
+				<listitem>
+					<para>
+						Add the directory <replaceable>directory</replaceable> to the list of directories to by searched for included files.
+					</para>
+				</listitem>
+			</varlistentry>
+			<varlistentry>
+				<term><option>-f/--file <replaceable>filename</replaceable></option></term>
+				<listitem>
+					<para>
+						Read input from <replaceable>filename</replaceable>.
+					</para>
+				</listitem>
+			</varlistentry>
+			<varlistentry>
+				<term><option>-i/--interactive</option></term>
+				<listitem>
+					<para>
+						Read input from an interactive readline CLI.
+					</para>
+				</listitem>
+			</varlistentry>
+		</variablelist>
+	</refsect1>
+
+	<refsect1>
+		<title>Input file format</title>
+		<para>
+			Input is parsed line-wise. When the last character of a line just before
+			the newline character is a non-quoted backslash (<literal>\</literal>),
+			the newline is treated as a line continuation.
+		</para>
+		<para>
+			A <literal>#</literal> begins a comment. All following characters on
+			the same line are ignored.
+		</para>
+		<para>
+			Other files can be included by using
+			<command>include "<replaceable>filename</replaceable>"</command>.
+		</para>
+	</refsect1>
+
+	<refsect1>
+		<title>Tables</title>
+		<para>
+			<cmdsynopsis>
+				<command>table</command>
+				<group choice="req">
+					<arg>add</arg>
+					<arg>delete</arg>
+					<arg>list</arg>
+					<arg>flush</arg>
+				</group>
+				<arg choice="opt"><replaceable>family</replaceable></arg>
+				<arg choice="req"><replaceable>table</replaceable></arg>
+			</cmdsynopsis>
+		</para>
+
+		<para>
+			Tables are containers for chains. They are identified by their family
+			and their name. The family must be one of
+
+			<simplelist type="inline">
+				<member><literal>ip</literal></member>
+				<member><literal>ip6</literal></member>
+				<member><literal>arp</literal></member>
+				<member><literal>bridge</literal></member>
+			</simplelist>.
+
+			When no family is specified, <literal>ip</literal> is used by default.
+		</para>
+
+		<variablelist>
+			<varlistentry>
+				<term><option>add</option></term>
+				<listitem>
+					<para>
+						Add a new table for the given family with the given name.
+					</para>
+				</listitem>
+			</varlistentry>
+			<varlistentry>
+				<term><option>delete</option></term>
+				<listitem>
+					<para>
+						Delete the specified table.
+					</para>
+				</listitem>
+			</varlistentry>
+			<varlistentry>
+				<term><option>list</option></term>
+				<listitem>
+					<para>
+						List all chains and rules of the specified table.
+					</para>
+				</listitem>
+			</varlistentry>
+			<varlistentry>
+				<term><option>flush</option></term>
+				<listitem>
+					<para>
+						Flush all chains and rules of the specified table.
+					</para>
+				</listitem>
+			</varlistentry>
+		</variablelist>
+	</refsect1>
+
+	<refsect1>
+		<title>Chains</title>
+		<para>
+			<cmdsynopsis>
+				<command>chain</command>
+				<arg choice="req">add</arg>
+				<arg choice="opt"><replaceable>family</replaceable></arg>
+				<arg choice="req"><replaceable>table</replaceable></arg>
+				<arg choice="req"><replaceable>chain</replaceable></arg>
+				<arg choice="req"><replaceable>hook</replaceable></arg>
+				<arg choice="req"><replaceable>priority</replaceable></arg>
+			</cmdsynopsis>
+			<cmdsynopsis>
+				<command>chain</command>
+				<group choice="req">
+					<arg>add</arg>
+					<arg>delete</arg>
+					<arg>list</arg>
+					<arg>flush</arg>
+				</group>
+				<arg choice="opt"><replaceable>family</replaceable></arg>
+				<arg choice="req"><replaceable>table</replaceable></arg>
+				<arg choice="req"><replaceable>chain</replaceable></arg>
+			</cmdsynopsis>
+		</para>
+
+		<para>
+			Chains are containers for rules. They exist in two kinds,
+			basechains and regular chains. A basecase is an entry point for
+			packets from the networking stack, a regular chain may be used
+			as jump target and is used for better rule organization.
+		</para>
+
+		<variablelist>
+			<varlistentry>
+				<term><option>add</option></term>
+				<listitem>
+					<para>
+						Add a new chain in the specified table. When a hook and priority
+						value are specified, the chain is created as a base chain and hooked
+						up to the networking stack.
+					</para>
+				</listitem>
+			</varlistentry>
+			<varlistentry>
+				<term><option>delete</option></term>
+				<listitem>
+					<para>
+						Delete the specified chain.
+					</para>
+				</listitem>
+			</varlistentry>
+			<varlistentry>
+				<term><option>list</option></term>
+				<listitem>
+					<para>
+						List all rules of the specified chain.
+					</para>
+				</listitem>
+			</varlistentry>
+			<varlistentry>
+				<term><option>flush</option></term>
+				<listitem>
+					<para>
+						Flush all rules of the specified chain.
+					</para>
+				</listitem>
+			</varlistentry>
+		</variablelist>
+	</refsect1>
+
+	<refsect1>
+		<title>Rules</title>
+		<para>
+			<cmdsynopsis>
+				<command>rule</command>
+				<group choice="req">
+					<arg>add</arg>
+					<arg>delete</arg>
+				</group>
+				<arg choice="opt"><replaceable>family</replaceable></arg>
+				<arg choice="req"><replaceable>table</replaceable></arg>
+				<arg choice="req"><replaceable>chain</replaceable></arg>
+				<arg choice="opt">handle <replaceable>handle</replaceable></arg>
+				<arg choice="req" rep="repeat"><replaceable>statement</replaceable></arg>
+			</cmdsynopsis>
+		</para>
+		<para>
+			Rules are constructed from two kinds of components according to a set
+			of rules: expressions and statements. The lowest order expression is a
+			primary expression, representing either a constant or a single datum
+			from a packets payload, meta data or a stateful module. Primary expressions
+			can be used as arguments to relational expressions (equality,
+			set membership, ...) to construct match expressions.
+		</para>
+	</refsect1>
+
+	<refsect1>
+		<title>Primary expressions</title>
+		<refsect2>
+			<title>Meta expressions</title>
+			<para>
+				A meta expression refers to meta data associated with a packet.
+			</para>
+			<table frame="all">
+				<title>Meta expressions</title>
+				<tgroup cols='3' align='left' colsep='1' rowsep='1'>
+					<colspec colname='c1'/>
+					<colspec colname='c2'/>
+					<colspec colname='c3'/>
+					<thead>
+						<row>
+							<entry>Keyword</entry>
+							<entry>Description</entry>
+							<entry>Type</entry>
+						</row>
+					</thead>
+					<tbody>
+						<row>
+							<entry>length</entry>
+							<entry>Length of the packet in bytes</entry>
+							<entry>Numeric (32 bit)</entry>
+						</row>
+						<row>
+							<entry>protocol</entry>
+							<entry>Ethertype protocol value</entry>
+							<entry>ethertype</entry>
+						</row>
+						<row>
+							<entry>priority</entry>
+							<entry>TC packet priority</entry>
+							<entry>Numeric (32 bit)</entry>
+						</row>
+						<row>
+							<entry>mark</entry>
+							<entry>Packet mark</entry>
+							<entry>packetmark</entry>
+						</row>
+						<row>
+							<entry>iif</entry>
+							<entry>Input interface index</entry>
+							<entry>ifindex</entry>
+						</row>
+						<row>
+							<entry>iifname</entry>
+							<entry>Input interface name</entry>
+							<entry>ifname</entry>
+						</row>
+						<row>
+							<entry>iiftype</entry>
+							<entry>Input interface hardware type</entry>
+							<entry>hwtype</entry>
+						</row>
+						<row>
+							<entry>oif</entry>
+							<entry>Output interface index</entry>
+							<entry>ifindex</entry>
+						</row>
+						<row>
+							<entry>oifname</entry>
+							<entry>Output interface name</entry>
+							<entry>ifname</entry>
+						</row>
+						<row>
+							<entry>oiftype</entry>
+							<entry>Output interface hardware type</entry>
+							<entry>hwtype</entry>
+						</row>
+						<row>
+							<entry>skuid</entry>
+							<entry>UID associated with originating socket</entry>
+							<entry>uid</entry>
+						</row>
+						<row>
+							<entry>skgid</entry>
+							<entry>GID associated with originating socket</entry>
+							<entry>gid</entry>
+						</row>
+						<row>
+							<entry>rtclassid</entry>
+							<entry>Routing realm</entry>
+							<entry>realm</entry>
+						</row>
+					</tbody>
+				</tgroup>
+			</table>
+			<table frame="all">
+				<title>Meta expression specific types</title>
+				<tgroup cols='2' align='left' colsep='1' rowsep='1'>
+					<colspec colname='c1'/>
+					<colspec colname='c2'/>
+					<thead>
+						<row>
+							<entry>Type</entry>
+							<entry>Description</entry>
+						</row>
+					</thead>
+					<tbody>
+						<row>
+							<entry>ifindex</entry>
+							<entry>
+								Interface index (32 bit number). Can be specified numerically
+								or as name of an existing interface.
+							</entry>
+						</row>
+						<row>
+							<entry>ifname</entry>
+							<entry>
+								Interface name (16 byte string). Does not have to exist.
+							</entry>
+						</row>
+						<row>
+							<entry>uid</entry>
+							<entry>
+								User ID (32 bit number). Can be specified numerically or as
+								user name.
+							</entry>
+						</row>
+						<row>
+							<entry>gid</entry>
+							<entry>
+								Group ID (32 bit number). Can be specified numerically or as
+								group name.
+							</entry>
+						</row>
+						<row>
+							<entry>realm</entry>
+							<entry>
+								Routing Realm (32 bit number). Can be specified numerically
+								or as symbolic name defined in /etc/iproute2/rt_realms.
+							</entry>
+						</row>
+					</tbody>
+				</tgroup>
+			</table>
+		</refsect2>
+
+		<refsect2>
+			<title>Payload expressions</title>
+			<table frame="all">
+				<title>Ethernet header expression</title>
+				<tgroup cols='2' align='left' colsep='1' rowsep='1'>
+					<colspec colname='c1'/>
+					<colspec colname='c2'/>
+					<thead>
+						<row>
+							<entry>Keyword</entry>
+							<entry>Description</entry>
+						</row>
+					</thead>
+					<tbody>
+						<row>
+							<entry>daddr</entry>
+							<entry>Destination address</entry>
+						</row>
+						<row>
+							<entry>saddr</entry>
+							<entry>Source address</entry>
+						</row>
+						<row>
+							<entry>type</entry>
+							<entry>EtherType</entry>
+						</row>
+					</tbody>
+				</tgroup>
+			</table>
+
+			<table frame="all">
+				<title>VLAN header expression</title>
+				<tgroup cols='2' align='left' colsep='1' rowsep='1'>
+					<colspec colname='c1'/>
+					<colspec colname='c2'/>
+					<thead>
+						<row>
+							<entry>Keyword</entry>
+							<entry>Description</entry>
+						</row>
+					</thead>
+					<tbody>
+						<row>
+							<entry>id</entry>
+							<entry>VLAN ID (VID)</entry>
+						</row>
+						<row>
+							<entry>cfi</entry>
+							<entry>Canonical Format Indicator</entry>
+						</row>
+						<row>
+							<entry>pcp</entry>
+							<entry>Priority code point</entry>
+						</row>
+						<row>
+							<entry>type</entry>
+							<entry>EtherType</entry>
+						</row>
+					</tbody>
+				</tgroup>
+			</table>
+
+			<table frame="all">
+				<title>ARP header expression</title>
+				<tgroup cols='2' align='left' colsep='1' rowsep='1'>
+					<colspec colname='c1'/>
+					<colspec colname='c2'/>
+					<thead>
+						<row>
+							<entry>Keyword</entry>
+							<entry>Description</entry>
+						</row>
+					</thead>
+					<tbody>
+						<row>
+							<entry>htype</entry>
+							<entry>ARP hardware type</entry>
+						</row>
+						<row>
+							<entry>ptype</entry>
+							<entry>EtherType</entry>
+						</row>
+						<row>
+							<entry>hlen</entry>
+							<entry>Hardware address len</entry>
+						</row>
+						<row>
+							<entry>plen</entry>
+							<entry>Protocol address len</entry>
+						</row>
+						<row>
+							<entry>op</entry>
+							<entry>Operation</entry>
+						</row>
+					</tbody>
+				</tgroup>
+			</table>
+
+			<table frame="all">
+				<title>IPv4 header expression</title>
+				<tgroup cols='2' align='left' colsep='1' rowsep='1'>
+					<colspec colname='c1'/>
+					<colspec colname='c2'/>
+					<thead>
+						<row>
+							<entry>Keyword</entry>
+							<entry>Description</entry>
+						</row>
+					</thead>
+					<tbody>
+						<row>
+							<entry>version</entry>
+							<entry>IP header version (4)</entry>
+						</row>
+						<row>
+							<entry>hdrlength</entry>
+							<entry>IP header length including options</entry>
+						</row>
+						<row>
+							<entry>tos</entry>
+							<entry>Type Of Service</entry>
+						</row>
+						<row>
+							<entry>length</entry>
+							<entry>Total packet length</entry>
+						</row>
+						<row>
+							<entry>id</entry>
+							<entry>IP ID</entry>
+						</row>
+						<row>
+							<entry>frag-off</entry>
+							<entry>Fragment offset</entry>
+						</row>
+						<row>
+							<entry>ttl</entry>
+							<entry>Time to live</entry>
+						</row>
+						<row>
+							<entry>protocol</entry>
+							<entry>Upper layer protocol</entry>
+						</row>
+						<row>
+							<entry>checksum</entry>
+							<entry>IP header checksum</entry>
+						</row>
+						<row>
+							<entry>saddr</entry>
+							<entry>Source address</entry>
+						</row>
+						<row>
+							<entry>daddr</entry>
+							<entry>Destination address</entry>
+						</row>
+					</tbody>
+				</tgroup>
+			</table>
+
+			<table frame="all">
+				<title>IPv6 header expression</title>
+				<tgroup cols='2' align='left' colsep='1' rowsep='1'>
+					<colspec colname='c1'/>
+					<colspec colname='c2'/>
+					<thead>
+						<row>
+							<entry>Keyword</entry>
+							<entry>Description</entry>
+						</row>
+					</thead>
+					<tbody>
+						<row>
+							<entry>version</entry>
+							<entry>IP header version (6)</entry>
+						</row>
+						<row>
+							<entry>priority</entry>
+							<entry></entry>
+						</row>
+						<row>
+							<entry>flowlabel</entry>
+							<entry></entry>
+						</row>
+						<row>
+							<entry>length</entry>
+							<entry></entry>
+						</row>
+						<row>
+							<entry>nexthdr</entry>
+							<entry>Nexthdr protocol</entry>
+						</row>
+						<row>
+							<entry>hoplimit</entry>
+							<entry></entry>
+						</row>
+						<row>
+							<entry>saddr</entry>
+							<entry>Source address</entry>
+						</row>
+						<row>
+							<entry>daddr</entry>
+							<entry>Destination address</entry>
+						</row>
+					</tbody>
+				</tgroup>
+			</table>
+
+			<table frame="all">
+				<title>SCTP header expression</title>
+				<tgroup cols='2' align='left' colsep='1' rowsep='1'>
+					<colspec colname='c1'/>
+					<colspec colname='c2'/>
+					<thead>
+						<row>
+							<entry>Keyword</entry>
+							<entry>Description</entry>
+						</row>
+					</thead>
+					<tbody>
+						<row>
+							<entry>sport</entry>
+							<entry>Source port</entry>
+						</row>
+						<row>
+							<entry>dport</entry>
+							<entry>Destination port</entry>
+						</row>
+						<row>
+							<entry>vtag</entry>
+							<entry>Verfication Tag</entry>
+						</row>
+						<row>
+							<entry>checksum</entry>
+							<entry>Checksum</entry>
+						</row>
+					</tbody>
+				</tgroup>
+			</table>
+
+			<table frame="all">
+				<title>DCCP header expression</title>
+				<tgroup cols='2' align='left' colsep='1' rowsep='1'>
+					<colspec colname='c1'/>
+					<colspec colname='c2'/>
+					<thead>
+						<row>
+							<entry>Keyword</entry>
+							<entry>Description</entry>
+						</row>
+					</thead>
+					<tbody>
+						<row>
+							<entry>sport</entry>
+							<entry>Source port</entry>
+						</row>
+						<row>
+							<entry>dport</entry>
+							<entry>Destination port</entry>
+						</row>
+					</tbody>
+				</tgroup>
+			</table>
+
+			<table frame="all">
+				<title>TCP header expression</title>
+				<tgroup cols='2' align='left' colsep='1' rowsep='1'>
+					<colspec colname='c1'/>
+					<colspec colname='c2'/>
+					<thead>
+						<row>
+							<entry>Keyword</entry>
+							<entry>Description</entry>
+						</row>
+					</thead>
+					<tbody>
+						<row>
+							<entry>sport</entry>
+							<entry>Source port</entry>
+						</row>
+						<row>
+							<entry>dport</entry>
+							<entry>Destination port</entry>
+						</row>
+						<row>
+							<entry>sequence</entry>
+							<entry>Sequence number</entry>
+						</row>
+						<row>
+							<entry>ackseq</entry>
+							<entry>Acknowledgement number</entry>
+						</row>
+						<row>
+							<entry>doff</entry>
+							<entry>Data offset</entry>
+						</row>
+						<row>
+							<entry>reserved</entry>
+							<entry>Reserved area</entry>
+						</row>
+						<row>
+							<entry>flags</entry>
+							<entry>TCP flags</entry>
+						</row>
+						<row>
+							<entry>window</entry>
+							<entry>Window</entry>
+						</row>
+						<row>
+							<entry>checksum</entry>
+							<entry>Checksum</entry>
+						</row>
+						<row>
+							<entry>urgptr</entry>
+							<entry>Urgent pointer</entry>
+						</row>
+					</tbody>
+				</tgroup>
+			</table>
+
+			<table frame="all">
+				<title>UDP header expression</title>
+				<tgroup cols='2' align='left' colsep='1' rowsep='1'>
+					<colspec colname='c1'/>
+					<colspec colname='c2'/>
+					<thead>
+						<row>
+							<entry>Keyword</entry>
+							<entry>Description</entry>
+						</row>
+					</thead>
+					<tbody>
+						<row>
+							<entry>sport</entry>
+							<entry>Source port</entry>
+						</row>
+						<row>
+							<entry>dport</entry>
+							<entry>Destination port</entry>
+						</row>
+						<row>
+							<entry>length</entry>
+							<entry>Total packet length</entry>
+						</row>
+						<row>
+							<entry>checksum</entry>
+							<entry>Checksum</entry>
+						</row>
+					</tbody>
+				</tgroup>
+			</table>
+
+			<table frame="all">
+				<title>UDP-Lite header expression</title>
+				<tgroup cols='2' align='left' colsep='1' rowsep='1'>
+					<colspec colname='c1'/>
+					<colspec colname='c2'/>
+					<thead>
+						<row>
+							<entry>Keyword</entry>
+							<entry>Description</entry>
+						</row>
+					</thead>
+					<tbody>
+						<row>
+							<entry>sport</entry>
+							<entry>Source port</entry>
+						</row>
+						<row>
+							<entry>dport</entry>
+							<entry>Destination port</entry>
+						</row>
+						<row>
+							<entry>cscov</entry>
+							<entry>Checksum coverage</entry>
+						</row>
+						<row>
+							<entry>checksum</entry>
+							<entry>Checksum</entry>
+						</row>
+					</tbody>
+				</tgroup>
+			</table>
+
+
+			<table frame="all">
+				<title>AH header expression</title>
+				<tgroup cols='2' align='left' colsep='1' rowsep='1'>
+					<colspec colname='c1'/>
+					<colspec colname='c2'/>
+					<thead>
+						<row>
+							<entry>Keyword</entry>
+							<entry>Description</entry>
+						</row>
+					</thead>
+					<tbody>
+						<row>
+							<entry>nexthdr</entry>
+							<entry>Next header protocol</entry>
+						</row>
+						<row>
+							<entry>hdrlength</entry>
+							<entry>AH Header length</entry>
+						</row>
+						<row>
+							<entry>reserved</entry>
+							<entry>Reserved area</entry>
+						</row>
+						<row>
+							<entry>spi</entry>
+							<entry>Security Parameter Index</entry>
+						</row>
+						<row>
+							<entry>sequence</entry>
+							<entry>Sequence number</entry>
+						</row>
+					</tbody>
+				</tgroup>
+			</table>
+
+			<table frame="all">
+				<title>ESP header expression</title>
+				<tgroup cols='2' align='left' colsep='1' rowsep='1'>
+					<colspec colname='c1'/>
+					<colspec colname='c2'/>
+					<thead>
+						<row>
+							<entry>Keyword</entry>
+							<entry>Description</entry>
+						</row>
+					</thead>
+					<tbody>
+						<row>
+							<entry>spi</entry>
+							<entry>Security Parameter Index</entry>
+						</row>
+						<row>
+							<entry>sequence</entry>
+							<entry>Sequence number</entry>
+						</row>
+					</tbody>
+				</tgroup>
+			</table>
+
+			<table frame="all">
+				<title>IPComp header expression</title>
+				<tgroup cols='2' align='left' colsep='1' rowsep='1'>
+					<colspec colname='c1'/>
+					<colspec colname='c2'/>
+					<thead>
+						<row>
+							<entry>Keyword</entry>
+							<entry>Description</entry>
+						</row>
+					</thead>
+					<tbody>
+						<row>
+							<entry>nexthdr</entry>
+							<entry>Next header protocol</entry>
+						</row>
+						<row>
+							<entry>flags</entry>
+							<entry>Flags</entry>
+						</row>
+						<row>
+							<entry>cfi</entry>
+							<entry>Compression Parameter Index</entry>
+						</row>
+					</tbody>
+				</tgroup>
+			</table>
+		</refsect2>
+	</refsect1>
+
+	<refsect1>
+		<title>Exit status</title>
+		<para>
+			On success, nftables exits with a status of 0. Unspecified
+			errors cause it to exit with a status of 1, memory allocation
+			errors with a status of 2.
+		</para>
+	</refsect1>
+
+	<refsect1>
+		<title>See Also</title>
+		<para>
+			<simplelist type="inline">
+				<member>iptables(8)</member>
+				<member>ip6tables(8)</member>
+				<member>arptables(8)</member>
+				<member>ebtables(8)</member>
+				<member>ip(8)</member>
+				<member>tc(8)</member>
+			</simplelist>
+		</para>
+	</refsect1>
+
+	<refsect1>
+		<title>Authors</title>
+		<para>
+			nftables was written by Patrick McHardy.
+		</para>
+	</refsect1>
+
+	<refsect1>
+		<title>Copyright</title>
+		<para>
+			Copyright &copy; 2008 Patrick McHardy <email>kaber@trash.net</email>
+		</para>
+		<para>
+			This program is free software; you can redistribute it and/or modify
+			it under the terms of the GNU General Public License version 2 as
+			published by the Free Software Foundation.
+		</para>
+	</refsect1>
+</refentry>

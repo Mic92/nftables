@@ -1,0 +1,14 @@
+mandocs-@CONFIG_MAN@	+= doc/nftables.8
+pdfdocs-@CONFIG_PDF@	+= doc/nftables.pdf
+
+all:		$(mandocs-y) $(pdfdocs-y)
+clean:
+		@echo -e "  CLEAN\t\tdoc"
+		$(RM) $(mandocs-y) $(pdfdocs-y)
+
+install:
+		@echo -e "  INSTALL\tdoc"
+		$(MKDIR_P) $(DESTDIR)/${mandir}/man8
+		$(INSTALL) -m 755 -o root -g root $(mandocs-y) $(DESTDIR)/${mandir}/man8/
+		$(MKDIR_P) $(DESTDIR)/${pdfdir}
+		$(INSTALL) -m 755 -o root -g root $(pdfdocs-y) $(DESTDIR)/${pdfdir}/

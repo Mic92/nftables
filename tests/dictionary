@@ -1,0 +1,52 @@
+#! nft -f
+#
+table add ip filter
+chain add ip filter OUTPUT NF_INET_LOCAL_OUT 0
+
+chain add ip filter chain1
+rule add ip filter chain1 handle 1 counter
+
+chain add ip filter chain2
+rule add ip filter chain2 handle 1 counter
+
+# must succeed: expr { expr, ... }
+rule add ip filter OUTPUT ip protocol 6 tcp dport { \
+	22, \
+	23, \
+}
+
+# must fail: expr { type1, type2, ... }
+rule add ip filter OUTPUT ip protocol 6 tcp dport { \
+	22, \
+	192.168.0.1, \
+}
+
+# must succeed: expr { expr => verdict, ... }
+rule add ip filter OUTPUT ip protocol 6 tcp dport { \
+	22 => jump chain1, \
+	23 => jump chain2, \
+}
+
+# must fail: expr { expr => verdict, expr => expr, ... }
+rule add ip filter OUTPUT ip protocol 6 tcp dport { \
+	22 => jump chain1, \
+	23 => 0x100, \
+}
+
+# must fail: expr { expr => expr, ...}
+rule add ip filter OUTPUT ip protocol 6 tcp dport { \
+	22 => 0x100, \
+	23 => 0x200, \
+}
+
+# must succeed: expr MAP { expr => expr, ... } expr
+rule add ip filter OUTPUT ip protocol 6 map tcp dport { \
+	22 => 1, \
+	23 => 2, \
+} 2
+
+# must fail: expr MAP { expr => type1, expr => type2, .. } expr
+rule add ip filter OUTPUT ip protocol 6 map tcp dport { \
+	22 => 1, \
+	23 => 192.168.0.1, \
+} 2

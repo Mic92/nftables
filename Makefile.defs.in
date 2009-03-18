@@ -1,0 +1,40 @@
+DEBUG		= @CONFIG_DEBUG@
+CC		= @CC@
+CPP		= @CPP@
+LEX		= @LEX@
+YACC		= @YACC@
+MKDIR_P		= @MKDIR_P@
+INSTALL		= @INSTALL@
+
+PACKAGE_TARNAME	= @PACKAGE_TARNAME@
+
+prefix		= @prefix@
+exec_prefix	= @exec_prefix@
+sysconfdir	= @sysconfdir@
+datarootdir	= @datarootdir@
+mandir		= @mandir@
+docdir		= @docdir@
+pdfdir		= @pdfdir@
+confdir		= @sysconfdir@/nftables
+
+LDFLAGS		+= @LDFLAGS@
+LDFLAGS		+= @LIBS@
+
+CPPFLAGS	+= @CPPFLAGS@
+
+CFLAGS		+= @CFLAGS@ @DEFS@
+CFLAGS		+= -DDEFAULT_INCLUDE_PATH="\"$(confdir)\""
+CFLAGS		+= -include config.h
+CFLAGS		+= -Iinclude
+CFLAGS		+= -fno-strict-aliasing
+
+CFLAGS		+= -Wall -Werror
+CFLAGS		+= -Wstrict-prototypes -Wmissing-prototypes -Wmissing-declarations
+CFLAGS		+= -Wdeclaration-after-statement -Wsign-compare -Winit-self
+CFLAGS		+= -Wformat-nonliteral -Wformat-security -Wmissing-format-attribute
+CFLAGS		+= -Wcast-align -Wundef -Wbad-function-cast # -Wshadow
+CFLAGS		+= -Waggregate-return -Wunused -Wwrite-strings
+
+ifeq ($(DEBUG),y)
+CFLAGS		+= -g -DDEBUG
+endif

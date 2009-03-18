@@ -1,0 +1,19 @@
+#! nft -f
+
+# Concat element mismatch
+rule add ip filter output ip daddr . tcp sport . tcp dport { \
+	192.168.0.1 . 22,	\
+	192.168.0.1 . 80,	\
+}
+
+# Concat type mismatch
+rule add ip filter output ip daddr . tcp dport { \
+	192.168.0.1 . 192.168.0.2,	\
+	192.168.0.1 . 192.168.0.3,	\
+}
+
+# Concat expression
+rule add ip filter output ip daddr . tcp dport { \
+	192.168.0.1 . 22,	\
+	192.168.0.1 . 80,	\
+}

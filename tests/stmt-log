@@ -1,0 +1,6 @@
+#! nft -f
+
+table add ip filter
+chain add ip filter output NF_INET_LOCAL_OUT 0
+
+rule add ip filter output log saddr "prefix" group 0 counter

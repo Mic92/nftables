@@ -1,0 +1,22 @@
+#! nft -f
+
+table add filter
+
+# chains: add and delete chain
+chain add filter testchain
+chain delete filter testchain
+
+# chains: add and delete base chain
+chain add filter input NF_INET_LOCAL_OUT 0
+chain delete filter input NF_INET_LOCAL_OUT 0
+
+# chains: can not delete chain while referenced
+chain add filter testchain
+chain add filter testchain2
+
+rule add filter testchain handle 1 jump testchain2
+chain delete filter testchain2
+rule delete filter testchain handle 1
+
+chain delete filter testchain2
+chain delete filter testchain
