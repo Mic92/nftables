@@ -359,8 +359,8 @@ static void location_update(struct location *loc, struct location *rhs, int n)
 %type <expr>			verdict_map_expr verdict_map_list verdict_map_list_expr
 %destructor { expr_free($$); }	verdict_map_expr verdict_map_list verdict_map_list_expr
 
-%type <expr>			set_expr
-%destructor { expr_free($$); }	set_expr
+%type <expr>			set_expr set_list_expr set_list_member_expr
+%destructor { expr_free($$); }	set_expr set_list_expr set_list_member_expr
 
 %type <expr>			expr
 %destructor { expr_free($$); }	expr
@@ -430,6 +430,10 @@ input			:	/* empty */
 
 stmt_seperator		:	NEWLINE
 			|	SEMICOLON
+			;
+
+opt_newline		:	NEWLINE
+		 	|	/* empty */
 			;
 
 common_block		:	INCLUDE		QUOTED_STRING	stmt_seperator
@@ -935,12 +939,14 @@ verdict_map_list	:	verdict_map_list_expr
 				$1->location = @$;
 				$$ = $1;
 			}
-			|	verdict_map_list	COMMA
+			|	verdict_map_list	COMMA	opt_newline
 			;
 
-verdict_map_list_expr	:	map_lhs_expr	ARROW	verdict_expr
+verdict_map_list_expr	:	opt_newline	map_lhs_expr	opt_newline
+		      				ARROW		opt_newline
+						verdict_expr	opt_newline
 			{
-				$$ = mapping_expr_alloc(&@$, $1, $3);
+				$$ = mapping_expr_alloc(&@$, $2, $6);
 			}
 			;
 
@@ -979,24 +985,36 @@ relational_op		:	EQ		{ $$ = OP_EQ; }
 			|	LTE		{ $$ = OP_LTE; }
 			;
 
-membership_expr		:	expr	'{'	set_expr	'}'
+membership_expr		:	expr	set_expr
 			{
-				$3->location = @$;
-				$$ = relational_expr_alloc(&@$, OP_LOOKUP, $1, $3);
+				$$ = relational_expr_alloc(&@$, OP_LOOKUP, $1, $2);
 			}
 			;
 
-set_expr		:	expr
+set_expr		:	'{'	set_list_expr		'}'
+	  		{
+				$2->location = @$;
+				$$ = $2;
+			}
+			;
+
+set_list_expr		:	set_list_member_expr
 			{
 				$$ = set_expr_alloc(&@1);
 				compound_expr_add($$, $1);
 			}
-			|	set_expr	COMMA	expr
+			|	set_list_expr		COMMA	set_list_member_expr
 			{
 				compound_expr_add($1, $3);
 				$$ = $1;
 			}
-			|	set_expr	COMMA
+			|	set_list_expr		COMMA	opt_newline
+			;
+
+set_list_member_expr	:	opt_newline	expr	opt_newline
+			{
+				$$ = $2;
+			}
 			;
 
 verdict_expr		:	ACCEPT
