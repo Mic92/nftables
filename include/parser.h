@@ -1,5 +1,5 @@
-#ifndef _PARSER_H
-#define _PARSER_H
+#ifndef NFTABLES_PARSER_H
+#define NFTABLES_PARSER_H
 
 #include <list.h>
 
@@ -33,4 +33,4 @@ extern void scanner_push_buffer(void *scanner,
 				const struct input_descriptor *indesc,
 				const char *buffer);
 
-#endif /* _PARSER_H */
+#endif /* NFTABLES_PARSER_H */

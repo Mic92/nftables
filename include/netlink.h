@@ -1,5 +1,5 @@
-#ifndef _NETLINK_H
-#define _NETLINK_H
+#ifndef NFTABLES_NETLINK_H
+#define NFTABLES_NETLINK_H
 
 #include <netlink/netfilter/netfilter.h>
 #include <netlink/netfilter/nft_table.h>
@@ -57,4 +57,4 @@ extern int netlink_get_table(struct netlink_ctx *ctx, const struct handle *h);
 extern int netlink_list_table(struct netlink_ctx *ctx, const struct handle *h);
 extern int netlink_flush_table(struct netlink_ctx *ctx, const struct handle *h);
 
-#endif /* _NETLINK_H */
+#endif /* NFTABLES_NETLINK_H */

@@ -1,5 +1,5 @@
-#ifndef _UTILS_H
-#define _UTILS_H
+#ifndef NFTABLES_UTILS_H
+#define NFTABLES_UTILS_H
 
 #include <stdint.h>
 #include <stdbool.h>
@@ -66,4 +66,4 @@ extern void *xrealloc(void *ptr, size_t size);
 extern void *xzalloc(size_t size);
 extern char *xstrdup(const char *s);
 
-#endif /* _UTILS_H */
+#endif /* NFTABLES_UTILS_H */

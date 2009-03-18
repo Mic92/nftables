@@ -1,5 +1,5 @@
-#ifndef _RULE_H
-#define _RULE_H
+#ifndef NFTABLES_RULE_H
+#define NFTABLES_RULE_H
 
 #include <stdint.h>
 #include <nftables.h>
@@ -171,4 +171,4 @@ extern struct error_record *rule_postprocess(struct rule *rule);
 struct netlink_ctx;
 extern int do_command(struct netlink_ctx *ctx, struct cmd *cmd);
 
-#endif /* RULE_H */
+#endif /* NFTABLES_RULE_H */

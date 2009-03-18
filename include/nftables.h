@@ -1,5 +1,5 @@
-#ifndef _NFTABLES_H
-#define _NFTABLES_H
+#ifndef NFTABLES_NFTABLES_H
+#define NFTABLES_NFTABLES_H
 
 #include <stdbool.h>
 #include <stdarg.h>
@@ -93,4 +93,4 @@ struct input_descriptor {
 	off_t				line_offset;
 };
 
-#endif /* _NFTABLES_H */
+#endif /* NFTABLES_NFTABLES_H */

@@ -1,5 +1,5 @@
-#ifndef _EREC_H
-#define _EREC_H
+#ifndef NFTABLES_EREC_H
+#define NFTABLES_EREC_H
 
 #include <nftables.h>
 #include <utils.h>
@@ -61,4 +61,4 @@ static inline void erec_queue(struct error_record *erec,
 extern void erec_print(FILE *f, const struct error_record *erec);
 extern void erec_print_list(FILE *f, struct list_head *list);
 
-#endif /* _EREC_H */
+#endif /* NFTABLES_EREC_H */

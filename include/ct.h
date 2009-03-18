@@ -1,5 +1,5 @@
-#ifndef _CT_H
-#define _CT_H
+#ifndef NFTABLES_CT_H
+#define NFTABLES_CT_H
 
 /**
  * struct ct_template
@@ -26,4 +26,4 @@ struct ct_template {
 extern struct expr *ct_expr_alloc(const struct location *loc,
 				  enum nft_ct_keys key);
 
-#endif /* _CT_H */
+#endif /* NFTABLES_CT_H */

@@ -1,5 +1,5 @@
-#ifndef _PAYLOAD_H
-#define _PAYLOAD_H
+#ifndef NFTABLES_PAYLOAD_H
+#define NFTABLES_PAYLOAD_H
 
 #include <nftables.h>
 
@@ -286,4 +286,4 @@ extern const struct payload_desc payload_arp;
 extern const struct payload_desc payload_vlan;
 extern const struct payload_desc payload_eth;
 
-#endif /* _PAYLOAD_H */
+#endif /* NFTABLES_PAYLOAD_H */

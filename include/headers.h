@@ -1,5 +1,5 @@
-#ifndef _HEADERS_H
-#define _HEADERS_H
+#ifndef NFTABLES_HEADERS_H
+#define NFTABLES_HEADERS_H
 
 #ifndef IPPROTO_UDPLITE
 # define IPPROTO_UDPLITE	136
@@ -116,4 +116,4 @@ struct ip6_mh {
 /* RFC 5142 */
 #define IP6_MH_TYPE_HASM	12	/* Home Agent Switch Message	*/
 
-#endif /* _HEADERS_H */
+#endif /* NFTABLES_HEADERS_H */

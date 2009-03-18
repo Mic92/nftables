@@ -1,5 +1,5 @@
-#ifndef _STATEMENT_H
-#define _STATEMENT_H
+#ifndef NFTABLES_STATEMENT_H
+#define NFTABLES_STATEMENT_H
 
 #include <list.h>
 #include <expression.h>
@@ -137,4 +137,4 @@ extern void stmt_free(struct stmt *stmt);
 extern void stmt_list_free(struct list_head *list);
 extern void stmt_print(const struct stmt *stmt);
 
-#endif /* _STATEMENT_H */
+#endif /* NFTABLES_STATEMENT_H */

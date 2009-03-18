@@ -1,5 +1,5 @@
-#ifndef _EXPRESSION_H
-#define _EXPRESSION_H
+#ifndef NFTABLES_EXPRESSION_H
+#define NFTABLES_EXPRESSION_H
 
 #include <stdbool.h>
 #include <gmp.h>
@@ -320,4 +320,4 @@ extern struct expr *mapping_expr_alloc(const struct location *loc,
 extern struct expr *map_expr_alloc(const struct location *loc,
 				   struct expr *arg, struct expr *list);
 
-#endif /* _EXPRESSION_H */
+#endif /* NFTABLES_EXPRESSION_H */

@@ -1,5 +1,5 @@
-#ifndef _META_H
-#define _META_H
+#ifndef NFTABLES_META_H
+#define NFTABLES_META_H
 
 /**
  * struct meta_template - template for meta expressions and statements
@@ -26,4 +26,4 @@ struct meta_template {
 extern struct expr *meta_expr_alloc(const struct location *loc,
 				    enum nft_meta_keys key);
 
-#endif /* _META_H */
+#endif /* NFTABLES_META_H */

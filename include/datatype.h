@@ -1,5 +1,5 @@
-#ifndef _DATATYPE_H
-#define _DATATYPE_H
+#ifndef NFTABLES_DATATYPE_H
+#define NFTABLES_DATATYPE_H
 
 /**
  * enum datatypes
@@ -153,4 +153,4 @@ extern const struct datatype inet_service_type;
 extern const struct datatype mark_type;
 extern const struct datatype time_type;
 
-#endif /* _DATATYPE_H */
+#endif /* NFTABLES_DATATYPE_H */

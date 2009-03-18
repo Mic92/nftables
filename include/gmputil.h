@@ -1,5 +1,5 @@
-#ifndef _GMPUTIL_H
-#define _GMPUTIL_H
+#ifndef NFTABLES_GMPUTIL_H
+#define NFTABLES_GMPUTIL_H
 
 #include <gmp.h>
 
@@ -39,4 +39,4 @@ extern void mpz_import_data(mpz_t rop, const void *data,
 			    unsigned int len);
 extern void mpz_switch_byteorder(mpz_t rop, unsigned int len);
 
-#endif /* _GMPUTIL_H */
+#endif /* NFTABLES_GMPUTIL_H */

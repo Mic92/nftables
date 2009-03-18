@@ -1,5 +1,5 @@
-#ifndef _EXTHDR_H
-#define _EXTHDR_H
+#ifndef NFTABLES_EXTHDR_H
+#define NFTABLES_EXTHDR_H
 
 /**
  * struct exthdr_desc - extension header description
@@ -81,4 +81,4 @@ extern const struct exthdr_desc exthdr_frag;
 extern const struct exthdr_desc exthdr_dst;
 extern const struct exthdr_desc exthdr_mh;
 
-#endif /* _EXTHDR_H */
+#endif /* NFTABLES_EXTHDR_H */

@@ -18,8 +18,8 @@
  *
  */
 
-#ifndef	_RBTREE_H
-#define	_RBTREE_H
+#ifndef	NFTABLES_RBTREE_H
+#define	NFTABLES_RBTREE_H
 
 #include <stddef.h>
 
@@ -95,4 +95,4 @@ static inline void rb_link_node(struct rb_node * node, struct rb_node * parent,
 	     (pos) != NULL; \
 	     (node) = (next))
 
-#endif	/* _RBTREE_H */
+#endif	/* NFTABLES_RBTREE_H */
