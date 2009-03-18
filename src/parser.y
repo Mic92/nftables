@@ -913,12 +913,14 @@ map_list		:	map_list_expr
 				$1->location = @$;
 				$$ = $1;
 			}
-			|	map_list	COMMA
+			|	map_list	COMMA	opt_newline
 			;
 
-map_list_expr		:	map_lhs_expr	ARROW	concat_expr
+map_list_expr		:	opt_newline	map_lhs_expr	opt_newline
+	       					ARROW		opt_newline
+						concat_expr	opt_newline
 			{
-				$$ = mapping_expr_alloc(&@$, $1, $3);
+				$$ = mapping_expr_alloc(&@$, $2, $6);
 			}
 			;
 
