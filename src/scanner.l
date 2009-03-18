@@ -38,9 +38,9 @@
 	long n = 0;								\
 	errno = 0;								\
 	while ((result = fread(buf, 1, max_size, yyin)) == 0 &&			\
-	       ferror(yyin)) {							\
+		ferror(yyin)) {							\
 		if (errno != EINTR) {						\
-			YY_FATAL_ERROR( "input in flex scanner failed" );	\
+			YY_FATAL_ERROR("input in flex scanner failed");		\
 			break;							\
 		}								\
 		errno = 0;							\
