@@ -30,7 +30,7 @@ configure:		configure.ac
 
 %.8:			%.xml	$(makedeps)
 			@echo -e "  MAN\t\t$@"
-			docbook2x-man $<
+			(cd $(SUBDIR); docbook2x-man ../$<)
 
 %.pdf:			%.xml	$(makedeps)
 			@echo -e "  PDF\t\t$@"
