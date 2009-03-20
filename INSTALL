@@ -1,0 +1,52 @@
+Installation instruction for nftables
+=====================================
+
+ Prerequisites
+ =============
+
+  - standard glibc headers, gcc etc.
+
+  - libnl including support for nftables: git://git.netfilter.org/libnl-nft.git
+
+  - flex
+
+  - bison
+
+  - libgmp
+
+  - libreadline
+
+  - optional: docbook2x: required for building man-page
+
+  - optional: docbook-utils: required for building PDF man-page
+
+ Configuring and compiling
+ =========================
+
+ Run "sh autogen.sh" to generate the configure script, then:
+
+ sh configure [options]
+
+ --prefix=
+
+        The prefix to put all installed files under. It defaults to
+        /usr/local, so the binaries will go into /usr/local/bin, sbin,
+        manpages into /usr/local/share/man, etc.
+
+ --disable-debug
+
+	Disable debugging
+
+ Run "make" to compile nftables, "make install" to install it in the
+ configured paths.
+
+ Other notes
+ ===========
+
+ The nftables kernel tree can be found at:
+
+ git://git.kernel.org/pub/scm/linux/kernel/git/kaber/nft-2.6.git
+
+ The latest version of this code can be found at:
+
+ git://git.netfilter.org/nftables.git
