@@ -207,6 +207,8 @@ addrstring	({macaddr}|{ip4addr}|{ip6addr})
 "-"			{ return DASH; }
 "*"			{ return ASTERISK; }
 "@"			{ return AT; }
+"$"			{ return '$'; }
+"="			{ return '='; }
 "=>"			{ return ARROW; }
 "map"			{ return MAP; }
 "vmap"			{ return VMAP; }
@@ -219,6 +221,7 @@ addrstring	({macaddr}|{ip4addr}|{ip6addr})
 "NF_INET_POST_ROUTING"	{ yylval->val = NF_INET_POST_ROUTING;	return HOOKNUM; }
 
 "include"		{ return INCLUDE; }
+"define"		{ return DEFINE; }
 
 "describe"		{ return DESCRIBE; }
 

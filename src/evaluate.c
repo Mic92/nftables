@@ -102,13 +102,25 @@ static int byteorder_conversion(struct eval_ctx *ctx, struct expr **expr,
 static int expr_evaluate_symbol(struct eval_ctx *ctx, struct expr **expr)
 {
 	struct error_record *erec;
+	struct symbol *sym;
 	struct expr *new;
 
 	(*expr)->sym_type = ctx->ectx.dtype;
-	erec = symbol_parse(*expr, &new);
-	if (erec != NULL) {
-		erec_queue(erec, ctx->msgs);
-		return -1;
+
+	if ((*expr)->scope != NULL) {
+		sym = symbol_lookup((*expr)->scope, (*expr)->identifier);
+		if (sym == NULL)
+			return expr_error(ctx, *expr,
+					  "undefined identifier '%s'",
+					  (*expr)->identifier);
+		// FIXME: need to copy (on write)
+		new = expr_get(sym->expr);
+	} else {
+		erec = symbol_parse(*expr, &new);
+		if (erec != NULL) {
+			erec_queue(erec, ctx->msgs);
+			return -1;
+		}
 	}
 
 	expr_free(*expr);
@@ -701,6 +713,23 @@ static int expr_evaluate_relational(struct eval_ctx *ctx, struct expr **expr)
 					 "Relational expression (%s) has "
 					 "constant value",
 					 expr_op_symbols[rel->op]);
+
+	if (rel->op == OP_IMPLICIT) {
+		switch (right->ops->type) {
+		case EXPR_RANGE:
+			rel->op = OP_RANGE;
+			break;
+		case EXPR_SET:
+			rel->op = OP_LOOKUP;
+			break;
+		case EXPR_LIST:
+			rel->op = OP_FLAGCMP;
+			break;
+		default:
+			rel->op = OP_EQ;
+			break;
+		}
+	}
 
 	switch (rel->op) {
 	case OP_LOOKUP:

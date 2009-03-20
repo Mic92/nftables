@@ -162,7 +162,7 @@ struct expr *verdict_expr_alloc(const struct location *loc,
 
 static void symbol_expr_print(const struct expr *expr)
 {
-	printf("%s", expr->identifier);
+	printf("%s%s", expr->scope != NULL ? "$" : "", expr->identifier);
 }
 
 static void symbol_expr_destroy(struct expr *expr)

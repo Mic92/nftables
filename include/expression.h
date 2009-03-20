@@ -55,6 +55,7 @@ enum expr_types {
 
 enum ops {
 	OP_INVALID,
+	OP_IMPLICIT,
 	/* Unary operations */
 	OP_HTON,
 	OP_NTOH,
@@ -172,6 +173,7 @@ struct expr {
 		struct {
 			/* EXPR_SYMBOL */
 			const struct datatype	*sym_type;
+			const struct scope	*scope;
 			const char		*identifier;
 		};
 		struct {

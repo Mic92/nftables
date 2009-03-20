@@ -151,6 +151,7 @@ static void location_update(struct location *loc, struct location *rhs, int n)
 %token SET			"set"
 
 %token INCLUDE			"include"
+%token DEFINE			"define"
 
 %token HOOK			"hook"
 %token <val> HOOKNUM		"hooknum"
@@ -379,8 +380,8 @@ static void location_update(struct location *loc, struct location *rhs, int n)
 %type <expr>			set_expr set_list_expr set_list_member_expr
 %destructor { expr_free($$); }	set_expr set_list_expr set_list_member_expr
 
-%type <expr>			expr
-%destructor { expr_free($$); }	expr
+%type <expr>			expr initializer_expr
+%destructor { expr_free($$); }	expr initializer_expr
 
 %type <expr>			match_expr
 %destructor { expr_free($$); }	match_expr
@@ -459,6 +460,11 @@ common_block		:	INCLUDE		QUOTED_STRING	stmt_seperator
 					xfree($2);
 					YYERROR;
 				}
+				xfree($2);
+			}
+			|	DEFINE		identifier	'='	initializer_expr	stmt_seperator
+			{
+				symbol_bind(current_scope(state), $2, $4);
 				xfree($2);
 			}
 			;
@@ -809,6 +815,12 @@ symbol_expr		:	string
 				$$ = symbol_expr_alloc(&@$, $1);
 				xfree($1);
 			}
+			|	'$'	identifier
+			{
+				$$ = symbol_expr_alloc(&@$, $2);
+				$$->scope = current_scope(state);
+				xfree($2);
+			}
 			;
 
 integer_expr		:	NUM
@@ -985,17 +997,18 @@ expr			:	concat_expr
 			|	multiton_expr
 			;
 
+initializer_expr	:	expr
+			|	set_expr
+			|	list_expr
+			;
+
 match_expr		:	relational_expr
 			|	membership_expr
 			;
 
 relational_expr		:	expr	/* implicit */	expr
 			{
-				enum ops op;
-
-				/* RHS determines operation */
-				op = ($2->ops->type == EXPR_RANGE) ? OP_RANGE : OP_EQ;
-				$$ = relational_expr_alloc(&@$, op, $1, $2);
+				$$ = relational_expr_alloc(&@$, OP_IMPLICIT, $1, $2);
 			}
 			|	expr	/* implicit */	list_expr
 			{
