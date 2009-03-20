@@ -2,6 +2,7 @@
 #define NFTABLES_PARSER_H
 
 #include <list.h>
+#include <rule.h> // FIXME
 
 #define MAX_INCLUDE_DEPTH		16
 #define TABSIZE				8
@@ -10,12 +11,19 @@
 #define YYLTYPE_IS_TRIVIAL		0
 #define YYENABLE_NLS			0
 
+#define SCOPE_NEST_MAX			3
+
 struct parser_state {
 	struct input_descriptor		*indesc;
 	struct input_descriptor		indescs[MAX_INCLUDE_DEPTH];
 	unsigned int			indesc_idx;
 
 	struct list_head		*msgs;
+
+	struct scope			top_scope;
+	struct scope			*scopes[SCOPE_NEST_MAX];
+	unsigned int			scope;
+
 	struct list_head		cmds;
 };
 

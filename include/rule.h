@@ -24,6 +24,37 @@ extern void handle_merge(struct handle *dst, const struct handle *src);
 extern void handle_free(struct handle *h);
 
 /**
+ * struct scope
+ *
+ * @parent:	pointer to parent scope
+ * @symbols:	symbols bound in the scope
+ */
+struct scope {
+	const struct scope	*parent;
+	struct list_head	symbols;
+};
+
+extern struct scope *scope_init(struct scope *scope, const struct scope *parent);
+
+/**
+ * struct symbol
+ *
+ * @list:	scope symbol list node
+ * @identifier:	identifier
+ * @expr:	initializer
+ */
+struct symbol {
+	struct list_head	list;
+	const char		*identifier;
+	struct expr		*expr;
+};
+
+extern void symbol_bind(struct scope *scope, const char *identifier,
+			struct expr *expr);
+extern struct symbol *symbol_lookup(const struct scope *scope,
+				    const char *identifier);
+
+/**
  * struct table - nftables table
  *
  * @list:	list node
@@ -33,6 +64,7 @@ extern void handle_free(struct handle *h);
 struct table {
 	struct list_head	list;
 	struct handle		handle;
+	struct scope		scope;
 	struct list_head	chains;
 };
 
@@ -55,6 +87,7 @@ struct chain {
 	struct handle		handle;
 	unsigned int		hooknum;
 	unsigned int		priority;
+	struct scope		scope;
 	struct list_head	rules;
 };
 

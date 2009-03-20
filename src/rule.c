@@ -68,6 +68,38 @@ void rule_print(const struct rule *rule)
 	printf("\n");
 }
 
+struct scope *scope_init(struct scope *scope, const struct scope *parent)
+{
+	scope->parent = parent;
+	init_list_head(&scope->symbols);
+	return scope;
+}
+
+void symbol_bind(struct scope *scope, const char *identifier, struct expr *expr)
+{
+	struct symbol *sym;
+
+	sym = xzalloc(sizeof(*sym));
+	sym->identifier = xstrdup(identifier);
+	sym->expr = expr;
+
+	list_add_tail(&sym->list, &scope->symbols);
+}
+
+struct symbol *symbol_lookup(const struct scope *scope, const char *identifier)
+{
+	struct symbol *sym;
+
+	while (scope != NULL) {
+		list_for_each_entry(sym, &scope->symbols, list) {
+			if (!strcmp(sym->identifier, identifier))
+				return sym;
+		}
+		scope = scope->parent;
+	}
+	return NULL;
+}
+
 struct chain *chain_alloc(const char *name)
 {
 	struct chain *chain;

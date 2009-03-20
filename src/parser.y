@@ -33,12 +33,29 @@ void parser_init(struct parser_state *state, struct list_head *msgs)
 	memset(state, 0, sizeof(*state));
 	init_list_head(&state->cmds);
 	state->msgs = msgs;
+	state->scopes[0] = scope_init(&state->top_scope, NULL);
 }
 
 static void yyerror(struct location *loc, void *scanner,
 		    struct parser_state *state, const char *s)
 {
 	erec_queue(error(loc, "%s", s), state->msgs);
+}
+
+static struct scope *current_scope(const struct parser_state *state)
+{
+	return state->scopes[state->scope];
+}
+
+static void open_scope(struct parser_state *state, struct scope *scope)
+{
+	scope_init(scope, current_scope(state));
+	state->scopes[++state->scope] = scope;
+}
+
+static void close_scope(struct parser_state *state)
+{
+	state->scope--;
 }
 
 static void location_init(void *scanner, struct parser_state *state,
@@ -474,6 +491,7 @@ add_cmd			:	TABLE		table_spec
 						'{'	table_block	'}'
 			{
 				handle_merge(&$3->handle, &$2);
+				close_scope(state);
 				$$ = cmd_alloc(CMD_ADD, CMD_OBJ_TABLE, &$2, $5);
 			}
 			|	CHAIN		chain_spec
@@ -484,6 +502,7 @@ add_cmd			:	TABLE		table_spec
 						'{'	chain_block	'}'
 			{
 				handle_merge(&$3->handle, &$2);
+				close_scope(state);
 				$$ = cmd_alloc(CMD_ADD, CMD_OBJ_CHAIN, &$2, $5);
 			}
 			|	RULE		ruleid_spec	rule
@@ -530,7 +549,11 @@ flush_cmd		:	TABLE		table_spec
 			}
 			;
 
-table_block_alloc	:	/* empty */	{ $$ = table_alloc(); }
+table_block_alloc	:	/* empty */
+			{
+				$$ = table_alloc();
+				open_scope(state, &$$->scope);
+			}
 			;
 
 table_block		:	/* empty */	{ $$ = $<table>-1; }
@@ -547,11 +570,16 @@ table_line		:	CHAIN		chain_identifier	chain_block_alloc
 	    					'{' 	chain_block	'}'
 	    		{
 				handle_merge(&$3->handle, &$2);
+				close_scope(state);
 				$$ = $3;
 			}
 			;
 
-chain_block_alloc	:	/* empty */	{ $$ = chain_alloc(NULL); }
+chain_block_alloc	:	/* empty */
+			{
+				$$ = chain_alloc(NULL);
+				open_scope(state, &$$->scope);
+			}
 			;
 
 chain_block		:	/* empty */	{ $$ = $<chain>-1; }
