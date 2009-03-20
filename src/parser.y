@@ -576,6 +576,7 @@ table_line		:	CHAIN		chain_identifier	chain_block_alloc
 	    					'{' 	chain_block	'}'
 	    		{
 				handle_merge(&$3->handle, &$2);
+				handle_free(&$2);
 				close_scope(state);
 				$$ = $3;
 			}

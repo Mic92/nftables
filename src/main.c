@@ -183,14 +183,16 @@ int main(int argc, char * const *argv)
 
 	{
 		struct netlink_ctx ctx;
-		struct cmd *cmd;
+		struct cmd *cmd, *next;
 
-		list_for_each_entry(cmd, &state.cmds, list) {
+		list_for_each_entry_safe(cmd, next, &state.cmds, list) {
 			memset(&ctx, 0, sizeof(ctx));
 			ctx.msgs = &msgs;
 			init_list_head(&ctx.list);
 			if (do_command(&ctx, cmd) < 0)
 				goto out;
+			list_del(&cmd->list);
+			cmd_free(cmd);
 		}
 	}
 out:
