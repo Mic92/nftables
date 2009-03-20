@@ -667,17 +667,17 @@ stmt			:	verdict_stmt
 
 verdict_stmt		:	verdict_expr
 			{
-				$$ = verdict_stmt_alloc(&@1, $1);
+				$$ = verdict_stmt_alloc(&@$, $1);
 			}
 			|	verdict_map_expr
 			{
-				$$ = verdict_stmt_alloc(&@1, $1);
+				$$ = verdict_stmt_alloc(&@$, $1);
 			}
 			;
 
 counter_stmt		:	COUNTER
 			{
-				$$ = counter_stmt_alloc(&@1);
+				$$ = counter_stmt_alloc(&@$);
 			}
 			;
 
@@ -687,7 +687,7 @@ log_stmt		:	log_stmt_alloc
 
 log_stmt_alloc		:	LOG
 			{
-				$$ = log_stmt_alloc(&@1);
+				$$ = log_stmt_alloc(&@$);
 			}
 			;
 
@@ -778,7 +778,7 @@ match_stmt		:	match_expr
 
 symbol_expr		:	string
 			{
-				$$ = symbol_expr_alloc(&@1, $1);
+				$$ = symbol_expr_alloc(&@$, $1);
 				xfree($1);
 			}
 			;
@@ -788,7 +788,7 @@ integer_expr		:	NUM
 				char str[64];
 
 				snprintf(str, sizeof(str), "%" PRIu64, $1);
-				$$ = symbol_expr_alloc(&@1, str);
+				$$ = symbol_expr_alloc(&@$, str);
 			}
 			;
 
@@ -880,7 +880,7 @@ wildcard_expr		:	ASTERISK
 	       		{
 				struct expr *expr;
 
-				expr = constant_expr_alloc(&@1, &integer_type,
+				expr = constant_expr_alloc(&@$, &integer_type,
 							   BYTEORDER_HOST_ENDIAN,
 							   0, NULL);
 				$$ = prefix_expr_alloc(&@$, expr, 0);
@@ -1002,7 +1002,7 @@ set_expr		:	'{'	set_list_expr		'}'
 
 set_list_expr		:	set_list_member_expr
 			{
-				$$ = set_expr_alloc(&@1);
+				$$ = set_expr_alloc(&@$);
 				compound_expr_add($$, $1);
 			}
 			|	set_list_expr		COMMA	set_list_member_expr
@@ -1021,31 +1021,31 @@ set_list_member_expr	:	opt_newline	expr	opt_newline
 
 verdict_expr		:	ACCEPT
 			{
-				$$ = verdict_expr_alloc(&@1, NF_ACCEPT, NULL);
+				$$ = verdict_expr_alloc(&@$, NF_ACCEPT, NULL);
 			}
 			|	DROP
 			{
-				$$ = verdict_expr_alloc(&@1, NF_DROP, NULL);
+				$$ = verdict_expr_alloc(&@$, NF_DROP, NULL);
 			}
 			|	QUEUE
 			{
-				$$ = verdict_expr_alloc(&@1, NF_QUEUE, NULL);
+				$$ = verdict_expr_alloc(&@$, NF_QUEUE, NULL);
 			}
 			|	CONTINUE
 			{
-				$$ = verdict_expr_alloc(&@1, NFT_CONTINUE, NULL);
+				$$ = verdict_expr_alloc(&@$, NFT_CONTINUE, NULL);
 			}
 			|	JUMP			identifier
 			{
-				$$ = verdict_expr_alloc(&@1, NFT_JUMP, $2);
+				$$ = verdict_expr_alloc(&@$, NFT_JUMP, $2);
 			}
 			|	GOTO			identifier
 			{
-				$$ = verdict_expr_alloc(&@1, NFT_GOTO, $2);
+				$$ = verdict_expr_alloc(&@$, NFT_GOTO, $2);
 			}
 			|	RETURN
 			{
-				$$ = verdict_expr_alloc(&@1, NFT_RETURN, NULL);
+				$$ = verdict_expr_alloc(&@$, NFT_RETURN, NULL);
 			}
 			;
 
