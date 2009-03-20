@@ -131,10 +131,16 @@ static void ct_expr_print(const struct expr *expr)
 	printf("ct %s", ct_templates[expr->ct.key].token);
 }
 
+static void ct_expr_clone(struct expr *new, const struct expr *expr)
+{
+	new->ct.key = expr->ct.key;
+}
+
 static const struct expr_ops ct_expr_ops = {
 	.type		= EXPR_CT,
 	.name		= "ct",
 	.print		= ct_expr_print,
+	.clone		= ct_expr_clone,
 };
 
 struct expr *ct_expr_alloc(const struct location *loc, enum nft_ct_keys key)

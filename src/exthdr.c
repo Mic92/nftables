@@ -27,10 +27,17 @@ static void exthdr_expr_print(const struct expr *expr)
 	printf("%s %s", expr->exthdr.desc->name, expr->exthdr.tmpl->token);
 }
 
+static void exthdr_expr_clone(struct expr *new, const struct expr *expr)
+{
+	new->exthdr.desc = expr->exthdr.desc;
+	new->exthdr.tmpl = expr->exthdr.tmpl;
+}
+
 static const struct expr_ops exthdr_expr_ops = {
 	.type		= EXPR_EXTHDR,
 	.name		= "exthdr",
 	.print		= exthdr_expr_print,
+	.clone		= exthdr_expr_clone,
 };
 
 static const struct payload_template exthdr_unknown_template =

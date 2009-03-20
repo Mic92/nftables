@@ -39,6 +39,18 @@ struct expr *expr_alloc(const struct location *loc, const struct expr_ops *ops,
 	return expr;
 }
 
+struct expr *expr_clone(const struct expr *expr)
+{
+	struct expr *new;
+
+	new = expr_alloc(&expr->location, expr->ops, expr->dtype,
+			 expr->byteorder, expr->len);
+	new->flags = expr->flags;
+	new->op    = expr->op;
+	expr->ops->clone(new, expr);
+	return new;
+}
+
 struct expr *expr_get(struct expr *expr)
 {
 	expr->refcnt++;
@@ -134,6 +146,13 @@ static void verdict_expr_print(const struct expr *expr)
 	datatype_print(expr);
 }
 
+static void verdict_expr_clone(struct expr *new, const struct expr *expr)
+{
+	new->verdict = expr->verdict;
+	if (expr->chain != NULL)
+		new->chain = xstrdup(expr->chain);
+}
+
 static void verdict_expr_destroy(struct expr *expr)
 {
         xfree(expr->chain);
@@ -143,6 +162,7 @@ static const struct expr_ops verdict_expr_ops = {
 	.type		= EXPR_VERDICT,
 	.name		= "verdict",
 	.print		= verdict_expr_print,
+	.clone		= verdict_expr_clone,
 	.destroy	= verdict_expr_destroy,
 };
 
@@ -165,6 +185,13 @@ static void symbol_expr_print(const struct expr *expr)
 	printf("%s%s", expr->scope != NULL ? "$" : "", expr->identifier);
 }
 
+static void symbol_expr_clone(struct expr *new, const struct expr *expr)
+{
+	new->sym_type   = expr->sym_type;
+	new->scope      = expr->scope;
+	new->identifier = xstrdup(expr->identifier);
+}
+
 static void symbol_expr_destroy(struct expr *expr)
 {
 	xfree(expr->identifier);
@@ -174,6 +201,7 @@ static const struct expr_ops symbol_expr_ops = {
 	.type		= EXPR_SYMBOL,
 	.name		= "symbol",
 	.print		= symbol_expr_print,
+	.clone		= symbol_expr_clone,
 	.destroy	= symbol_expr_destroy,
 };
 
@@ -193,6 +221,11 @@ static void constant_expr_print(const struct expr *expr)
 	datatype_print(expr);
 }
 
+static void constant_expr_clone(struct expr *new, const struct expr *expr)
+{
+	mpz_init_set(new->value, expr->value);
+}
+
 static void constant_expr_destroy(struct expr *expr)
 {
 	mpz_clear(expr->value);
@@ -202,6 +235,7 @@ static const struct expr_ops constant_expr_ops = {
 	.type		= EXPR_VALUE,
 	.name		= "value",
 	.print		= constant_expr_print,
+	.clone		= constant_expr_clone,
 	.destroy	= constant_expr_destroy,
 };
 
@@ -275,11 +309,24 @@ static void prefix_expr_set_type(const struct expr *expr,
 	expr_set_type(expr->expr, type, byteorder);
 }
 
+static void prefix_expr_clone(struct expr *new, const struct expr *expr)
+{
+	new->expr       = expr_clone(expr->expr);
+	new->prefix_len = expr->prefix_len;
+}
+
+static void prefix_expr_destroy(struct expr *expr)
+{
+	expr_free(expr->expr);
+}
+
 static const struct expr_ops prefix_expr_ops = {
 	.type		= EXPR_PREFIX,
 	.name		= "prefix",
 	.print		= prefix_expr_print,
 	.set_type	= prefix_expr_set_type,
+	.clone		= prefix_expr_clone,
+	.destroy	= prefix_expr_destroy,
 };
 
 struct expr *prefix_expr_alloc(const struct location *loc,
@@ -321,6 +368,11 @@ static void unary_expr_print(const struct expr *expr)
 	printf(")");
 }
 
+static void unary_expr_clone(struct expr *new, const struct expr *expr)
+{
+	new->arg = expr_clone(expr->expr);
+}
+
 static void unary_expr_destroy(struct expr *expr)
 {
 	expr_free(expr->arg);
@@ -330,6 +382,7 @@ static const struct expr_ops unary_expr_ops = {
 	.type		= EXPR_UNARY,
 	.name		= "unary",
 	.print		= unary_expr_print,
+	.clone		= unary_expr_clone,
 	.destroy	= unary_expr_destroy,
 };
 
@@ -355,6 +408,12 @@ static void binop_expr_print(const struct expr *expr)
 	expr_print(expr->right);
 }
 
+static void binop_expr_clone(struct expr *new, const struct expr *expr)
+{
+	new->left  = expr_clone(expr->left);
+	new->right = expr_clone(expr->right);
+}
+
 static void binop_expr_destroy(struct expr *expr)
 {
 	expr_free(expr->left);
@@ -365,6 +424,7 @@ static const struct expr_ops binop_expr_ops = {
 	.type		= EXPR_BINOP,
 	.name		= "binop",
 	.print		= binop_expr_print,
+	.clone		= binop_expr_clone,
 	.destroy	= binop_expr_destroy,
 };
 
@@ -408,6 +468,12 @@ static void range_expr_print(const struct expr *expr)
 	expr_print(expr->right);
 }
 
+static void range_expr_clone(struct expr *new, const struct expr *expr)
+{
+	new->left  = expr_clone(expr->left);
+	new->right = expr_clone(expr->right);
+}
+
 static void range_expr_destroy(struct expr *expr)
 {
 	expr_free(expr->left);
@@ -426,6 +492,7 @@ static const struct expr_ops range_expr_ops = {
 	.type		= EXPR_RANGE,
 	.name		= "range",
 	.print		= range_expr_print,
+	.clone		= range_expr_clone,
 	.destroy	= range_expr_destroy,
 	.set_type	= range_expr_set_type,
 };
@@ -450,6 +517,15 @@ static struct expr *compound_expr_alloc(const struct location *loc,
 	expr = expr_alloc(loc, ops, &invalid_type, BYTEORDER_INVALID, 0);
 	init_list_head(&expr->expressions);
 	return expr;
+}
+
+static void compound_expr_clone(struct expr *new, const struct expr *expr)
+{
+	struct expr *i;
+
+	init_list_head(&new->expressions);
+	list_for_each_entry(i, &expr->expressions, list)
+		compound_expr_add(new, expr_clone(i));
 }
 
 static void compound_expr_destroy(struct expr *expr)
@@ -493,6 +569,7 @@ static const struct expr_ops concat_expr_ops = {
 	.type		= EXPR_CONCAT,
 	.name		= "concat",
 	.print		= concat_expr_print,
+	.clone		= compound_expr_clone,
 	.destroy	= compound_expr_destroy,
 };
 
@@ -510,6 +587,7 @@ static const struct expr_ops list_expr_ops = {
 	.type		= EXPR_LIST,
 	.name		= "list",
 	.print		= list_expr_print,
+	.clone		= compound_expr_clone,
 	.destroy	= compound_expr_destroy,
 };
 
@@ -540,6 +618,7 @@ static const struct expr_ops set_expr_ops = {
 	.name		= "set",
 	.print		= set_expr_print,
 	.set_type	= set_expr_set_type,
+	.clone		= compound_expr_clone,
 	.destroy	= compound_expr_destroy,
 };
 
@@ -562,6 +641,12 @@ static void mapping_expr_set_type(const struct expr *expr,
 	expr_set_type(expr->left, dtype, byteorder);
 }
 
+static void mapping_expr_clone(struct expr *new, const struct expr *expr)
+{
+	new->left  = expr_clone(expr->left);
+	new->right = expr_clone(expr->right);
+}
+
 static void mapping_expr_destroy(struct expr *expr)
 {
 	expr_free(expr->left);
@@ -573,6 +658,7 @@ static const struct expr_ops mapping_expr_ops = {
 	.name		= "mapping",
 	.print		= mapping_expr_print,
 	.set_type	= mapping_expr_set_type,
+	.clone		= mapping_expr_clone,
 	.destroy	= mapping_expr_destroy,
 };
 
@@ -595,6 +681,12 @@ static void map_expr_print(const struct expr *expr)
 	expr_print(expr->mappings);
 }
 
+static void map_expr_clone(struct expr *new, const struct expr *expr)
+{
+	new->expr     = expr_clone(expr->expr);
+	new->mappings = expr_clone(expr->mappings);
+}
+
 static void map_expr_destroy(struct expr *expr)
 {
 	expr_free(expr->expr);
@@ -605,6 +697,7 @@ static const struct expr_ops map_expr_ops = {
 	.type		= EXPR_MAP,
 	.name		= "map",
 	.print		= map_expr_print,
+	.clone		= map_expr_clone,
 	.destroy	= map_expr_destroy,
 };
 

@@ -63,10 +63,20 @@ static void payload_expr_print(const struct expr *expr)
 		       expr->payload.offset, expr->len);
 }
 
+static void payload_expr_clone(struct expr *new, const struct expr *expr)
+{
+	new->payload.desc   = expr->payload.desc;
+	new->payload.tmpl   = expr->payload.tmpl;
+	new->payload.base   = expr->payload.base;
+	new->payload.offset = expr->payload.offset;
+	new->payload.flags  = expr->payload.flags;
+}
+
 static const struct expr_ops payload_expr_ops = {
 	.type		= EXPR_PAYLOAD,
 	.name		= "payload",
 	.print		= payload_expr_print,
+	.clone		= payload_expr_clone,
 };
 
 struct expr *payload_expr_alloc(const struct location *loc,

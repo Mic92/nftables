@@ -106,6 +106,7 @@ static inline void expr_set_context(struct expr_ctx *ctx,
  *
  * @type:	expression type
  * @name:	expression name for diagnostics
+ * @clone:	function to clone type specific data
  * @destroy:	destructor, must release inner expressions
  * @set_type:	function to promote type and byteorder of inner types
  * @print:	function to print the expression
@@ -113,6 +114,7 @@ static inline void expr_set_context(struct expr_ctx *ctx,
 struct expr_ops {
 	enum expr_types		type;
 	const char		*name;
+	void			(*clone)(struct expr *new, const struct expr *expr);
 	void			(*destroy)(struct expr *expr);
 	void			(*set_type)(const struct expr *expr,
 					    const struct datatype *dtype,
@@ -238,6 +240,7 @@ extern struct expr *expr_alloc(const struct location *loc,
 			       const struct expr_ops *ops,
 			       const struct datatype *dtype,
 			       enum byteorder byteorder, unsigned int len);
+extern struct expr *expr_clone(const struct expr *expr);
 extern struct expr *expr_get(struct expr *expr);
 extern void expr_free(struct expr *expr);
 extern void expr_print(const struct expr *expr);

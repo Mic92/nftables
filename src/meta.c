@@ -305,10 +305,16 @@ static void meta_expr_print(const struct expr *expr)
 	printf("meta %s", meta_templates[expr->meta.key].token);
 }
 
+static void meta_expr_clone(struct expr *new, const struct expr *expr)
+{
+	new->meta.key = expr->meta.key;
+}
+
 static const struct expr_ops meta_expr_ops = {
 	.type		= EXPR_META,
 	.name		= "meta",
 	.print		= meta_expr_print,
+	.clone		= meta_expr_clone,
 };
 
 struct expr *meta_expr_alloc(const struct location *loc, enum nft_meta_keys key)
