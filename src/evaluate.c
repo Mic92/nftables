@@ -113,8 +113,7 @@ static int expr_evaluate_symbol(struct eval_ctx *ctx, struct expr **expr)
 			return expr_error(ctx, *expr,
 					  "undefined identifier '%s'",
 					  (*expr)->identifier);
-		// FIXME: need to copy (on write)
-		new = expr_get(sym->expr);
+		new = expr_clone(sym->expr);
 	} else {
 		erec = symbol_parse(*expr, &new);
 		if (erec != NULL) {
