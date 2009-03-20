@@ -195,6 +195,7 @@ int main(int argc, char * const *argv)
 	}
 out:
 	scanner_destroy(scanner);
+	scope_release(&state.top_scope);
 	erec_print_list(stdout, &msgs);
 
 	xfree(buf);

@@ -75,6 +75,18 @@ struct scope *scope_init(struct scope *scope, const struct scope *parent)
 	return scope;
 }
 
+void scope_release(const struct scope *scope)
+{
+	struct symbol *sym, *next;
+
+	list_for_each_entry_safe(sym, next, &scope->symbols, list) {
+		list_del(&sym->list);
+		xfree(sym->identifier);
+		expr_free(sym->expr);
+		xfree(sym);
+	}
+}
+
 void symbol_bind(struct scope *scope, const char *identifier, struct expr *expr)
 {
 	struct symbol *sym;
@@ -118,6 +130,7 @@ void chain_free(struct chain *chain)
 	list_for_each_entry_safe(rule, next, &chain->rules, list)
 		rule_free(rule);
 	handle_free(&chain->handle);
+	scope_release(&chain->scope);
 	xfree(chain);
 }
 
@@ -165,6 +178,7 @@ void table_free(struct table *table)
 	list_for_each_entry_safe(chain, next, &table->chains, list)
 		chain_free(chain);
 	handle_free(&table->handle);
+	scope_release(&table->scope);
 	xfree(table);
 }
 

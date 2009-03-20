@@ -35,6 +35,7 @@ struct scope {
 };
 
 extern struct scope *scope_init(struct scope *scope, const struct scope *parent);
+extern void scope_release(const struct scope *scope);
 
 /**
  * struct symbol
