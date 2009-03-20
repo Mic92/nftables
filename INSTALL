@@ -1,5 +1,5 @@
-Installation instruction for nftables
-=====================================
+Installation instructions for nftables
+======================================
 
  Prerequisites
  =============
@@ -33,9 +33,16 @@ Installation instruction for nftables
         /usr/local, so the binaries will go into /usr/local/bin, sbin,
         manpages into /usr/local/share/man, etc.
 
+ --datarootdir=
+
+ 	The base directory for arch-independant files. Defaults to
+	$prefix/share.
+
  --disable-debug
 
 	Disable debugging
+
+ Suggested configuration options: --prefix=/ --datarootdir=/usr/share
 
  Run "make" to compile nftables, "make install" to install it in the
  configured paths.
