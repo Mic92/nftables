@@ -534,7 +534,7 @@ table_block_alloc	:	/* empty */	{ $$ = table_alloc(); }
 			;
 
 table_block		:	/* empty */	{ $$ = $<table>-1; }
-			|	common_block	{ $$ = $<table>-1; }
+			|	table_block	common_block
 			|	table_block	stmt_seperator
 			|	table_block	table_line	stmt_seperator
 			{
@@ -555,7 +555,7 @@ chain_block_alloc	:	/* empty */	{ $$ = chain_alloc(NULL); }
 			;
 
 chain_block		:	/* empty */	{ $$ = $<chain>-1; }
-			|	common_block	{ $$ = $<chain>-1; }
+			|	chain_block	common_block
 	     		|	chain_block	stmt_seperator
 			|	chain_block	hook_spec	stmt_seperator
 			|	chain_block	rule		stmt_seperator
