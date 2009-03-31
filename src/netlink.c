@@ -199,8 +199,7 @@ static int netlink_list_rules(struct netlink_ctx *ctx, const struct handle *h)
 					nl_geterror(err));
 
 	nlr = alloc_nft_rule(h);
-	nl_cache_foreach_filter(rule_cache, (struct nl_object *)nlr,
-				list_rule_cb, ctx);
+	nl_cache_foreach_filter(rule_cache, OBJ_CAST(nlr), list_rule_cb, ctx);
 	nfnl_nft_rule_put(nlr);
 	nl_cache_free(rule_cache);
 	return 0;
@@ -254,8 +253,7 @@ static int netlink_flush_rules(struct netlink_ctx *ctx, const struct handle *h)
 					nl_geterror(err));
 
 	nlr = alloc_nft_rule(h);
-	nl_cache_foreach_filter(rule_cache, (struct nl_object *)nlr,
-				flush_rule_cb, ctx);
+	nl_cache_foreach_filter(rule_cache, OBJ_CAST(nlr), flush_rule_cb, ctx);
 	nfnl_nft_rule_put(nlr);
 	nl_cache_free(rule_cache);
 	return 0;
@@ -332,8 +330,7 @@ int netlink_list_chains(struct netlink_ctx *ctx, const struct handle *h)
 					nl_geterror(err));
 
 	nlc = alloc_nft_chain(h);
-	nl_cache_foreach_filter(chain_cache, (struct nl_object *)nlc,
-				list_chain_cb, ctx);
+	nl_cache_foreach_filter(chain_cache, OBJ_CAST(nlc), list_chain_cb, ctx);
 	nfnl_nft_chain_put(nlc);
 	nl_cache_free(chain_cache);
 	return 0;
@@ -436,8 +433,7 @@ int netlink_list_tables(struct netlink_ctx *ctx, const struct handle *h)
 					nl_geterror(err));
 
 	nlt = alloc_nft_table(h);
-	nl_cache_foreach_filter(table_cache, (struct nl_object *)nlt,
-				list_table_cb, ctx);
+	nl_cache_foreach_filter(table_cache, OBJ_CAST(nlt), list_table_cb, ctx);
 	nfnl_nft_table_put(nlt);
 	nl_cache_free(table_cache);
 	return 0;
