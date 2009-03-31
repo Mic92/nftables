@@ -34,79 +34,6 @@ static void release_register(struct netlink_linearize_ctx *ctx)
 	ctx->reg_low--;
 }
 
-static struct nfnl_nft_data *netlink_gen_mpz_data(const mpz_t value,
-						  enum byteorder byteorder,
-						  unsigned int len)
-{
-	unsigned char data[len];
-
-	mpz_export_data(data, value, byteorder, len);
-	return alloc_nft_data(data, len);
-}
-
-static struct nfnl_nft_data *netlink_gen_constant_data(const struct expr *expr)
-{
-	assert(expr->ops->type == EXPR_VALUE);
-	return netlink_gen_mpz_data(expr->value, expr->byteorder,
-				    div_round_up(expr->len, BITS_PER_BYTE));
-}
-
-static struct nfnl_nft_data *netlink_gen_concat_data(const struct expr *expr)
-{
-	struct nfnl_nft_data *data;
-	const struct expr *i;
-	void *buf;
-	unsigned int len, offset;
-
-	len = 0;
-	list_for_each_entry(i, &expr->expressions, list)
-		len += i->len;
-
-	buf = xmalloc(len / BITS_PER_BYTE);
-
-	offset = 0;
-	list_for_each_entry(i, &expr->expressions, list) {
-		assert(i->ops->type == EXPR_VALUE);
-		mpz_export_data(buf + offset, i->value, i->byteorder,
-				i->len / BITS_PER_BYTE);
-		offset += i->len / BITS_PER_BYTE;
-	}
-
-	data = alloc_nft_data(buf, len / BITS_PER_BYTE);
-	xfree(buf);
-	return data;
-}
-
-static struct nfnl_nft_data *netlink_gen_verdict(const struct expr *expr)
-{
-	struct nfnl_nft_data *verdict;
-
-	verdict = nfnl_nft_verdict_alloc();
-	nfnl_nft_verdict_set_verdict(verdict, expr->verdict);
-
-	switch (expr->verdict) {
-	case NFT_JUMP:
-	case NFT_GOTO:
-		nfnl_nft_verdict_set_chain(verdict, expr->chain);
-	}
-
-	return verdict;
-}
-
-static struct nfnl_nft_data *netlink_gen_data(const struct expr *expr)
-{
-	switch (expr->ops->type) {
-	case EXPR_VALUE:
-		return netlink_gen_constant_data(expr);
-	case EXPR_CONCAT:
-		return netlink_gen_concat_data(expr);
-	case EXPR_VERDICT:
-		return netlink_gen_verdict(expr);
-	default:
-		BUG();
-	}
-}
-
 static void netlink_gen_expr(struct netlink_linearize_ctx *ctx,
 			     const struct expr *expr,
 			     enum nft_registers dreg);
@@ -361,7 +288,7 @@ static void netlink_gen_flagcmp(struct netlink_linearize_ctx *ctx,
 	mpz_init_set_ui(zero, 0);
 
 	nle = alloc_nft_expr(nfnl_nft_bitwise_init);
-	nld = netlink_gen_mpz_data(zero, expr->right->byteorder, len);
+	nld = netlink_gen_raw_data(zero, expr->right->byteorder, len);
 	nfnl_nft_bitwise_set_sreg(nle, sreg);
 	nfnl_nft_bitwise_set_dreg(nle, sreg);
 	nfnl_nft_bitwise_set_len(nle, len);
@@ -370,7 +297,7 @@ static void netlink_gen_flagcmp(struct netlink_linearize_ctx *ctx,
 	nfnl_nft_rule_add_expr(ctx->nlr, nle);
 
 	nle = alloc_nft_expr(nfnl_nft_cmp_init);
-	nld = netlink_gen_mpz_data(zero, expr->right->byteorder, len);
+	nld = netlink_gen_raw_data(zero, expr->right->byteorder, len);
 	nfnl_nft_cmp_set_sreg(nle, sreg);
 	nfnl_nft_cmp_set_op(nle, NFT_CMP_NEQ);
 	nfnl_nft_cmp_set_data(nle, nld);
@@ -467,10 +394,10 @@ static void netlink_gen_binop(struct netlink_linearize_ctx *ctx,
 	nfnl_nft_bitwise_set_dreg(nle, dreg);
 	nfnl_nft_bitwise_set_len(nle, len);
 
-	nld = netlink_gen_mpz_data(mask, expr->byteorder, len);
+	nld = netlink_gen_raw_data(mask, expr->byteorder, len);
 	nfnl_nft_bitwise_set_mask(nle, nld);
 
-	nld = netlink_gen_mpz_data(xor, expr->byteorder, len);
+	nld = netlink_gen_raw_data(xor, expr->byteorder, len);
 	nfnl_nft_bitwise_set_xor(nle, nld);
 
 	mpz_clear(tmp);

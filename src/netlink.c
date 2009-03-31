@@ -20,6 +20,7 @@
 #include <nftables.h>
 #include <netlink.h>
 #include <expression.h>
+#include <gmputil.h>
 #include <utils.h>
 #include <erec.h>
 
@@ -131,6 +132,118 @@ struct nfnl_nft_data *alloc_nft_data(const void *data, unsigned int len)
 	if (nld == NULL)
 		memory_allocation_error();
 	return nld;
+}
+
+struct nfnl_nft_data *netlink_gen_raw_data(const mpz_t value,
+					   enum byteorder byteorder,
+					   unsigned int len)
+{
+	unsigned char data[len];
+
+	mpz_export_data(data, value, byteorder, len);
+	return alloc_nft_data(data, len);
+}
+
+static struct nfnl_nft_data *netlink_gen_concat_data(const struct expr *expr)
+{
+	const struct expr *i;
+	unsigned int len, offset;
+
+	len = 0;
+	list_for_each_entry(i, &expr->expressions, list)
+		len += i->len;
+
+	if (1) {
+		unsigned char data[len / BITS_PER_BYTE];
+
+		offset = 0;
+		list_for_each_entry(i, &expr->expressions, list) {
+			assert(i->ops->type == EXPR_VALUE);
+			mpz_export_data(data + offset, i->value, i->byteorder,
+					i->len / BITS_PER_BYTE);
+			offset += i->len / BITS_PER_BYTE;
+		}
+	
+		return alloc_nft_data(data, len / BITS_PER_BYTE);
+	}
+}
+
+static struct nfnl_nft_data *netlink_gen_constant_data(const struct expr *expr)
+{
+	assert(expr->ops->type == EXPR_VALUE);
+	return netlink_gen_raw_data(expr->value, expr->byteorder,
+				    div_round_up(expr->len, BITS_PER_BYTE));
+}
+
+static struct nfnl_nft_data *netlink_gen_verdict(const struct expr *expr)
+{
+	struct nfnl_nft_data *verdict;
+
+	verdict = nfnl_nft_verdict_alloc();
+	nfnl_nft_verdict_set_verdict(verdict, expr->verdict);
+
+	switch (expr->verdict) {
+	case NFT_JUMP:
+	case NFT_GOTO:
+		nfnl_nft_verdict_set_chain(verdict, expr->chain);
+		break;
+	}
+
+	return verdict;
+}
+
+struct nfnl_nft_data *netlink_gen_data(const struct expr *expr)
+{
+	switch (expr->ops->type) {
+	case EXPR_VALUE:
+		return netlink_gen_constant_data(expr);
+	case EXPR_CONCAT:
+		return netlink_gen_concat_data(expr);
+	case EXPR_VERDICT:
+		return netlink_gen_verdict(expr);
+	default:
+		BUG();
+	}
+}
+
+struct expr *netlink_alloc_value(const struct location *loc,
+				 const struct nfnl_nft_data *nld)
+{
+	return constant_expr_alloc(loc, &invalid_type, BYTEORDER_INVALID,
+				   nfnl_nft_data_get_size(nld) * BITS_PER_BYTE,
+				   nfnl_nft_data_get(nld));
+}
+
+static struct expr *netlink_alloc_verdict(const struct location *loc,
+					  const struct nfnl_nft_data *nld)
+{
+	unsigned int code;
+	char *chain;
+
+	code = nfnl_nft_verdict_get_verdict(nld);
+	switch (code) {
+	case NFT_JUMP:
+	case NFT_GOTO:
+		chain = xstrdup(nfnl_nft_verdict_get_chain(nld));
+		break;
+	default:
+		chain = NULL;
+		break;
+	}
+
+	return verdict_expr_alloc(loc, code, chain);
+}
+
+struct expr *netlink_alloc_data(const struct location *loc,
+				const struct nfnl_nft_data *nld,
+				enum nft_registers dreg)
+{
+	switch (dreg) {
+	case NFT_REG_VERDICT:
+		return netlink_alloc_verdict(loc, nld);
+	default:
+		return netlink_alloc_value(loc, nld);
+	}
 }
 
 int netlink_add_rule(struct netlink_ctx *ctx, const struct handle *h,

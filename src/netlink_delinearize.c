@@ -66,46 +66,6 @@ static struct expr *netlink_get_register(struct netlink_parse_ctx *ctx,
 	return expr;
 }
 
-static struct expr *netlink_alloc_value(const struct location *loc,
-					const struct nfnl_nft_data *nld)
-{
-	return constant_expr_alloc(loc, &invalid_type, BYTEORDER_INVALID,
-				   nfnl_nft_data_get_size(nld) * BITS_PER_BYTE,
-				   nfnl_nft_data_get(nld));
-}
-
-static struct expr *netlink_alloc_verdict(const struct location *loc,
-					  const struct nfnl_nft_data *nld)
-{
-	unsigned int code;
-	char *chain;
-
-	code = nfnl_nft_verdict_get_verdict(nld);
-	switch (code) {
-	case NFT_JUMP:
-	case NFT_GOTO:
-		chain = xstrdup(nfnl_nft_verdict_get_chain(nld));
-		break;
-	default:
-		chain = NULL;
-		break;
-	}
-
-	return verdict_expr_alloc(loc, code, chain);
-}
-
-static struct expr *netlink_alloc_data(const struct location *loc,
-				       const struct nfnl_nft_data *nld,
-				       enum nft_registers dreg)
-{
-	switch (dreg) {
-	case NFT_REG_VERDICT:
-		return netlink_alloc_verdict(loc, nld);
-	default:
-		return netlink_alloc_value(loc, nld);
-	}
-}
-
 static void netlink_parse_immediate(struct netlink_parse_ctx *ctx,
 				    const struct location *loc,
 				    const struct nfnl_nft_expr *nle)

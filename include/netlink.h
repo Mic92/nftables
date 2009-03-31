@@ -30,6 +30,17 @@ extern struct nfnl_nft_rule *alloc_nft_rule(const struct handle *h);
 extern struct nfnl_nft_expr *alloc_nft_expr(int (*init)(struct nfnl_nft_expr *));
 extern struct nfnl_nft_data *alloc_nft_data(const void *data, unsigned int len);
 
+extern struct nfnl_nft_data *netlink_gen_data(const struct expr *expr);
+extern struct nfnl_nft_data *netlink_gen_raw_data(const mpz_t value,
+						  enum byteorder byteorder,
+						  unsigned int len);
+
+extern struct expr *netlink_alloc_value(const struct location *loc,
+				        const struct nfnl_nft_data *nld);
+extern struct expr *netlink_alloc_data(const struct location *loc,
+				       const struct nfnl_nft_data *nld,
+				       enum nft_registers dreg);
+
 extern int netlink_linearize_rule(struct netlink_ctx *ctx,
 				  struct nfnl_nft_rule *nlr,
 				  const struct rule *rule);
