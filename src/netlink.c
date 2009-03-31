@@ -124,13 +124,13 @@ struct nfnl_nft_expr *alloc_nft_expr(int (*init)(struct nfnl_nft_expr *))
 
 struct nfnl_nft_data *alloc_nft_data(const void *data, unsigned int len)
 {
-	struct nfnl_nft_data *nfd;
+	struct nfnl_nft_data *nld;
 
 	assert(len > 0);
-	nfd = nfnl_nft_data_alloc(data, len);
-	if (nfd == NULL)
+	nld = nfnl_nft_data_alloc(data, len);
+	if (nld == NULL)
 		memory_allocation_error();
-	return nfd;
+	return nld;
 }
 
 int netlink_add_rule(struct netlink_ctx *ctx, const struct handle *h,
