@@ -40,6 +40,11 @@ static void __exit netlink_close_sock(void)
 	nl_socket_free(nf_sock);
 }
 
+static void netlink_set_callback(nl_recvmsg_msg_cb_t func, void *arg)
+{
+	nl_socket_modify_cb(nf_sock, NL_CB_VALID, NL_CB_CUSTOM, func, arg);
+}
+
 void netlink_dump_object(struct nl_object *obj)
 {
 	struct nl_dump_params params = {
@@ -213,8 +218,7 @@ int netlink_get_rule(struct netlink_ctx *ctx, const struct handle *h)
 
 	nlr = alloc_nft_rule(h);
 	nfnl_nft_rule_query(nf_sock, nlr, 0);
-	nl_socket_modify_cb(nf_sock, NL_CB_VALID, NL_CB_CUSTOM,
-			    netlink_get_rule_cb, ctx);
+	netlink_set_callback(netlink_get_rule_cb, ctx);
 	err = nl_recvmsgs_default(nf_sock);
 	nfnl_nft_rule_put(nlr);
 
@@ -347,8 +351,7 @@ int netlink_get_chain(struct netlink_ctx *ctx, const struct handle *h)
 
 	nlc = alloc_nft_chain(h);
 	nfnl_nft_chain_query(nf_sock, nlc, 0);
-	nl_socket_modify_cb(nf_sock, NL_CB_VALID, NL_CB_CUSTOM,
-			    netlink_get_chain_cb, ctx);
+	netlink_set_callback(netlink_get_chain_cb, ctx);
 	err = nl_recvmsgs_default(nf_sock);
 	nfnl_nft_chain_put(nlc);
 
@@ -452,8 +455,7 @@ int netlink_get_table(struct netlink_ctx *ctx, const struct handle *h)
 
 	nlt = alloc_nft_table(h);
 	nfnl_nft_table_query(nf_sock, nlt, 0);
-	nl_socket_modify_cb(nf_sock, NL_CB_VALID, NL_CB_CUSTOM,
-			    netlink_get_table_cb, ctx);
+	netlink_set_callback(netlink_get_table_cb, ctx);
 	err = nl_recvmsgs_default(nf_sock);
 	nfnl_nft_table_put(nlt);
 
