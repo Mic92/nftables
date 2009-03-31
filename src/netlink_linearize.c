@@ -504,9 +504,7 @@ static void netlink_gen_unary(struct netlink_linearize_ctx *ctx,
 	nle = alloc_nft_expr(nfnl_nft_byteorder_init);
 	nfnl_nft_byteorder_set_sreg(nle, dreg);
 	nfnl_nft_byteorder_set_dreg(nle, dreg);
-	printf("%u\n", expr->len);
 	nfnl_nft_byteorder_set_len(nle, expr->len / BITS_PER_BYTE);
-	printf("%u\n", expr->arg->len);
 	nfnl_nft_byteorder_set_size(nle, expr->arg->len % 32 ? 2 : 4);
 	nfnl_nft_byteorder_set_op(nle, netlink_gen_unary_op(expr->op));
 	nfnl_nft_rule_add_expr(ctx->nlr, nle);
