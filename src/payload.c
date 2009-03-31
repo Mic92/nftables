@@ -580,7 +580,8 @@ static const struct symbol_table icmp_type_tbl = {
 
 static const struct datatype icmp_type_type = {
 	.type		= TYPE_ICMP_TYPE,
-	.name		= "ICMP type",
+	.name		= "icmp_type",
+	.desc		= "ICMP type",
 	.basetype	= &integer_type,
 	.sym_tbl	= &icmp_type_tbl,
 };
@@ -658,7 +659,8 @@ static const struct symbol_table tcp_flag_tbl = {
 
 static const struct datatype tcp_flag_type = {
 	.type		= TYPE_TCP_FLAG,
-	.name		= "TCP flag",
+	.name		= "tcp_flag",
+	.desc		= "TCP flag",
 	.basetype	= &bitmask_type,
 	.sym_tbl	= &tcp_flag_tbl,
 };
@@ -818,7 +820,8 @@ static const struct symbol_table arpop_tbl = {
 
 static const struct datatype arpop_type = {
 	.type		= TYPE_ARPOP,
-	.name		= "ARP operation",
+	.name		= "arp_op",
+	.desc		= "ARP operation",
 	.basetype	= &integer_type,
 	.sym_tbl	= &arpop_tbl,
 };
@@ -888,7 +891,8 @@ static const struct symbol_table ethertype_tbl = {
 
 const struct datatype ethertype_type = {
 	.type		= TYPE_ETHERTYPE,
-	.name		= "Ethernet protocol",
+	.name		= "ethertype",
+	.desc		= "Ethernet protocol",
 	.basetype	= &integer_type,
 	.sym_tbl	= &ethertype_tbl,
 };
@@ -916,3 +920,11 @@ const struct payload_desc payload_eth = {
 		[ETHHDR_TYPE]		= ETHHDR_TYPE("type", ether_type),
 	},
 };
+
+static void __init payload_init(void)
+{
+	datatype_register(&icmp_type_type);
+	datatype_register(&tcp_flag_type);
+	datatype_register(&arpop_type);
+	datatype_register(&ethertype_type);
+}

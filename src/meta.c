@@ -53,7 +53,8 @@ static struct error_record *realm_type_parse(const struct expr *sym,
 
 static const struct datatype realm_type = {
 	.type		= TYPE_REALM,
-	.name		= "routing realm",
+	.name		= "realm",
+	.desc		= "routing realm",
 	.basetype	= &integer_type,
 	.print		= realm_type_print,
 	.parse		= realm_type_parse,
@@ -74,7 +75,7 @@ static struct error_record *tchandle_type_parse(const struct expr *sym,
 
 	if (rtnl_tc_str2handle(sym->identifier, &handle) < 0)
 		return error(&sym->location, "Could not parse %s",
-			     sym->sym_type->name);
+			     sym->sym_type->desc);
 
 	*res = constant_expr_alloc(&sym->location, sym->sym_type,
 				   BYTEORDER_HOST_ENDIAN,
@@ -84,7 +85,8 @@ static struct error_record *tchandle_type_parse(const struct expr *sym,
 
 static const struct datatype tchandle_type = {
 	.type		= TYPE_TC_HANDLE,
-	.name		= "TC handle",
+	.name		= "tc_handle",
+	.desc		= "TC handle",
 	.basetype	= &integer_type,
 	.print		= tchandle_type_print,
 	.parse		= tchandle_type_parse,
@@ -160,7 +162,8 @@ static void __exit ifindex_table_free(void)
 
 static const struct datatype ifindex_type = {
 	.type		= TYPE_IFINDEX,
-	.name		= "interface index",
+	.name		= "ifindex",
+	.desc		= "interface index",
 	.basetype	= &integer_type,
 	.print		= ifindex_type_print,
 	.parse		= ifindex_type_parse,
@@ -184,7 +187,8 @@ static const struct symbol_table arphrd_tbl = {
 
 const struct datatype arphrd_type = {
 	.type		= TYPE_ARPHRD,
-	.name		= "hardware type",
+	.name		= "arphrd",
+	.desc		= "hardware type",
 	.basetype	= &integer_type,
 	.sym_tbl	= &arphrd_tbl,
 };
@@ -221,7 +225,8 @@ static struct error_record *uid_type_parse(const struct expr *sym,
 
 static const struct datatype uid_type = {
 	.type		= TYPE_UID,
-	.name		= "user ID",
+	.name		= "uid",
+	.desc		= "user ID",
 	.basetype	= &integer_type,
 	.print		= uid_type_print,
 	.parse		= uid_type_parse,
@@ -259,7 +264,8 @@ static struct error_record *gid_type_parse(const struct expr *sym,
 
 static const struct datatype gid_type = {
 	.type		= TYPE_GID,
-	.name		= "group ID",
+	.name		= "gid",
+	.desc		= "group ID",
 	.basetype	= &integer_type,
 	.print		= gid_type_print,
 	.parse		= gid_type_parse,
@@ -350,4 +356,13 @@ struct stmt *meta_stmt_alloc(const struct location *loc, enum nft_meta_keys key,
 	stmt->meta.tmpl	= &meta_templates[key];
 	stmt->meta.expr	= expr;
 	return stmt;
+}
+
+static void __init meta_init(void)
+{
+	datatype_register(&ifindex_type);
+	datatype_register(&realm_type);
+	datatype_register(&tchandle_type);
+	datatype_register(&uid_type);
+	datatype_register(&gid_type);
 }

@@ -40,7 +40,8 @@ static const struct symbol_table ct_state_tbl = {
 
 static const struct datatype ct_state_type = {
 	.type		= TYPE_CT_STATE,
-	.name		= "conntrack state",
+	.name		= "ct_state",
+	.desc		= "conntrack state",
 	.basetype	= &bitmask_type,
 	.sym_tbl	= &ct_state_tbl,
 };
@@ -57,7 +58,8 @@ static const struct symbol_table ct_dir_tbl = {
 
 static const struct datatype ct_dir_type = {
 	.type		= TYPE_CT_DIR,
-	.name		= "conntrack direction",
+	.name		= "ct_dir",
+	.desc		= "conntrack direction",
 	.basetype	= &bitmask_type,
 	.sym_tbl	= &ct_dir_tbl,
 };
@@ -82,7 +84,8 @@ static const struct symbol_table ct_status_tbl = {
 
 static const struct datatype ct_status_type = {
 	.type		= TYPE_CT_STATUS,
-	.name		= "conntrack status",
+	.name		= "ct_status",
+	.desc		= "conntrack status",
 	.basetype	= &bitmask_type,
 	.sym_tbl	= &ct_status_tbl,
 };
@@ -152,4 +155,11 @@ struct expr *ct_expr_alloc(const struct location *loc, enum nft_ct_keys key)
 			  tmpl->byteorder, tmpl->len);
 	expr->ct.key = key;
 	return expr;
+}
+
+static void __init ct_init(void)
+{
+	datatype_register(&ct_state_type);
+	datatype_register(&ct_dir_type);
+	datatype_register(&ct_status_type);
 }

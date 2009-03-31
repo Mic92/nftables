@@ -219,7 +219,7 @@ static int expr_evaluate_prefix(struct eval_ctx *ctx, struct expr **expr)
 	if (expr_basetype(base)->type != TYPE_INTEGER)
 		return expr_error(ctx, prefix,
 				  "Prefix expression is undefined for "
-				  "%s types", base->dtype->name);
+				  "%s types", base->dtype->desc);
 
 	if (prefix->prefix_len > base->len)
 		return expr_error(ctx, prefix,
@@ -259,7 +259,7 @@ static int expr_evaluate_range_expr(struct eval_ctx *ctx,
 	if (expr_basetype(*expr)->type != TYPE_INTEGER)
 		return expr_binary_error(ctx, *expr, range,
 					 "Range expression is undefined for "
-					 "%s types", (*expr)->dtype->name);
+					 "%s types", (*expr)->dtype->desc);
 	if (!expr_is_constant(*expr))
 		return expr_binary_error(ctx, *expr, range,
 					 "Range is not constant");
@@ -449,7 +449,7 @@ static int expr_evaluate_binop(struct eval_ctx *ctx, struct expr **expr)
 		return expr_binary_error(ctx, left, op,
 					 "Binary operation (%s) is undefined "
 					 "for %s types",
-					 sym, left->dtype->name);
+					 sym, left->dtype->desc);
 
 	if (expr_is_constant(left) && !expr_is_singleton(left))
 		return expr_binary_error(ctx, left, op,
@@ -527,7 +527,7 @@ static int expr_evaluate_list(struct eval_ctx *ctx, struct expr **expr)
 		if (i->dtype->basetype->type != TYPE_BITMASK)
 			return expr_error(ctx, i,
 					  "Basetype of type %s is not bitmask",
-					  i->dtype->name);
+					  i->dtype->desc);
 		mpz_ior(val, val, i->value);
 	}
 

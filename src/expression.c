@@ -78,12 +78,13 @@ void expr_describe(const struct expr *expr)
 	const struct datatype *dtype = expr->dtype;
 	const char *delim = "";
 
-	printf("%s expression, datatype %s", expr->ops->name, dtype->name);
+	printf("%s expression, datatype %s (%s)",
+		expr->ops->name, dtype->name, dtype->desc);
 	if (dtype->basetype != NULL) {
 		printf(" (basetype ");
 		for (dtype = dtype->basetype; dtype != NULL;
 		     dtype = dtype->basetype) {
-			printf("%s%s", delim, dtype->name);
+			printf("%s%s", delim, dtype->desc);
 			delim = ", ";
 		}
 		printf(")");

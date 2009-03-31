@@ -22,6 +22,49 @@
 #include <gmputil.h>
 #include <erec.h>
 
+static const struct datatype *datatypes[TYPE_MAX + 1] = {
+	[TYPE_VERDICT]		= &verdict_type,
+	[TYPE_BITMASK]		= &bitmask_type,
+	[TYPE_INTEGER]		= &integer_type,
+	[TYPE_STRING]		= &string_type,
+	[TYPE_LLADDR]		= &lladdr_type,
+	[TYPE_IPADDR]		= &ipaddr_type,
+	[TYPE_IP6ADDR]		= &ip6addr_type,
+	[TYPE_ETHERTYPE]	= &ethertype_type,
+	[TYPE_INET_PROTOCOL]	= &inet_protocol_type,
+	[TYPE_INET_SERVICE]	= &inet_service_type,
+	[TYPE_TIME]		= &time_type,
+	[TYPE_MARK]		= &mark_type,
+	[TYPE_ARPHRD]		= &arphrd_type,
+};
+
+void datatype_register(const struct datatype *dtype)
+{
+	datatypes[dtype->type] = dtype;
+}
+
+const struct datatype *datatype_lookup(enum datatypes type)
+{
+	if (type > TYPE_MAX)
+		return NULL;
+	return datatypes[type];
+}
+
+const struct datatype *datatype_lookup_byname(const char *name)
+{
+	const struct datatype *dtype;
+	enum datatypes type;
+
+	for (type = TYPE_INVALID; type <= TYPE_MAX; type++) {
+		dtype = datatypes[type];
+		if (dtype == NULL)
+			continue;
+		if (!strcmp(dtype->name, name))
+			return dtype;
+	}
+	return NULL;
+}
+
 void datatype_print(const struct expr *expr)
 {
 	const struct datatype *dtype = expr->dtype;
@@ -49,7 +92,7 @@ struct error_record *symbol_parse(const struct expr *sym,
 
 	return error(&sym->location,
 		     "Can't parse symbolic %s expressions",
-		     sym->sym_type->name);
+		     sym->sym_type->desc);
 }
 
 struct error_record *symbolic_constant_parse(const struct expr *sym,
@@ -65,7 +108,7 @@ struct error_record *symbolic_constant_parse(const struct expr *sym,
 
 	if (s->identifier == NULL)
 		return error(&sym->location, "Could not parse %s",
-			     sym->sym_type->name);
+			     sym->sym_type->desc);
 
 	*res = constant_expr_alloc(&sym->location, sym->sym_type,
 				   tbl->byteorder, tbl->size, &s->value);
@@ -106,6 +149,7 @@ static void invalid_type_print(const struct expr *expr)
 const struct datatype invalid_type = {
 	.type		= TYPE_INVALID,
 	.name		= "invalid",
+	.desc		= "invalid",
 	.print		= invalid_type_print,
 };
 
@@ -144,12 +188,14 @@ static void verdict_type_print(const struct expr *expr)
 const struct datatype verdict_type = {
 	.type		= TYPE_VERDICT,
 	.name		= "verdict",
+	.desc		= "netfilter verdict",
 	.print		= verdict_type_print,
 };
 
 const struct datatype bitmask_type = {
 	.type		= TYPE_BITMASK,
 	.name		= "bitmask",
+	.desc		= "bitmask",
 	.basetype	= &integer_type,
 };
 
@@ -173,7 +219,7 @@ static struct error_record *integer_type_parse(const struct expr *sym,
 		if (sym->sym_type != &integer_type)
 			return NULL;
 		return error(&sym->location, "Could not parse %s",
-			     sym->sym_type->name);
+			     sym->sym_type->desc);
 	}
 
 	*res = constant_expr_alloc(&sym->location, sym->sym_type,
@@ -186,6 +232,7 @@ static struct error_record *integer_type_parse(const struct expr *sym,
 const struct datatype integer_type = {
 	.type		= TYPE_INTEGER,
 	.name		= "integer",
+	.desc		= "integer",
 	.print		= integer_type_print,
 	.parse		= integer_type_parse,
 };
@@ -212,6 +259,7 @@ static struct error_record *string_type_parse(const struct expr *sym,
 const struct datatype string_type = {
 	.type		= TYPE_STRING,
 	.name		= "string",
+	.desc		= "string",
 	.print		= string_type_print,
 	.parse		= string_type_parse,
 };
@@ -256,7 +304,8 @@ static struct error_record *lladdr_type_parse(const struct expr *sym,
 
 const struct datatype lladdr_type = {
 	.type		= TYPE_LLADDR,
-	.name		= "LL address",
+	.name		= "lladdr",
+	.desc		= "link layer address",
 	.basetype	= &integer_type,
 	.print		= lladdr_type_print,
 	.parse		= lladdr_type_parse,
@@ -302,7 +351,8 @@ static struct error_record *ipaddr_type_parse(const struct expr *sym,
 
 const struct datatype ipaddr_type = {
 	.type		= TYPE_IPADDR,
-	.name		= "IPv4 address",
+	.name		= "ipv4_address",
+	.desc		= "IPv4 address",
 	.basetype	= &integer_type,
 	.print		= ipaddr_type_print,
 	.parse		= ipaddr_type_parse,
@@ -350,7 +400,8 @@ static struct error_record *ip6addr_type_parse(const struct expr *sym,
 
 const struct datatype ip6addr_type = {
 	.type		= TYPE_IP6ADDR,
-	.name		= "IPv6 address",
+	.name		= "ipv6_address",
+	.desc		= "IPv6 address",
 	.basetype	= &integer_type,
 	.print		= ip6addr_type_print,
 	.parse		= ip6addr_type_parse,
@@ -387,7 +438,8 @@ static struct error_record *inet_protocol_type_parse(const struct expr *sym,
 
 const struct datatype inet_protocol_type = {
 	.type		= TYPE_INET_PROTOCOL,
-	.name		= "Internet protocol",
+	.name		= "inet_protocol",
+	.desc		= "Internet protocol",
 	.basetype	= &integer_type,
 	.print		= inet_protocol_type_print,
 	.parse		= inet_protocol_type_parse,
@@ -427,7 +479,8 @@ static struct error_record *inet_service_type_parse(const struct expr *sym,
 
 const struct datatype inet_service_type = {
 	.type		= TYPE_INET_SERVICE,
-	.name		= "internet network service",
+	.name		= "inet_service",
+	.desc		= "internet network service",
 	.basetype	= &integer_type,
 	.print		= inet_service_type_print,
 	.parse		= inet_service_type_parse,
@@ -519,7 +572,8 @@ static struct error_record *mark_type_parse(const struct expr *sym,
 
 const struct datatype mark_type = {
 	.type		= TYPE_MARK,
-	.name		= "packet mark",
+	.name		= "mark",
+	.desc		= "packet mark",
 	.basetype	= &integer_type,
 	.basefmt	= "0x%.8Zx",
 	.print		= mark_type_print,
@@ -562,7 +616,8 @@ static void time_type_print(const struct expr *expr)
 
 const struct datatype time_type = {
 	.type		= TYPE_TIME,
-	.name		= "relative time",
+	.name		= "time",
+	.desc		= "relative time",
 	.basetype	= &integer_type,
 	.print		= time_type_print,
 };

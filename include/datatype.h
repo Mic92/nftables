@@ -58,7 +58,9 @@ enum datatypes {
 	TYPE_CT_STATE,
 	TYPE_CT_DIR,
 	TYPE_CT_STATUS,
+	__TYPE_MAX
 };
+#define TYPE_MAX		(__TYPE_MAX - 1)
 
 /**
  * enum byteorder
@@ -79,7 +81,8 @@ struct expr;
  * struct datatype
  *
  * @type:	numeric identifier
- * @name:	type name for diagnostics
+ * @name:	type name
+ * @desc:	type description
  * @basetype:	basetype for subtypes, determines type compatibilty
  * @basefmt:	format string for basetype
  * @print:	function to print a constant of this type
@@ -89,6 +92,7 @@ struct expr;
 struct datatype {
 	enum datatypes			type;
 	const char			*name;
+	const char			*desc;
 	const struct datatype		*basetype;
 	const char			*basefmt;
 	void				(*print)(const struct expr *expr);
@@ -96,6 +100,10 @@ struct datatype {
 						  struct expr **res);
 	const struct symbol_table	*sym_tbl;
 };
+
+extern void datatype_register(const struct datatype *dtype);
+extern const struct datatype *datatype_lookup(enum datatypes type);
+extern const struct datatype *datatype_lookup_byname(const char *name);
 
 extern struct error_record *symbol_parse(const struct expr *sym,
 					 struct expr **res);
