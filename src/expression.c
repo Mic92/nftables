@@ -102,7 +102,7 @@ void expr_describe(const struct expr *expr)
 
 	if (expr->dtype->sym_tbl != NULL) {
 		printf("\npre-defined symbolic constants:\n");
-		symbol_table_print(expr->dtype->sym_tbl);
+		symbol_table_print(expr->dtype->sym_tbl, expr->dtype);
 	}
 }
 

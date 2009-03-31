@@ -81,6 +81,8 @@ struct expr;
  * struct datatype
  *
  * @type:	numeric identifier
+ * @byteorder:	byteorder of type (non-basetypes only)
+ * @size:	type size (fixed sized non-basetypes only)
  * @name:	type name
  * @desc:	type description
  * @basetype:	basetype for subtypes, determines type compatibilty
@@ -91,6 +93,8 @@ struct expr;
  */
 struct datatype {
 	enum datatypes			type;
+	enum byteorder			byteorder;
+	unsigned int			size;
 	const char			*name;
 	const char			*desc;
 	const struct datatype		*basetype;
@@ -126,13 +130,10 @@ struct symbolic_constant {
 /**
  * struct symbol_table - type construction from symbolic values
  *
- * @byteorder:	byteorder of symbol values
- * @size:	size of symbol values
  * @symbols:	the symbols
  */
 struct symbol_table {
-	enum byteorder			byteorder;
-	unsigned int			size;
+	int				gcc_workaround;
 	struct symbolic_constant	symbols[];
 };
 
@@ -141,7 +142,8 @@ extern struct error_record *symbolic_constant_parse(const struct expr *sym,
 						    struct expr **res);
 extern void symbolic_constant_print(const struct symbol_table *tbl,
 				    const struct expr *expr);
-extern void symbol_table_print(const struct symbol_table *tbl);
+extern void symbol_table_print(const struct symbol_table *tbl,
+			       const struct datatype *dtype);
 
 extern struct symbol_table *rt_symbol_table_init(const char *filename);
 extern void rt_symbol_table_free(struct symbol_table *tbl);

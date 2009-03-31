@@ -26,8 +26,6 @@
 #include <utils.h>
 
 static const struct symbol_table ct_state_tbl = {
-	.byteorder	= BYTEORDER_HOST_ENDIAN,
-	.size		= 4 * BITS_PER_BYTE,
 	.symbols	= {
 		SYMBOL("invalid",	NF_CT_STATE_INVALID_BIT),
 		SYMBOL("new",		NF_CT_STATE_BIT(IP_CT_NEW)),
@@ -42,13 +40,13 @@ static const struct datatype ct_state_type = {
 	.type		= TYPE_CT_STATE,
 	.name		= "ct_state",
 	.desc		= "conntrack state",
+	.byteorder	= BYTEORDER_HOST_ENDIAN,
+	.size		= 4 * BITS_PER_BYTE,
 	.basetype	= &bitmask_type,
 	.sym_tbl	= &ct_state_tbl,
 };
 
 static const struct symbol_table ct_dir_tbl = {
-	.byteorder	= BYTEORDER_INVALID,
-	.size		= BITS_PER_BYTE,
 	.symbols	= {
 		SYMBOL("original",	IP_CT_DIR_ORIGINAL),
 		SYMBOL("reply",		IP_CT_DIR_REPLY),
@@ -60,13 +58,13 @@ static const struct datatype ct_dir_type = {
 	.type		= TYPE_CT_DIR,
 	.name		= "ct_dir",
 	.desc		= "conntrack direction",
+	.byteorder	= BYTEORDER_INVALID,
+	.size		= BITS_PER_BYTE,
 	.basetype	= &bitmask_type,
 	.sym_tbl	= &ct_dir_tbl,
 };
 
 static const struct symbol_table ct_status_tbl = {
-	.byteorder	= BYTEORDER_HOST_ENDIAN,
-	.size		= 4 * BITS_PER_BYTE,
 	/*
 	 * There are more, but most of them don't make sense for filtering.
 	 */
@@ -86,6 +84,8 @@ static const struct datatype ct_status_type = {
 	.type		= TYPE_CT_STATUS,
 	.name		= "ct_status",
 	.desc		= "conntrack status",
+	.byteorder	= BYTEORDER_HOST_ENDIAN,
+	.size		= 4 * BITS_PER_BYTE,
 	.basetype	= &bitmask_type,
 	.sym_tbl	= &ct_status_tbl,
 };

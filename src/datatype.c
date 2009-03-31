@@ -100,18 +100,20 @@ struct error_record *symbolic_constant_parse(const struct expr *sym,
 					     struct expr **res)
 {
 	const struct symbolic_constant *s;
+	const struct datatype *dtype;
 
 	for (s = tbl->symbols; s->identifier != NULL; s++) {
 		if (!strcmp(sym->identifier, s->identifier))
 			break;
 	}
 
+	dtype = sym->sym_type;
 	if (s->identifier == NULL)
-		return error(&sym->location, "Could not parse %s",
-			     sym->sym_type->desc);
+		return error(&sym->location, "Could not parse %s", dtype->desc);
 
-	*res = constant_expr_alloc(&sym->location, sym->sym_type,
-				   tbl->byteorder, tbl->size, &s->value);
+	*res = constant_expr_alloc(&sym->location, dtype,
+				   dtype->byteorder, dtype->size,
+				   &s->value);
 	return NULL;
 }
 
@@ -131,10 +133,11 @@ void symbolic_constant_print(const struct symbol_table *tbl,
 	printf("%s", s->identifier);
 }
 
-void symbol_table_print(const struct symbol_table *tbl)
+void symbol_table_print(const struct symbol_table *tbl,
+			const struct datatype *dtype)
 {
 	const struct symbolic_constant *s;
-	unsigned int size = 2 * tbl->size / BITS_PER_BYTE;
+	unsigned int size = 2 * dtype->size / BITS_PER_BYTE;
 
 	for (s = tbl->symbols; s->identifier != NULL; s++)
 		printf("\t%-30s\t0x%.*" PRIx64 "\n",
@@ -353,6 +356,8 @@ const struct datatype ipaddr_type = {
 	.type		= TYPE_IPADDR,
 	.name		= "ipv4_address",
 	.desc		= "IPv4 address",
+	.byteorder	= BYTEORDER_BIG_ENDIAN,
+	.size		= 4 * BITS_PER_BYTE,
 	.basetype	= &integer_type,
 	.print		= ipaddr_type_print,
 	.parse		= ipaddr_type_parse,
@@ -402,6 +407,8 @@ const struct datatype ip6addr_type = {
 	.type		= TYPE_IP6ADDR,
 	.name		= "ipv6_address",
 	.desc		= "IPv6 address",
+	.byteorder	= BYTEORDER_BIG_ENDIAN,
+	.size		= 16 * BITS_PER_BYTE,
 	.basetype	= &integer_type,
 	.print		= ip6addr_type_print,
 	.parse		= ip6addr_type_parse,
@@ -440,6 +447,7 @@ const struct datatype inet_protocol_type = {
 	.type		= TYPE_INET_PROTOCOL,
 	.name		= "inet_protocol",
 	.desc		= "Internet protocol",
+	.size		= BITS_PER_BYTE,
 	.basetype	= &integer_type,
 	.print		= inet_protocol_type_print,
 	.parse		= inet_protocol_type_parse,
@@ -481,6 +489,8 @@ const struct datatype inet_service_type = {
 	.type		= TYPE_INET_SERVICE,
 	.name		= "inet_service",
 	.desc		= "internet network service",
+	.byteorder	= BYTEORDER_BIG_ENDIAN,
+	.size		= 2 * BITS_PER_BYTE,
 	.basetype	= &integer_type,
 	.print		= inet_service_type_print,
 	.parse		= inet_service_type_parse,
@@ -499,9 +509,6 @@ struct symbol_table *rt_symbol_table_init(const char *filename)
 	size = RT_SYM_TAB_INITIAL_SIZE;
 	tbl = xmalloc(sizeof(*tbl) + size * sizeof(s));
 	nelems = 0;
-
-	tbl->size      = 4 * BITS_PER_BYTE;
-	tbl->byteorder = BYTEORDER_HOST_ENDIAN;
 
 	f = fopen(filename, "r");
 	if (f == NULL)
@@ -574,6 +581,8 @@ const struct datatype mark_type = {
 	.type		= TYPE_MARK,
 	.name		= "mark",
 	.desc		= "packet mark",
+	.size		= 4 * BITS_PER_BYTE,
+	.byteorder	= BYTEORDER_HOST_ENDIAN,
 	.basetype	= &integer_type,
 	.basefmt	= "0x%.8Zx",
 	.print		= mark_type_print,
@@ -618,6 +627,8 @@ const struct datatype time_type = {
 	.type		= TYPE_TIME,
 	.name		= "time",
 	.desc		= "relative time",
+	.byteorder	= BYTEORDER_HOST_ENDIAN,
+	.size		= 8 * BITS_PER_BYTE,
 	.basetype	= &integer_type,
 	.print		= time_type_print,
 };

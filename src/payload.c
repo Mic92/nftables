@@ -558,8 +558,6 @@ const struct payload_desc payload_comp = {
 #include <netinet/ip_icmp.h>
 
 static const struct symbol_table icmp_type_tbl = {
-	.byteorder	= BYTEORDER_BIG_ENDIAN,
-	.size		= BITS_PER_BYTE,
 	.symbols	= {
 		SYMBOL("echo-reply",			ICMP_ECHOREPLY),
 		SYMBOL("destination-unreachable",	ICMP_DEST_UNREACH),
@@ -582,6 +580,8 @@ static const struct datatype icmp_type_type = {
 	.type		= TYPE_ICMP_TYPE,
 	.name		= "icmp_type",
 	.desc		= "ICMP type",
+	.byteorder	= BYTEORDER_BIG_ENDIAN,
+	.size		= BITS_PER_BYTE,
 	.basetype	= &integer_type,
 	.sym_tbl	= &icmp_type_tbl,
 };
@@ -642,8 +642,6 @@ const struct payload_desc payload_udplite = {
 #include <netinet/tcp.h>
 
 static const struct symbol_table tcp_flag_tbl = {
-	.byteorder	= BYTEORDER_BIG_ENDIAN,
-	.size		= BITS_PER_BYTE,
 	.symbols	= {
 		SYMBOL("fin",	TCP_FLAG_FIN),
 		SYMBOL("syn",	TCP_FLAG_SYN),
@@ -661,6 +659,8 @@ static const struct datatype tcp_flag_type = {
 	.type		= TYPE_TCP_FLAG,
 	.name		= "tcp_flag",
 	.desc		= "TCP flag",
+	.byteorder	= BYTEORDER_BIG_ENDIAN,
+	.size		= BITS_PER_BYTE,
 	.basetype	= &bitmask_type,
 	.sym_tbl	= &tcp_flag_tbl,
 };
@@ -805,8 +805,6 @@ const struct payload_desc payload_ip6 = {
 #include <net/if_arp.h>
 
 static const struct symbol_table arpop_tbl = {
-	.byteorder	= BYTEORDER_HOST_ENDIAN,
-	.size		= 2 * BITS_PER_BYTE,
 	.symbols	= {
 		SYMBOL("request",	ARPOP_REQUEST),
 		SYMBOL("reply",		ARPOP_REPLY),
@@ -822,6 +820,8 @@ static const struct datatype arpop_type = {
 	.type		= TYPE_ARPOP,
 	.name		= "arp_op",
 	.desc		= "ARP operation",
+	.byteorder	= BYTEORDER_HOST_ENDIAN,
+	.size		= 2 * BITS_PER_BYTE,
 	.basetype	= &integer_type,
 	.sym_tbl	= &arpop_tbl,
 };
@@ -878,8 +878,6 @@ const struct payload_desc payload_vlan = {
  */
 
 static const struct symbol_table ethertype_tbl = {
-	.byteorder	= BYTEORDER_HOST_ENDIAN,
-	.size		= 2 * BITS_PER_BYTE,
 	.symbols	= {
 		SYMBOL("ip",		ETH_P_IP),
 		SYMBOL("arp",		ETH_P_ARP),
@@ -893,6 +891,8 @@ const struct datatype ethertype_type = {
 	.type		= TYPE_ETHERTYPE,
 	.name		= "ethertype",
 	.desc		= "Ethernet protocol",
+	.byteorder	= BYTEORDER_HOST_ENDIAN,
+	.size		= 2 * BITS_PER_BYTE,
 	.basetype	= &integer_type,
 	.sym_tbl	= &ethertype_tbl,
 };

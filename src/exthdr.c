@@ -205,8 +205,6 @@ const struct exthdr_desc exthdr_dst = {
 	HDR_TEMPLATE(__name, __dtype, struct ip6_mh, __member)
 
 static const struct symbol_table mh_type_tbl = {
-	.byteorder	= BYTEORDER_BIG_ENDIAN,
-	.size		= BITS_PER_BYTE,
 	.symbols	= {
 		SYMBOL("binding-refresh-request",	IP6_MH_TYPE_BRR),
 		SYMBOL("home-test-init",		IP6_MH_TYPE_HOTI),
@@ -229,6 +227,8 @@ static const struct datatype mh_type_type = {
 	.type		= TYPE_MH_TYPE,
 	.name		= "mh_type",
 	.desc		= "Mobility Header Type",
+	.byteorder	= BYTEORDER_BIG_ENDIAN,
+	.size		= BITS_PER_BYTE,
 	.basetype	= &integer_type,
 	.sym_tbl	= &mh_type_tbl,
 };
