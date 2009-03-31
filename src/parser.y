@@ -287,6 +287,7 @@ static void location_update(struct location *loc, struct location *rhs, int n)
 %token STATUS			"status"
 %token EXPIRATION		"expiration"
 %token HELPER			"helper"
+%token L3PROTOCOL		"l3proto"
 %token PROTO_SRC		"proto-src"
 %token PROTO_DST		"proto-dst"
 
@@ -1133,9 +1134,10 @@ ct_key			:	STATE		{ $$ = NFT_CT_STATE; }
 			|	SECMARK		{ $$ = NFT_CT_SECMARK; }
 			|	EXPIRATION	{ $$ = NFT_CT_EXPIRATION; }
 			|	HELPER		{ $$ = NFT_CT_HELPER; }
+			|	L3PROTOCOL	{ $$ = NFT_CT_L3PROTOCOL; }
+			|	SADDR		{ $$ = NFT_CT_SRC; }
+			|	DADDR		{ $$ = NFT_CT_DST; }
 			|	PROTOCOL	{ $$ = NFT_CT_PROTOCOL; }
-			|	SADDR		{ $$ = NFT_CT_SADDR; }
-			|	DADDR		{ $$ = NFT_CT_DADDR; }
 			|	PROTO_SRC	{ $$ = NFT_CT_PROTO_SRC; }
 			|	PROTO_DST	{ $$ = NFT_CT_PROTO_DST; }
 			;

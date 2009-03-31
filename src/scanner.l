@@ -375,6 +375,7 @@ addrstring	({macaddr}|{ip4addr}|{ip6addr})
 "status"		{ return STATUS; }
 "expiration"		{ return EXPIRATION; }
 "helper"		{ return HELPER; }
+"l3proto"		{ return L3PROTOCOL; }
 "proto-src"		{ return PROTO_SRC; }
 "proto-dst"		{ return PROTO_DST; }
 
