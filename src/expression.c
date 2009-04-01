@@ -188,7 +188,6 @@ static void symbol_expr_print(const struct expr *expr)
 
 static void symbol_expr_clone(struct expr *new, const struct expr *expr)
 {
-	new->sym_type   = expr->sym_type;
 	new->scope      = expr->scope;
 	new->identifier = xstrdup(expr->identifier);
 }

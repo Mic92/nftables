@@ -77,9 +77,9 @@ static struct error_record *tchandle_type_parse(const struct expr *sym,
 
 	if (rtnl_tc_str2handle(sym->identifier, &handle) < 0)
 		return error(&sym->location, "Could not parse %s",
-			     sym->sym_type->desc);
+			     sym->dtype->desc);
 
-	*res = constant_expr_alloc(&sym->location, sym->sym_type,
+	*res = constant_expr_alloc(&sym->location, sym->dtype,
 				   BYTEORDER_HOST_ENDIAN,
 				   sizeof(handle) * BITS_PER_BYTE, &handle);
 	return NULL;
@@ -153,7 +153,7 @@ static struct error_record *ifindex_type_parse(const struct expr *sym,
 	if (ifindex == 0)
 		return error(&sym->location, "Interface does not exist");
 
-	*res = constant_expr_alloc(&sym->location, sym->sym_type,
+	*res = constant_expr_alloc(&sym->location, sym->dtype,
 				   BYTEORDER_HOST_ENDIAN,
 				   sizeof(ifindex) * BITS_PER_BYTE, &ifindex);
 	return NULL;
@@ -222,7 +222,7 @@ static struct error_record *uid_type_parse(const struct expr *sym,
 	if (pw == NULL)
 		return error(&sym->location, "User does not exist");
 
-	*res = constant_expr_alloc(&sym->location, sym->sym_type,
+	*res = constant_expr_alloc(&sym->location, sym->dtype,
 				   BYTEORDER_HOST_ENDIAN,
 				   sizeof(pw->pw_uid) * BITS_PER_BYTE,
 				   &pw->pw_uid);
@@ -263,7 +263,7 @@ static struct error_record *gid_type_parse(const struct expr *sym,
 	if (gr == NULL)
 		return error(&sym->location, "Group does not exist");
 
-	*res = constant_expr_alloc(&sym->location, sym->sym_type,
+	*res = constant_expr_alloc(&sym->location, sym->dtype,
 				   BYTEORDER_HOST_ENDIAN,
 				   sizeof(gr->gr_gid) * BITS_PER_BYTE,
 				   &gr->gr_gid);

@@ -79,7 +79,7 @@ void datatype_print(const struct expr *expr)
 struct error_record *symbol_parse(const struct expr *sym,
 				  struct expr **res)
 {
-	const struct datatype *dtype = sym->sym_type;
+	const struct datatype *dtype = sym->dtype;
 
 	assert(sym->ops->type == EXPR_SYMBOL);
 
@@ -92,7 +92,7 @@ struct error_record *symbol_parse(const struct expr *sym,
 
 	return error(&sym->location,
 		     "Can't parse symbolic %s expressions",
-		     sym->sym_type->desc);
+		     sym->dtype->desc);
 }
 
 struct error_record *symbolic_constant_parse(const struct expr *sym,
@@ -107,7 +107,7 @@ struct error_record *symbolic_constant_parse(const struct expr *sym,
 			break;
 	}
 
-	dtype = sym->sym_type;
+	dtype = sym->dtype;
 	if (s->identifier == NULL)
 		return error(&sym->location, "Could not parse %s", dtype->desc);
 
@@ -219,13 +219,13 @@ static struct error_record *integer_type_parse(const struct expr *sym,
 	mpz_init(v);
 	if (gmp_sscanf(sym->identifier, "%Zu", v) != 1) {
 		mpz_clear(v);
-		if (sym->sym_type != &integer_type)
+		if (sym->dtype != &integer_type)
 			return NULL;
 		return error(&sym->location, "Could not parse %s",
-			     sym->sym_type->desc);
+			     sym->dtype->desc);
 	}
 
-	*res = constant_expr_alloc(&sym->location, sym->sym_type,
+	*res = constant_expr_alloc(&sym->location, sym->dtype,
 				   BYTEORDER_HOST_ENDIAN, 1, NULL);
 	mpz_set((*res)->value, v);
 	mpz_clear(v);

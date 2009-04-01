@@ -174,7 +174,6 @@ struct expr {
 	union {
 		struct {
 			/* EXPR_SYMBOL */
-			const struct datatype	*sym_type;
 			const struct scope	*scope;
 			const char		*identifier;
 		};
@@ -292,7 +291,7 @@ static inline void symbol_expr_set_type(struct expr *expr,
 					const struct datatype *dtype)
 {
 	if (expr->ops->type == EXPR_SYMBOL)
-		expr->sym_type = dtype;
+		expr->dtype = dtype;
 }
 
 extern struct expr *constant_expr_alloc(const struct location *loc,

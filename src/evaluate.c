@@ -105,7 +105,7 @@ static int expr_evaluate_symbol(struct eval_ctx *ctx, struct expr **expr)
 	struct symbol *sym;
 	struct expr *new;
 
-	(*expr)->sym_type = ctx->ectx.dtype;
+	(*expr)->dtype = ctx->ectx.dtype;
 
 	if ((*expr)->scope != NULL) {
 		sym = symbol_lookup((*expr)->scope, (*expr)->identifier);
