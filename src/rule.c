@@ -465,6 +465,9 @@ static int do_command_list(struct netlink_ctx *ctx, struct cmd *cmd)
 	case CMD_OBJ_TABLE:
 		if (do_list_sets(ctx, table) < 0)
 			return -1;
+		if (netlink_list_chains(ctx, &cmd->handle) < 0)
+			return -1;
+		list_splice_tail_init(&ctx->list, &table->chains);
 		if (netlink_list_table(ctx, &cmd->handle) < 0)
 			return -1;
 		break;
