@@ -648,7 +648,7 @@ static const struct symbol_table tcp_flag_tbl = {
 		SYMBOL("rst",	TCP_FLAG_RST),
 		SYMBOL("psh",	TCP_FLAG_PSH),
 		SYMBOL("ack",	TCP_FLAG_ACK),
-		SYMBOL("urh",	TCP_FLAG_URG),
+		SYMBOL("urg",	TCP_FLAG_URG),
 		SYMBOL("ecn",	TCP_FLAG_ECN),
 		SYMBOL("cwr",	TCP_FLAG_CWR),
 		SYMBOL_LIST_END
@@ -841,6 +841,7 @@ static const struct symbol_table arpop_tbl = {
 		SYMBOL("inrequest",	ARPOP_InREQUEST),
 		SYMBOL("inreply",	ARPOP_InREPLY),
 		SYMBOL("nak",		ARPOP_NAK),
+		SYMBOL_LIST_END
 	},
 };
 
