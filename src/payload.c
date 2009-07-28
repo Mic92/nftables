@@ -691,6 +691,33 @@ const struct payload_desc payload_tcp = {
  * DCCP
  */
 
+static const struct symbol_table dccp_pkttype_tbl = {
+	.symbols	= {
+		SYMBOL("request",	DCCP_PKT_REQUEST),
+		SYMBOL("response",	DCCP_PKT_RESPONSE),
+		SYMBOL("data",		DCCP_PKT_DATA),
+		SYMBOL("ack",		DCCP_PKT_ACK),
+		SYMBOL("dataack",	DCCP_PKT_DATAACK),
+		SYMBOL("closereq",	DCCP_PKT_CLOSEREQ),
+		SYMBOL("close",		DCCP_PKT_CLOSE),
+		SYMBOL("reset",		DCCP_PKT_RESET),
+		SYMBOL("sync",		DCCP_PKT_SYNC),
+		SYMBOL("syncack",	DCCP_PKT_SYNCACK),
+		SYMBOL_LIST_END
+	},
+};
+
+static const struct datatype dccp_pkttype_type = {
+	.type		= TYPE_DCCP_PKTTYPE,
+	.name		= "dccp_pkttype",
+	.desc		= "DCCP packet type",
+	.byteorder	= BYTEORDER_INVALID,
+	.size		= 4,
+	.basetype	= &integer_type,
+	.sym_tbl	= &dccp_pkttype_tbl,
+};
+
+
 #define DCCPHDR_FIELD(__name, __member) \
 	HDR_FIELD(__name, struct dccp_hdr, __member)
 
@@ -700,6 +727,7 @@ const struct payload_desc payload_dccp = {
 	.templates	= {
 		[DCCPHDR_SPORT]		= INET_SERVICE("sport", struct dccp_hdr, dccph_sport),
 		[DCCPHDR_DPORT]		= INET_SERVICE("dport", struct dccp_hdr, dccph_dport),
+		[DCCPHDR_TYPE]		= HDR_BITFIELD("type", &dccp_pkttype_type, 67, 4),
 	},
 };
 
@@ -925,6 +953,7 @@ static void __init payload_init(void)
 {
 	datatype_register(&icmp_type_type);
 	datatype_register(&tcp_flag_type);
+	datatype_register(&dccp_pkttype_type);
 	datatype_register(&arpop_type);
 	datatype_register(&ethertype_type);
 }

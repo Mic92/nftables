@@ -258,6 +258,7 @@ enum dccp_hdr_fields {
 	DCCPHDR_INVALID,
 	DCCPHDR_SPORT,
 	DCCPHDR_DPORT,
+	DCCPHDR_TYPE,
 };
 
 enum sctp_hdr_fields {

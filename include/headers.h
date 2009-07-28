@@ -39,6 +39,20 @@ struct ip_comp_hdr {
 # define IPPROTO_DCCP 33
 #endif
 
+enum dccp_pkt_type {
+	DCCP_PKT_REQUEST = 0,
+	DCCP_PKT_RESPONSE,
+	DCCP_PKT_DATA,
+	DCCP_PKT_ACK,
+	DCCP_PKT_DATAACK,
+	DCCP_PKT_CLOSEREQ,
+	DCCP_PKT_CLOSE,
+	DCCP_PKT_RESET,
+	DCCP_PKT_SYNC,
+	DCCP_PKT_SYNCACK,
+	DCCP_PKT_INVALID,
+};
+
 struct dccp_hdr {
 	uint16_t	dccph_sport,
 			dccph_dport;

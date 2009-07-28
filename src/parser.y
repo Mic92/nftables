@@ -1439,6 +1439,7 @@ dccp_hdr_expr		:	DCCP	dccp_hdr_field
 
 dccp_hdr_field		:	SPORT		{ $$ = DCCPHDR_SPORT; }
 			|	DPORT		{ $$ = DCCPHDR_DPORT; }
+			|	TYPE		{ $$ = DCCPHDR_TYPE; }
 			;
 
 sctp_hdr_expr		:	SCTP	sctp_hdr_field
