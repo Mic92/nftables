@@ -8,6 +8,7 @@
  * Development of this code funded by Astaro AG (http://www.astaro.com/)
  */
 
+#include <limits.h>
 #include <linux/netfilter/nf_tables.h>
 #include <netlink.h>
 #include <rule.h>
@@ -580,9 +581,7 @@ static void expr_postprocess(struct rule_pp_ctx *ctx,
 			expr_free(expr->right);
 			expr->right = list_expr_alloc(&expr->left->left->location);
 			n = 0;
-			while ((n = mpz_scan1(expr->left->right->value, n + 1))) {
-				if (n > expr->left->right->len)
-					break;
+			while ((n = mpz_scan1(expr->left->right->value, n)) != ULONG_MAX) {
 				i = constant_expr_alloc(&expr->left->right->location,
 							expr->left->left->dtype,
 							expr->left->right->byteorder,
@@ -590,6 +589,7 @@ static void expr_postprocess(struct rule_pp_ctx *ctx,
 				mpz_set_ui(i->value, 1);
 				mpz_lshift_ui(i->value, n);
 				compound_expr_add(expr->right, i);
+				n++;
 			}
 			expr->left = expr->left->left;
 			expr->op = OP_FLAGCMP;
