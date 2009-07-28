@@ -1,0 +1,53 @@
+#! /sbin/nft -nf
+#
+# Examples of set and map usage
+#
+
+# symbolic anonymous set definition built from symbolic singleton definitions
+define int_if1	 = eth0
+define int_if2	 = eth1
+define int_ifs	 = { $int_if1, $int_if2 }
+
+define ext_if1	 = eth2
+define ext_if2	 = eth3
+define ext_ifs	 = { $ext_if1, $ext_if2 }
+
+# recursive symbolic anonymous set definition
+define local_ifs = { $int_ifs, $ext_ifs }
+
+# symbolic anonymous set definition
+define tcp_ports = { ssh, domain, https, 123-125 }
+
+delete table filter
+table filter {
+	# named set of type ifindex
+	set local_ifs {
+		type ifindex
+	}
+
+	# named map of type ifindex => ipv4_address
+	map nat_map {
+		type ifindex => ipv4_address
+	}
+
+	map jump_map {
+		type ifindex => verdict
+	}
+
+	chain input_1 { counter; }
+	chain input_2 { counter; }
+	chain input {
+		hook NF_INET_LOCAL_IN 0
+
+		# symbolic anonymous sets
+		meta iif $local_ifs tcp dport $tcp_ports counter
+
+		# literal anonymous set
+		meta iif { eth0, eth1 } counter
+
+		meta iif @local_ifs counter
+		meta iif vmap @jump_map
+
+		#meta iif vmap { eth0 => jump input1, eth1 => jump input2 }
+	}
+}

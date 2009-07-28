@@ -26,6 +26,7 @@
  * @EXPR_CONCAT:	concatenation
  * @EXPR_LIST:		list of expressions
  * @EXPR_SET:		literal set
+ * @EXPR_SET_REF:	set reference
  * @EXPR_MAPPING:	a single mapping (key => value)
  * @EXPR_MAP:		map operation (expr map { EXPR_MAPPING, ... })
  * @EXPR_UNARY:		byteorder conversion, generated during evaluation
@@ -46,6 +47,7 @@ enum expr_types {
 	EXPR_CONCAT,
 	EXPR_LIST,
 	EXPR_SET,
+	EXPR_SET_REF,
 	EXPR_MAPPING,
 	EXPR_MAP,
 	EXPR_UNARY,
@@ -81,6 +83,12 @@ enum ops {
 };
 
 extern const char *expr_op_symbols[];
+
+enum symbol_types {
+	SYMBOL_VALUE,
+	SYMBOL_DEFINE,
+	SYMBOL_SET,
+};
 
 /**
  * struct expr_ctx - type context for symbol parsing during evaluation
@@ -129,14 +137,12 @@ struct expr_ops {
  * @EXPR_F_CONSTANT:		constant expression
  * @EXPR_F_SINGLETON:		singleton (implies primary and constant)
  * @EXPR_F_INTERVAL_END:	set member ends an open interval
- * @SET_F_INTERVAL:		set includes ranges and/or prefix expressions
  */
 enum expr_flags {
 	EXPR_F_PRIMARY		= 0x1,
 	EXPR_F_CONSTANT		= 0x2,
 	EXPR_F_SINGLETON	= 0x4,
 	EXPR_F_INTERVAL_END	= 0x8,
-	SET_F_INTERVAL		= 0x10,
 };
 
 #include <payload.h>
@@ -176,6 +182,7 @@ struct expr {
 			/* EXPR_SYMBOL */
 			const struct scope	*scope;
 			const char		*identifier;
+			enum symbol_types	symtype;
 		};
 		struct {
 			/* EXPR_VERDICT */
@@ -195,6 +202,11 @@ struct expr {
 			/* EXPR_CONCAT, EXPR_LIST, EXPR_SET */
 			struct list_head	expressions;
 			unsigned int		size;
+			uint32_t		set_flags;
+		};
+		struct {
+			/* EXPR_SET_REF */
+			struct set		*set;
 		};
 		struct {
 			/* EXPR_UNARY */
@@ -285,6 +297,7 @@ extern struct expr *verdict_expr_alloc(const struct location *loc,
 				       int verdict, const char *chain);
 
 extern struct expr *symbol_expr_alloc(const struct location *loc,
+				      enum symbol_types type, struct scope *scope,
 				      const char *identifier);
 
 static inline void symbol_expr_set_type(struct expr *expr,
@@ -323,5 +336,8 @@ extern struct expr *mapping_expr_alloc(const struct location *loc,
 				       struct expr *from, struct expr *to);
 extern struct expr *map_expr_alloc(const struct location *loc,
 				   struct expr *arg, struct expr *list);
+
+extern struct expr *set_ref_expr_alloc(const struct location *loc,
+				       struct set *set);
 
 #endif /* NFTABLES_EXPRESSION_H */

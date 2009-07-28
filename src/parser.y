@@ -119,6 +119,7 @@ static void location_update(struct location *loc, struct location *rhs, int n)
 	struct rule		*rule;
 	struct stmt		*stmt;
 	struct expr		*expr;
+	struct set		*set;
 }
 
 %token TOKEN_EOF 0		"end of file"
@@ -146,9 +147,7 @@ static void location_update(struct location *loc, struct location *rhs, int n)
 %token DASH			"-"
 %token AT			"@"
 %token ARROW			"=>"
-%token MAP			"map"
 %token VMAP			"vmap"
-%token SET			"set"
 
 %token INCLUDE			"include"
 %token DEFINE			"define"
@@ -158,6 +157,10 @@ static void location_update(struct location *loc, struct location *rhs, int n)
 %token TABLE			"table"
 %token CHAIN			"chain"
 %token RULE			"rule"
+%token SETS			"sets"
+%token SET			"set"
+%token ELEMENT			"element"
+%token MAP			"map"
 %token HANDLE			"handle"
 
 %token ADD			"add"
@@ -327,14 +330,22 @@ static void location_update(struct location *loc, struct location *rhs, int n)
 
 %type <handle>			table_spec chain_spec chain_identifier ruleid_spec
 %destructor { handle_free(&$$); } table_spec chain_spec chain_identifier ruleid_spec
+%type <handle>			set_spec set_identifier
+%destructor { handle_free(&$$); } set_spec set_identifier
 %type <val>			handle_spec family_spec
 
 %type <table>			table_block_alloc table_block
 %destructor { table_free($$); }	table_block_alloc
-%type <chain>			table_line chain_block_alloc chain_block
-%destructor { chain_free($$); }	table_line chain_block_alloc
+%type <chain>			chain_block_alloc chain_block
+%destructor { chain_free($$); }	chain_block_alloc
 %type <rule>			rule
 %destructor { rule_free($$); }	rule
+
+%type <set>			set_block_alloc set_block
+%destructor { set_free($$); }	set_block_alloc
+
+%type <set>			map_block_alloc map_block
+%destructor { set_free($$); }	map_block_alloc
 
 %type <list>			stmt_list
 %destructor { stmt_list_free($$); xfree($$); } stmt_list
@@ -372,11 +383,11 @@ static void location_update(struct location *loc, struct location *rhs, int n)
 %type <expr>			concat_expr map_lhs_expr
 %destructor { expr_free($$); }	concat_expr map_lhs_expr
 
-%type <expr>			map_expr map_list map_list_expr
-%destructor { expr_free($$); }	map_expr map_list map_list_expr
+%type <expr>			map_expr
+%destructor { expr_free($$); }	map_expr
 
-%type <expr>			verdict_map_expr verdict_map_list verdict_map_list_expr
-%destructor { expr_free($$); }	verdict_map_expr verdict_map_list verdict_map_list_expr
+%type <expr>			verdict_map_expr
+%destructor { expr_free($$); }	verdict_map_expr
 
 %type <expr>			set_expr set_list_expr set_list_member_expr
 %destructor { expr_free($$); }	set_expr set_list_expr set_list_member_expr
@@ -384,10 +395,8 @@ static void location_update(struct location *loc, struct location *rhs, int n)
 %type <expr>			expr initializer_expr
 %destructor { expr_free($$); }	expr initializer_expr
 
-%type <expr>			match_expr
-%destructor { expr_free($$); }	match_expr
-%type <expr>			relational_expr membership_expr
-%destructor { expr_free($$); }	relational_expr membership_expr
+%type <expr>			relational_expr
+%destructor { expr_free($$); }	relational_expr
 %type <val>			relational_op
 
 %type <expr>			payload_expr payload_raw_expr
@@ -520,6 +529,24 @@ add_cmd			:	TABLE		table_spec
 			{
 				$$ = cmd_alloc(CMD_ADD, CMD_OBJ_RULE, &$1, $2);
 			}
+			|	SET		set_spec	set_block_alloc
+						'{'	set_block	'}'
+			{
+				$5->location = @5;
+				handle_merge(&$3->handle, &$2);
+				$$ = cmd_alloc(CMD_ADD, CMD_OBJ_SET, &$2, $5);
+			}
+			|	MAP		set_spec	map_block_alloc
+						'{'	map_block	'}'
+			{
+				$5->location = @5;
+				handle_merge(&$3->handle, &$2);
+				$$ = cmd_alloc(CMD_ADD, CMD_OBJ_SET, &$2, $5);
+			}
+			|	ELEMENT		set_spec	set_expr
+			{
+				$$ = cmd_alloc(CMD_ADD, CMD_OBJ_SETELEM, &$2, $3);
+			}
 			;
 
 delete_cmd		:	TABLE		table_spec
@@ -534,6 +561,14 @@ delete_cmd		:	TABLE		table_spec
 			{
 				$$ = cmd_alloc(CMD_DELETE, CMD_OBJ_RULE, &$2, NULL);
 			}
+			|	SET		set_spec
+			{
+				$$ = cmd_alloc(CMD_DELETE, CMD_OBJ_SET, &$2, NULL);
+			}
+			|	ELEMENT		set_spec	set_expr
+			{
+				$$ = cmd_alloc(CMD_DELETE, CMD_OBJ_SETELEM, &$2, $3);
+			}
 			;
 
 list_cmd		:	TABLE		table_spec
@@ -544,6 +579,14 @@ list_cmd		:	TABLE		table_spec
 			{
 				$$ = cmd_alloc(CMD_LIST, CMD_OBJ_CHAIN, &$2, NULL);
 			}
+			|	SETS		table_spec
+			{
+				$$ = cmd_alloc(CMD_LIST, CMD_OBJ_SETS, &$2, NULL);
+			}
+			|	SET		set_spec
+			{
+				$$ = cmd_alloc(CMD_LIST, CMD_OBJ_SET, &$2, NULL);
+			}
 			;
 
 flush_cmd		:	TABLE		table_spec
@@ -553,6 +596,10 @@ flush_cmd		:	TABLE		table_spec
 			|	CHAIN		chain_spec
 			{
 				$$ = cmd_alloc(CMD_FLUSH, CMD_OBJ_CHAIN, &$2, NULL);
+			}
+			|	SET		set_spec
+			{
+				$$ = cmd_alloc(CMD_FLUSH, CMD_OBJ_SET, &$2, NULL);
 			}
 			;
 
@@ -566,20 +613,35 @@ table_block_alloc	:	/* empty */
 table_block		:	/* empty */	{ $$ = $<table>-1; }
 			|	table_block	common_block
 			|	table_block	stmt_seperator
-			|	table_block	table_line	stmt_seperator
+			|	table_block	CHAIN		chain_identifier
+					chain_block_alloc	'{' 	chain_block	'}'
+					stmt_seperator
 			{
-				list_add_tail(&$2->list, &$1->chains);
+				handle_merge(&$4->handle, &$3);
+				handle_free(&$3);
+				close_scope(state);
+				list_add_tail(&$4->list, &$1->chains);
 				$$ = $1;
 			}
-			;
-
-table_line		:	CHAIN		chain_identifier	chain_block_alloc
-	    					'{' 	chain_block	'}'
-	    		{
-				handle_merge(&$3->handle, &$2);
-				handle_free(&$2);
-				close_scope(state);
-				$$ = $3;
+			|	table_block	SET		set_identifier
+					set_block_alloc		'{'	set_block	'}'
+					stmt_seperator
+			{
+				$4->location = @3;
+				handle_merge(&$4->handle, &$3);
+				handle_free(&$3);
+				list_add_tail(&$4->list, &$1->sets);
+				$$ = $1;
+			}
+			|	table_block	MAP		set_identifier
+					map_block_alloc		'{'	map_block	'}'
+					stmt_seperator
+			{
+				$4->location = @3;
+				handle_merge(&$4->handle, &$3);
+				handle_free(&$3);
+				list_add_tail(&$4->list, &$1->sets);
+				$$ = $1;
 			}
 			;
 
@@ -597,6 +659,59 @@ chain_block		:	/* empty */	{ $$ = $<chain>-1; }
 			|	chain_block	rule		stmt_seperator
 			{
 				list_add_tail(&$2->list, &$1->rules);
+				$$ = $1;
+			}
+			;
+
+set_block_alloc		:	/* empty */
+			{
+				$$ = set_alloc(NULL);
+			}
+			;
+
+set_block		:	/* empty */	{ $$ = $<set>-1; }
+			|	set_block	common_block
+			|	set_block	stmt_seperator
+			|	set_block	TYPE		identifier	stmt_seperator
+			{
+				$1->keytype = datatype_lookup_byname($3);
+				if ($1->keytype == NULL) {
+					erec_queue(error(&@3, "unknown datatype %s", $3),
+						   state->msgs);
+					YYERROR;
+				}
+				$$ = $1;
+			}
+			;
+
+map_block_alloc		:	/* empty */
+			{
+				$$ = set_alloc(NULL);
+				$$->flags |= NFT_SET_MAP;
+			}
+			;
+
+map_block		:	/* empty */	{ $$ = $<set>-1; }
+			|	map_block	common_block
+			|	map_block	stmt_seperator
+			|	map_block	TYPE
+						identifier	ARROW	identifier
+						stmt_seperator
+			{
+				$1->keytype = datatype_lookup_byname($3);
+				if ($1->keytype == NULL) {
+					erec_queue(error(&@3, "unknown datatype %s", $3),
+						   state->msgs);
+					YYERROR;
+				}
+
+				$1->datatype = datatype_lookup_byname($5);
+				if ($1->datatype == NULL) {
+					erec_queue(error(&@5, "unknown datatype %s", $5),
+						   state->msgs);
+					YYERROR;
+				}
+
 				$$ = $1;
 			}
 			;
@@ -646,6 +761,20 @@ chain_identifier	:	identifier
 			{
 				memset(&$$, 0, sizeof($$));
 				$$.chain	= $1;
+			}
+			;
+
+set_spec		:	table_spec	identifier
+			{
+				$$		= $1;
+				$$.set		= $2;
+			}
+			;
+
+set_identifier		:	identifier
+			{
+				memset(&$$, 0, sizeof($$));
+				$$.set		= $1;
 			}
 			;
 
@@ -806,7 +935,7 @@ nat_stmt_args		:	expr
 			}
 			;
 
-match_stmt		:	match_expr
+match_stmt		:	relational_expr
 			{
 				$$ = expr_stmt_alloc(&@$, $1);
 			}
@@ -814,13 +943,23 @@ match_stmt		:	match_expr
 
 symbol_expr		:	string
 			{
-				$$ = symbol_expr_alloc(&@$, $1);
+				$$ = symbol_expr_alloc(&@$, SYMBOL_VALUE,
+						       current_scope(state),
+						       $1);
 				xfree($1);
 			}
 			|	'$'	identifier
 			{
-				$$ = symbol_expr_alloc(&@$, $2);
-				$$->scope = current_scope(state);
+				$$ = symbol_expr_alloc(&@$, SYMBOL_DEFINE,
+						       current_scope(state),
+						       $2);
+				xfree($2);
+			}
+			|	AT	identifier
+			{
+				$$ = symbol_expr_alloc(&@$, SYMBOL_SET,
+						       current_scope(state),
+						       $2);
 				xfree($2);
 			}
 			;
@@ -830,7 +969,9 @@ integer_expr		:	NUM
 				char str[64];
 
 				snprintf(str, sizeof(str), "%" PRIu64, $1);
-				$$ = symbol_expr_alloc(&@$, str);
+				$$ = symbol_expr_alloc(&@$, SYMBOL_VALUE,
+						       current_scope(state),
+						       str);
 			}
 			;
 
@@ -938,106 +1079,26 @@ map_lhs_expr		:	multiton_expr
 			|	concat_expr
 			;
 
-map_expr		:	concat_expr	MAP	'{'	map_list '}'
+map_expr		:	concat_expr	MAP	expr
 			{
-				$$ = map_expr_alloc(&@$, $1, $4);
+				$$ = map_expr_alloc(&@$, $1, $3);
 			}
 			;
 
-map_list		:	map_list_expr
+verdict_map_expr	:	concat_expr	VMAP	expr
 			{
-				$$ = set_expr_alloc(&@$);
-				compound_expr_add($$, $1);
-			}
-			|	map_list	COMMA	map_list_expr
-			{
-				compound_expr_add($1, $3);
-				$1->location = @$;
-				$$ = $1;
-			}
-			|	map_list	COMMA	opt_newline
-			;
-
-map_list_expr		:	opt_newline	map_lhs_expr	opt_newline
-	       					ARROW		opt_newline
-						concat_expr	opt_newline
-			{
-				$$ = mapping_expr_alloc(&@$, $2, $6);
-			}
-			;
-
-verdict_map_expr	:	concat_expr	VMAP	'{'	verdict_map_list '}'
-			{
-				$$ = map_expr_alloc(&@$, $1, $4);
-			}
-			;
-
-verdict_map_list	:	verdict_map_list_expr
-			{
-				$$ = set_expr_alloc(&@$);
-				compound_expr_add($$, $1);
-			}
-			|	verdict_map_list	COMMA	verdict_map_list_expr
-			{
-				compound_expr_add($1, $3);
-				$1->location = @$;
-				$$ = $1;
-			}
-			|	verdict_map_list	COMMA	opt_newline
-			;
-
-verdict_map_list_expr	:	opt_newline	map_lhs_expr	opt_newline
-		      				ARROW		opt_newline
-						verdict_expr	opt_newline
-			{
-				$$ = mapping_expr_alloc(&@$, $2, $6);
+				$$ = map_expr_alloc(&@$, $1, $3);
 			}
 			;
 
 expr			:	concat_expr
+			|	set_expr
 			|       map_expr
 			|	multiton_expr
 			;
 
-initializer_expr	:	expr
-			|	set_expr
-			|	list_expr
-			;
-
-match_expr		:	relational_expr
-			|	membership_expr
-			;
-
-relational_expr		:	expr	/* implicit */	expr
-			{
-				$$ = relational_expr_alloc(&@$, OP_IMPLICIT, $1, $2);
-			}
-			|	expr	/* implicit */	list_expr
-			{
-				$$ = relational_expr_alloc(&@$, OP_FLAGCMP, $1, $2);
-			}
-			|	expr	relational_op	expr
-			{
-				$$ = relational_expr_alloc(&@2, $2, $1, $3);
-			}
-			;
-
-relational_op		:	EQ		{ $$ = OP_EQ; }
-			|	NEQ		{ $$ = OP_NEQ; }
-			|	LT		{ $$ = OP_LT; }
-			|	GT		{ $$ = OP_GT; }
-			|	GTE		{ $$ = OP_GTE; }
-			|	LTE		{ $$ = OP_LTE; }
-			;
-
-membership_expr		:	expr	set_expr
-			{
-				$$ = relational_expr_alloc(&@$, OP_LOOKUP, $1, $2);
-			}
-			;
-
 set_expr		:	'{'	set_list_expr		'}'
-	  		{
+			{
 				$2->location = @$;
 				$$ = $2;
 			}
@@ -1060,6 +1121,40 @@ set_list_member_expr	:	opt_newline	expr	opt_newline
 			{
 				$$ = $2;
 			}
+			|	opt_newline	map_lhs_expr	ARROW	concat_expr	opt_newline
+			{
+				$$ = mapping_expr_alloc(&@$, $2, $4);
+			}
+			|	opt_newline	map_lhs_expr	ARROW	verdict_expr	opt_newline
+			{
+				$$ = mapping_expr_alloc(&@$, $2, $4);
+			}
+			;
+
+initializer_expr	:	expr
+			|	list_expr
+			;
+
+relational_expr		:	expr	/* implicit */	expr
+			{
+				$$ = relational_expr_alloc(&@$, OP_IMPLICIT, $1, $2);
+			}
+			|	expr	/* implicit */	list_expr
+			{
+				$$ = relational_expr_alloc(&@$, OP_FLAGCMP, $1, $2);
+			}
+			|	expr	relational_op	expr
+			{
+				$$ = relational_expr_alloc(&@2, $2, $1, $3);
+			}
+			;
+
+relational_op		:	EQ		{ $$ = OP_EQ; }
+			|	NEQ		{ $$ = OP_NEQ; }
+			|	LT		{ $$ = OP_LT; }
+			|	GT		{ $$ = OP_GT; }
+			|	GTE		{ $$ = OP_GTE; }
+			|	LTE		{ $$ = OP_LTE; }
 			;
 
 verdict_expr		:	ACCEPT

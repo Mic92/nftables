@@ -19,6 +19,7 @@
 
 struct netlink_parse_ctx {
 	struct list_head	*msgs;
+	struct table		*table;
 	struct rule		*rule;
 	struct expr		*registers[NFT_REG_MAX + 1];
 };
@@ -132,91 +133,34 @@ static void netlink_parse_cmp(struct netlink_parse_ctx *ctx,
 	list_add_tail(&stmt->list, &ctx->rule->stmts);
 }
 
-struct netlink_data_ctx {
-	const struct location	*location;
-	struct expr		*expr;
-	enum nft_registers	dreg;
-};
-
-static void netlink_data_ctx_init(struct netlink_data_ctx *dctx,
-				  const struct location *loc,
-				  struct expr *expr, enum nft_registers dreg)
-{
-	dctx->location	= loc;
-	dctx->expr	= expr;
-	dctx->dreg	= dreg;
-}
-
-static void netlink_set_parse_data(struct nfnl_nft_data *data,
-				   enum nft_set_elem_flags flags,
-				   void *arg)
-{
-	struct netlink_data_ctx *dctx = arg;
-	struct expr *expr;
-
-	assert(dctx->dreg != NFT_REG_VERDICT);
-	expr = netlink_alloc_value(dctx->location, data);
-	if (flags & NFT_SE_INTERVAL_END)
-		expr->flags |= EXPR_F_INTERVAL_END;
-	compound_expr_add(dctx->expr, expr);
-}
-
-static void netlink_set_parse_mapping(struct nfnl_nft_data *data,
-				      struct nfnl_nft_data *mapping,
-				      enum nft_set_elem_flags flags,
-				      void *arg)
-{
-	struct netlink_data_ctx *dctx = arg;
-	struct expr *expr, *left, *right;
-
-	left  = netlink_alloc_value(dctx->location, data);
-	if (mapping != NULL) {
-		right = netlink_alloc_data(dctx->location, mapping, dctx->dreg);
-		expr  = mapping_expr_alloc(dctx->location, left, right);
-	} else
-		expr  = left;
-
-	if (flags & NFT_SE_INTERVAL_END)
-		expr->flags |= EXPR_F_INTERVAL_END;
-	compound_expr_add(dctx->expr, expr);
-}
-
-extern void interval_map_decompose(struct expr *set);
-
-static void netlink_parse_set(struct netlink_parse_ctx *ctx,
-			      const struct location *loc,
-			      const struct nfnl_nft_expr *nle)
+static void netlink_parse_lookup(struct netlink_parse_ctx *ctx,
+				 const struct location *loc,
+				 const struct nfnl_nft_expr *nle)
 {
 	struct stmt *stmt;
 	struct expr *expr, *left, *right;
-	struct netlink_data_ctx dctx;
+	struct set *set;
 	enum nft_registers dreg;
-	enum nft_set_flags flags;
 
-	left = netlink_get_register(ctx, loc, nfnl_nft_set_get_sreg(nle));
+	left = netlink_get_register(ctx, loc, nfnl_nft_lookup_get_sreg(nle));
 	if (left == NULL)
 		return netlink_error(ctx, loc,
-				     "Set expression has no left hand side");
+				     "Lookup expression has no left hand side");
 
-	right = set_expr_alloc(loc);
+	set = set_lookup(ctx->table, nfnl_nft_lookup_get_set(nle));
+	if (set == NULL)
+		return netlink_error(ctx, loc,
+				     "Unknown set '%s' in lookup expression",
+				     nfnl_nft_lookup_get_set(nle));
 
-	flags = nfnl_nft_set_get_flags(nle);
-	if (flags & NFT_SET_MAP) {
-		dreg = nfnl_nft_set_get_dreg(nle);
-		netlink_data_ctx_init(&dctx, loc, right, dreg);
-		nfnl_nft_set_foreach_mapping(nle, netlink_set_parse_mapping,
-					     &dctx);
+	right = set_ref_expr_alloc(loc, set);
 
+	if (nfnl_nft_lookup_test_dreg(nle)) {
+		dreg = nfnl_nft_lookup_get_dreg(nle);
 		expr = map_expr_alloc(loc, left, right);
 		if (dreg != NFT_REG_VERDICT)
 			return netlink_set_register(ctx, dreg, expr);
 	} else {
-		netlink_data_ctx_init(&dctx, loc, right, EXPR_VALUE);
-		nfnl_nft_set_foreach_elem(nle, netlink_set_parse_data, &dctx);
-		if (flags & NFT_SET_INTERVAL) {
-			interval_map_decompose(right);
-			right->flags |= NFT_SET_INTERVAL;
-		}
 		expr = relational_expr_alloc(loc, OP_LOOKUP, left, right);
 	}
 
@@ -487,7 +431,7 @@ static const struct {
 } netlink_parsers[] = {
 	{ .name = "immediate",	.parse = netlink_parse_immediate },
 	{ .name = "cmp",	.parse = netlink_parse_cmp },
-	{ .name = "set",	.parse = netlink_parse_set },
+	{ .name = "lookup",	.parse = netlink_parse_lookup },
 	{ .name = "bitwise",	.parse = netlink_parse_bitwise },
 	{ .name = "byteorder",	.parse = netlink_parse_byteorder },
 	{ .name = "payload",	.parse = netlink_parse_payload },
@@ -586,12 +530,6 @@ static void expr_postprocess(struct rule_pp_ctx *ctx,
 	switch (expr->ops->type) {
 	case EXPR_MAP:
 		expr_postprocess(ctx, stmt, &expr->expr);
-		list_for_each_entry(i, &expr->mappings->expressions, list) {
-			if (i->flags & EXPR_F_INTERVAL_END)
-				continue;
-			expr_set_type(i->left, expr->expr->dtype,
-				      expr->expr->byteorder);
-		}
 		expr_postprocess(ctx, stmt, &expr->mappings);
 		break;
 	case EXPR_MAPPING:
@@ -682,6 +620,7 @@ static void expr_postprocess(struct rule_pp_ctx *ctx,
 			expr->len = len;
 		}
 		break;
+	case EXPR_SET_REF:
 	case EXPR_EXTHDR:
 	case EXPR_META:
 	case EXPR_CT:
@@ -734,6 +673,8 @@ struct rule *netlink_delinearize_rule(struct netlink_ctx *ctx,
 	h.handle = nfnl_nft_rule_get_handle(nlr);
 
 	pctx->rule = rule_alloc(&internal_location, &h);
+	pctx->table = table_lookup(&h);
+	assert(pctx->table != NULL);
 	nfnl_nft_rule_foreach_expr(nlr, netlink_parse_expr, pctx);
 
 	rule_parse_postprocess(pctx, pctx->rule);

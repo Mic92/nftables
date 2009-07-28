@@ -210,9 +210,7 @@ addrstring	({macaddr}|{ip4addr}|{ip6addr})
 "$"			{ return '$'; }
 "="			{ return '='; }
 "=>"			{ return ARROW; }
-"map"			{ return MAP; }
 "vmap"			{ return VMAP; }
-"set"			{ return SET; }
 
 "NF_INET_PRE_ROUTING"	{ yylval->val = NF_INET_PRE_ROUTING;	return HOOKNUM; }
 "NF_INET_LOCAL_IN"	{ yylval->val = NF_INET_LOCAL_IN;	return HOOKNUM; }
@@ -229,6 +227,10 @@ addrstring	({macaddr}|{ip4addr}|{ip6addr})
 "table"			{ return TABLE; }
 "chain"			{ return CHAIN; }
 "rule"			{ return RULE; }
+"sets"			{ return SETS; }
+"set"			{ return SET; }
+"element"		{ return ELEMENT; }
+"map"			{ return MAP; }
 "handle"		{ return HANDLE; }
 
 "accept"		{ return ACCEPT; }

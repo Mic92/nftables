@@ -188,6 +188,7 @@ static void symbol_expr_print(const struct expr *expr)
 
 static void symbol_expr_clone(struct expr *new, const struct expr *expr)
 {
+	new->symtype	= expr->symtype;
 	new->scope      = expr->scope;
 	new->identifier = xstrdup(expr->identifier);
 }
@@ -206,12 +207,15 @@ static const struct expr_ops symbol_expr_ops = {
 };
 
 struct expr *symbol_expr_alloc(const struct location *loc,
+			       enum symbol_types type, struct scope *scope,
 			       const char *identifier)
 {
 	struct expr *expr;
 
 	expr = expr_alloc(loc, &symbol_expr_ops, &invalid_type,
 			  BYTEORDER_INVALID, 0);
+	expr->symtype	 = type;
+	expr->scope	 = scope;
 	expr->identifier = xstrdup(identifier);
 	return expr;
 }
@@ -702,14 +706,42 @@ static const struct expr_ops map_expr_ops = {
 };
 
 struct expr *map_expr_alloc(const struct location *loc, struct expr *arg,
-			    struct expr *list)
+			    struct expr *mappings)
 {
 	struct expr *expr;
 
-	assert(list->ops->type == EXPR_SET);
-	expr = expr_alloc(loc, &map_expr_ops, list->dtype,
-			  list->byteorder, list->len);
+	expr = expr_alloc(loc, &map_expr_ops, &invalid_type, BYTEORDER_INVALID, 0);
 	expr->expr     = arg;
-	expr->mappings = list;
+	expr->mappings = mappings;
+	return expr;
+}
+
+static void set_ref_expr_print(const struct expr *expr)
+{
+	if (expr->set->flags & SET_F_ANONYMOUS)
+		expr_print(expr->set->init);
+	else
+		printf("@%s", expr->set->handle.set);
+}
+
+static void set_ref_expr_destroy(struct expr *expr)
+{
+	set_free(expr->set);
+}
+
+static const struct expr_ops set_ref_expr_ops = {
+	.type		= EXPR_SET_REF,
+	.name		= "set reference",
+	.print		= set_ref_expr_print,
+	.destroy	= set_ref_expr_destroy,
+};
+
+struct expr *set_ref_expr_alloc(const struct location *loc, struct set *set)
+{
+	struct expr *expr;
+
+	expr = expr_alloc(loc, &set_ref_expr_ops, set->keytype, 0, 0);
+	expr->set = set_get(set);
+	expr->flags |= EXPR_F_CONSTANT;
 	return expr;
 }

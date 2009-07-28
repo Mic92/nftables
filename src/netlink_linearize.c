@@ -105,17 +105,10 @@ static void netlink_gen_map(struct netlink_linearize_ctx *ctx,
 			    enum nft_registers dreg)
 {
 	struct nfnl_nft_expr *nle;
-	struct nfnl_nft_data *data;
-	struct nfnl_nft_data *mapping;
-	const struct expr *i;
-	enum nft_set_elem_flags flags;
 	enum nft_registers sreg;
-	unsigned int klen, dlen;
 
-	assert(expr->mappings->ops->type == EXPR_SET);
+	assert(expr->mappings->ops->type == EXPR_SET_REF);
 
-	klen = expr->expr->len / BITS_PER_BYTE;
-	dlen = expr->mappings->len / BITS_PER_BYTE;
 	if (dreg == NFT_REG_VERDICT)
 		sreg = get_register(ctx);
 	else
@@ -123,38 +116,10 @@ static void netlink_gen_map(struct netlink_linearize_ctx *ctx,
 
 	netlink_gen_expr(ctx, expr->expr, sreg);
 
-	nle = alloc_nft_expr(nfnl_nft_set_init);
-	nfnl_nft_set_set_flags(nle, NFT_SET_MAP);
-	nfnl_nft_set_set_sreg(nle, sreg);
-	nfnl_nft_set_set_klen(nle, klen);
-	nfnl_nft_set_set_dreg(nle, dreg);
-	nfnl_nft_set_set_dlen(nle, dlen);
-
-	if (expr->mappings->flags & SET_F_INTERVAL) {
-		set_to_intervals(expr->mappings);
-		nfnl_nft_set_set_flags(nle, NFT_SET_INTERVAL);
-	}
-
-	list_for_each_entry(i, &expr->mappings->expressions, list) {
-		flags = 0;
-
-		switch (i->ops->type) {
-		case EXPR_MAPPING:
-			data	= netlink_gen_data(i->left);
-			mapping	= netlink_gen_data(i->right);
-			break;
-		case EXPR_VALUE:
-			assert(i->flags & EXPR_F_INTERVAL_END);
-			data    = netlink_gen_data(i);
-			mapping = NULL;
-			flags   = NFT_SE_INTERVAL_END;
-			break;
-		default:
-			BUG();
-		}
-
-		nfnl_nft_set_add_mapping(nle, data, mapping, flags);
-	}
+	nle = alloc_nft_expr(nfnl_nft_lookup_init);
+	nfnl_nft_lookup_set_sreg(nle, sreg);
+	nfnl_nft_lookup_set_dreg(nle, dreg);
+	nfnl_nft_lookup_set_set(nle, expr->mappings->set->handle.set);
 
 	if (dreg == NFT_REG_VERDICT)
 		release_register(ctx);
@@ -167,34 +132,17 @@ static void netlink_gen_lookup(struct netlink_linearize_ctx *ctx,
 			       enum nft_registers dreg)
 {
 	struct nfnl_nft_expr *nle;
-	const struct expr *i;
-	enum nft_set_elem_flags flags;
 	enum nft_registers sreg;
 
-	assert(expr->right->ops->type == EXPR_SET);
+	assert(expr->right->ops->type == EXPR_SET_REF);
 	assert(dreg == NFT_REG_VERDICT);
 
 	sreg = get_register(ctx);
 	netlink_gen_expr(ctx, expr->left, sreg);
 
-	nle = alloc_nft_expr(nfnl_nft_set_init);
-	nfnl_nft_set_set_sreg(nle, sreg);
-	nfnl_nft_set_set_klen(nle, expr->left->len / BITS_PER_BYTE);
-
-	if (expr->right->flags & SET_F_INTERVAL) {
-		set_to_intervals(expr->right);
-		nfnl_nft_set_set_flags(nle, NFT_SET_INTERVAL);
-	}
-
-	list_for_each_entry(i, &expr->right->expressions, list) {
-		assert(i->ops->type == EXPR_VALUE);
-
-		flags = 0;
-		if (i->flags & EXPR_F_INTERVAL_END)
-			flags = NFT_SE_INTERVAL_END;
-
-		nfnl_nft_set_add_elem(nle, netlink_gen_data(i), flags);
-	}
+	nle = alloc_nft_expr(nfnl_nft_lookup_init);
+	nfnl_nft_lookup_set_sreg(nle, sreg);
+	nfnl_nft_lookup_set_set(nle, expr->right->set->handle.set);
 
 	release_register(ctx);
 	nfnl_nft_rule_add_expr(ctx->nlr, nle);

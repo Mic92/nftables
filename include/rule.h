@@ -6,17 +6,19 @@
 #include <list.h>
 
 /**
- * struct handle - handle for tables, chains and rules
+ * struct handle - handle for tables, chains, rules and sets
  *
  * @family:	protocol family
  * @table:	table name
  * @chain:	chain name (chains and rules only)
+ * @set:	set name (sets only)
  * @handle:	rule handle (rules only)
  */
 struct handle {
 	int			family;
 	const char		*table;
 	const char		*chain;
+	const char		*set;
 	uint32_t		handle;
 };
 
@@ -61,12 +63,14 @@ extern struct symbol *symbol_lookup(const struct scope *scope,
  * @list:	list node
  * @handle:	table handle
  * @chains:	chains contained in the table
+ * @sets:	sets contained in the table
  */
 struct table {
 	struct list_head	list;
 	struct handle		handle;
 	struct scope		scope;
 	struct list_head	chains;
+	struct list_head	sets;
 };
 
 extern struct table *table_alloc(void);
@@ -121,6 +125,53 @@ extern void rule_free(struct rule *rule);
 extern void rule_print(const struct rule *rule);
 
 /**
+ * enum set_flags
+ *
+ * @SET_F_CONSTANT:		Set content is constant
+ * @SET_F_INTERVAL:		set includes ranges and/or prefix expressions
+ */
+enum set_flags {
+	SET_F_ANONYMOUS		= 0x1,
+	SET_F_CONSTANT		= 0x2,
+	SET_F_INTERVAL		= 0x4,
+	SET_F_MAP		= 0x8,
+};
+
+/**
+ * struct set - nftables set
+ *
+ * @list:	table set list node
+ * @handle:	set handle
+ * @location:	location the set was defined/declared at
+ * @refcnt:	reference count
+ * @flags:	bitmask of set flags
+ * @keytype:	key data type
+ * @keylen:	key length
+ * @datatype:	mapping data type
+ * @datalen:	mapping data len
+ * @init:	initializer
+ */
+struct set {
+	struct list_head	list;
+	struct handle		handle;
+	struct location		location;
+	unsigned int		refcnt;
+	uint32_t		flags;
+	const struct datatype	*keytype;
+	unsigned int		keylen;
+	const struct datatype	*datatype;
+	unsigned int		datalen;
+	struct expr		*init;
+};
+
+extern struct set *set_alloc(const struct location *loc);
+extern struct set *set_get(struct set *set);
+extern void set_free(struct set *set);
+extern void set_add_hash(struct set *set, struct table *table);
+extern struct set *set_lookup(const struct table *table, const char *name);
+extern void set_print(const struct set *set);
+
+/**
  * enum cmd_ops - command operations
  *
  * @CMD_INVALID:	invalid
@@ -141,12 +192,18 @@ enum cmd_ops {
  * enum cmd_obj - command objects
  *
  * @CMD_OBJ_INVALID:	invalid
+ * @CMD_OBJ_SETELEM:	set element(s)
+ * @CMD_OBJ_SET:	set
+ * @CMD_OBJ_SETS:	multiple sets
  * @CMD_OBJ_RULE:	rule
  * @CMD_OBJ_CHAIN:	chain
  * @CMD_OBJ_TABLE:	table
  */
 enum cmd_obj {
 	CMD_OBJ_INVALID,
+	CMD_OBJ_SETELEM,
+	CMD_OBJ_SET,
+	CMD_OBJ_SETS,
 	CMD_OBJ_RULE,
 	CMD_OBJ_CHAIN,
 	CMD_OBJ_TABLE,
@@ -170,6 +227,8 @@ struct cmd {
 	struct handle		handle;
 	union {
 		void		*data;
+		struct expr	*expr;
+		struct set	*set;
 		struct rule	*rule;
 		struct chain	*chain;
 		struct table	*table;
@@ -187,12 +246,18 @@ extern void cmd_free(struct cmd *cmd);
  * struct eval_ctx - evaluation context
  *
  * @msgs:	message queue
+ * @cmd:	current command
+ * @table:	current table
+ * @set:	current set
  * @stmt:	current statement
  * @ectx:	expression context
  * @pctx:	payload context
  */
 struct eval_ctx {
 	struct list_head	*msgs;
+	struct cmd		*cmd;
+	struct table		*table;
+	struct set		*set;
 	struct stmt		*stmt;
 	struct expr_ctx		ectx;
 	struct payload_ctx	pctx;

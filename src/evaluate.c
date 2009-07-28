@@ -52,6 +52,78 @@ static int __fmtstring(4, 5) stmt_binary_error(struct eval_ctx *ctx,
 	return -1;
 }
 
+static int __fmtstring(3, 4) set_error(struct eval_ctx *ctx,
+				       const struct set *set,
+				       const char *fmt, ...)
+{
+	struct error_record *erec;
+	va_list ap;
+
+	va_start(ap, fmt);
+	erec = erec_vcreate(EREC_ERROR, &set->location, fmt, ap);
+	va_end(ap);
+	erec_queue(erec, ctx->msgs);
+	return -1;
+}
+
+static struct expr *implicit_set_declaration(struct eval_ctx *ctx,
+					     const struct datatype *keytype,
+					     unsigned int keylen,
+					     struct expr *expr)
+{
+	struct cmd *cmd;
+	struct set *set;
+
+	set = set_alloc(&expr->location);
+	set->flags	= SET_F_CONSTANT | SET_F_ANONYMOUS | expr->set_flags;
+	set->handle.set = xstrdup(set->flags & SET_F_MAP ? "map%d" : "set%d");
+	set->keytype 	= keytype;
+	set->keylen	= keylen;
+	set->init	= expr;
+
+	if (ctx->table != NULL)
+		list_add_tail(&set->list, &ctx->table->sets);
+	else {
+		handle_merge(&set->handle, &ctx->cmd->handle);
+		cmd = cmd_alloc(CMD_ADD, CMD_OBJ_SET, &set->handle, set);
+		cmd->location = set->location;
+		list_add_tail(&cmd->list, &ctx->cmd->list);
+	}
+
+	return set_ref_expr_alloc(&expr->location, set);
+}
+
+// FIXME
+#include <netlink.h>
+static struct set *get_set(struct eval_ctx *ctx, const struct handle *h,
+			   const char *identifier)
+{
+	struct netlink_ctx nctx = {
+		.msgs = ctx->msgs,
+	};
+	struct handle handle;
+	struct set *set;
+	int err;
+
+	if (ctx->table != NULL) {
+		set = set_lookup(ctx->table, identifier);
+		if (set != NULL)
+			return set;
+	}
+
+	init_list_head(&nctx.list);
+
+	memset(&handle, 0, sizeof(handle));
+	handle_merge(&handle, h);
+	handle.set = xstrdup(identifier);
+	err = netlink_get_set(&nctx, &handle);
+	handle_free(&handle);
+
+	if (err < 0)
+		return NULL;
+	return list_first_entry(&nctx.list, struct set, list);
+}
+
 static enum ops byteorder_conversion_op(struct expr *expr,
 					enum byteorder byteorder)
 {
@@ -103,23 +175,32 @@ static int expr_evaluate_symbol(struct eval_ctx *ctx, struct expr **expr)
 {
 	struct error_record *erec;
 	struct symbol *sym;
+	struct set *set;
 	struct expr *new;
 
-	(*expr)->dtype = ctx->ectx.dtype;
-
-	if ((*expr)->scope != NULL) {
+	switch ((*expr)->symtype) {
+	case SYMBOL_VALUE:
+		(*expr)->dtype = ctx->ectx.dtype;
+		erec = symbol_parse(*expr, &new);
+		if (erec != NULL) {
+			erec_queue(erec, ctx->msgs);
+			return -1;
+		}
+		break;
+	case SYMBOL_DEFINE:
 		sym = symbol_lookup((*expr)->scope, (*expr)->identifier);
 		if (sym == NULL)
 			return expr_error(ctx, *expr,
 					  "undefined identifier '%s'",
 					  (*expr)->identifier);
 		new = expr_clone(sym->expr);
-	} else {
-		erec = symbol_parse(*expr, &new);
-		if (erec != NULL) {
-			erec_queue(erec, ctx->msgs);
+		break;
+	case SYMBOL_SET:
+		set = get_set(ctx, &ctx->cmd->handle, (*expr)->identifier);
+		if (set == NULL)
 			return -1;
-		}
+		new = set_ref_expr_alloc(&(*expr)->location, set);
+		break;
 	}
 
 	expr_free(*expr);
@@ -548,10 +629,18 @@ static int expr_evaluate_set(struct eval_ctx *ctx, struct expr **expr)
 	list_for_each_entry_safe(i, next, &set->expressions, list) {
 		if (list_member_evaluate(ctx, &i) < 0)
 			return -1;
+
 		if (!expr_is_constant(i))
 			return expr_error(ctx, i, "Set member is not constant");
-		if (!expr_is_singleton(i))
-			set->flags |= SET_F_INTERVAL;
+
+		if (i->ops->type == EXPR_SET) {
+			/* Merge recursive set definitions */
+			list_splice_tail_init(&i->expressions, &i->list);
+			list_del(&i->list);
+			set->set_flags |= i->set_flags;
+			expr_free(i);
+		} else if (!expr_is_singleton(i))
+			set->set_flags |= SET_F_INTERVAL;
 	}
 
 	set->dtype = ctx->ectx.dtype;
@@ -563,7 +652,7 @@ static int expr_evaluate_set(struct eval_ctx *ctx, struct expr **expr)
 static int expr_evaluate_map(struct eval_ctx *ctx, struct expr **expr)
 {
 	struct expr_ctx ectx = ctx->ectx;
-	struct expr *map = *expr, *i;
+	struct expr *map = *expr, *mappings;
 
 	if (expr_evaluate(ctx, &map->expr) < 0)
 		return -1;
@@ -571,39 +660,71 @@ static int expr_evaluate_map(struct eval_ctx *ctx, struct expr **expr)
 		return expr_error(ctx, map->expr,
 				  "Map expression can not be constant");
 
-	/* FIXME: segtree needs to know the dimension of the *key*.
-	 * The len should actually be the value of the mapping. */
-	map->mappings->dtype = ctx->ectx.dtype;
-	map->mappings->len   = ctx->ectx.len;
+	mappings = map->mappings;
+	mappings->set_flags |= SET_F_MAP;
 
-	list_for_each_entry(i, &map->mappings->expressions, list) {
-		expr_set_context(&ctx->ectx, map->expr->dtype, map->expr->len);
-		if (expr_evaluate(ctx, &i->left) < 0)
-			return -1;
-		if (!expr_is_constant(i->left))
-			return expr_error(ctx, i->left,
-					  "Key must be a constant");
-		if (!expr_is_singleton(i->left))
-			map->mappings->flags |= SET_F_INTERVAL;
+	switch (map->mappings->ops->type) {
+	case EXPR_SET:
+		mappings = implicit_set_declaration(ctx, ctx->ectx.dtype,
+						    ctx->ectx.len, mappings);
+		mappings->set->datatype = ectx.dtype;
+		mappings->set->datalen  = ectx.len;
 
-		expr_set_context(&ctx->ectx, ectx.dtype, ectx.len);
-		if (expr_evaluate(ctx, &i->right) < 0)
+		map->mappings = mappings;
+
+		ctx->set = mappings->set;
+		if (expr_evaluate(ctx, &map->mappings->set->init) < 0)
 			return -1;
-		if (!expr_is_constant(i->right))
-			return expr_error(ctx, i->right,
-					  "Mapping must be a constant");
-		if (!expr_is_singleton(i->right))
-			return expr_error(ctx, i->right,
-					  "Mapping must be a singleton");
+		ctx->set = NULL;
+		break;
+	case EXPR_SYMBOL:
+		if (expr_evaluate(ctx, &map->mappings) < 0)
+			return -1;
+		if (map->mappings->ops->type != EXPR_SET_REF)
+			return expr_error(ctx, map->mappings,
+					  "Expression is not a map");
+		break;
+	default:
+		BUG();
 	}
 
 	map->dtype = ctx->ectx.dtype;
 	map->flags |= EXPR_F_CONSTANT;
 
 	/* Data for range lookups needs to be in big endian order */
-	if (map->mappings->flags & SET_F_INTERVAL &&
+	if (map->mappings->set_flags & SET_F_INTERVAL &&
 	    byteorder_conversion(ctx, &map->expr, BYTEORDER_BIG_ENDIAN) < 0)
 		return -1;
+
+	return 0;
+}
+
+static int expr_evaluate_mapping(struct eval_ctx *ctx, struct expr **expr)
+{
+	struct expr *mapping = *expr;
+	struct set *set = ctx->set;
+
+	if (set == NULL)
+		return expr_error(ctx, mapping, "mapping outside of map context");
+	if (!(set->flags & SET_F_MAP))
+		return set_error(ctx, set, "set is not a map");
+
+	expr_set_context(&ctx->ectx, set->keytype, set->keylen);
+	if (expr_evaluate(ctx, &mapping->left) < 0)
+		return -1;
+	if (!expr_is_constant(mapping->left))
+		return expr_error(ctx, mapping->left, "Key must be a constant");
+	mapping->flags |= mapping->left->flags & EXPR_F_SINGLETON;
+
+	expr_set_context(&ctx->ectx, set->datatype, set->datalen);
+	if (expr_evaluate(ctx, &mapping->right) < 0)
+		return -1;
+	if (!expr_is_constant(mapping->right))
+		return expr_error(ctx, mapping->right, "Value must be a constant");
+	if (!expr_is_singleton(mapping->right))
+		return expr_error(ctx, mapping->right, "Value must be a singleton");
+
+	mapping->flags |= EXPR_F_CONSTANT;
 	return 0;
 }
 
@@ -719,6 +840,7 @@ static int expr_evaluate_relational(struct eval_ctx *ctx, struct expr **expr)
 			rel->op = OP_RANGE;
 			break;
 		case EXPR_SET:
+		case EXPR_SET_REF:
 			rel->op = OP_LOOKUP;
 			break;
 		case EXPR_LIST:
@@ -732,10 +854,21 @@ static int expr_evaluate_relational(struct eval_ctx *ctx, struct expr **expr)
 
 	switch (rel->op) {
 	case OP_LOOKUP:
+		/* A literal set expression implicitly declares the set */
+		if (right->ops->type == EXPR_SET)
+			right = rel->right =
+				implicit_set_declaration(ctx, left->dtype, left->len, right);
+		else if (left->dtype != right->dtype)
+			return expr_binary_error(ctx, right, left,
+						 "datatype mismatch, expected %s, "
+						 "set has type %s",
+						 left->dtype->desc,
+						 right->dtype->desc);
+
 		/* Data for range lookups needs to be in big endian order */
-		if (right->flags & SET_F_INTERVAL &&
+		if (right->set->flags & SET_F_INTERVAL &&
 		    byteorder_conversion(ctx, &rel->left,
-			    		 BYTEORDER_BIG_ENDIAN) < 0)
+					 BYTEORDER_BIG_ENDIAN) < 0)
 			return -1;
 		left = rel->left;
 		break;
@@ -839,6 +972,8 @@ static int expr_evaluate(struct eval_ctx *ctx, struct expr **expr)
 	switch ((*expr)->ops->type) {
 	case EXPR_SYMBOL:
 		return expr_evaluate_symbol(ctx, expr);
+	case EXPR_SET_REF:
+		return 0;
 	case EXPR_VALUE:
 		return expr_evaluate_value(ctx, expr);
 	case EXPR_VERDICT:
@@ -864,6 +999,8 @@ static int expr_evaluate(struct eval_ctx *ctx, struct expr **expr)
 		return expr_evaluate_set(ctx, expr);
 	case EXPR_MAP:
 		return expr_evaluate_map(ctx, expr);
+	case EXPR_MAPPING:
+		return expr_evaluate_mapping(ctx, expr);
 	case EXPR_RELATIONAL:
 		return expr_evaluate_relational(ctx, expr);
 	default:
@@ -879,6 +1016,7 @@ static int stmt_evaluate_expr(struct eval_ctx *ctx, struct stmt *stmt)
 
 static int stmt_evaluate_verdict(struct eval_ctx *ctx, struct stmt *stmt)
 {
+	expr_set_context(&ctx->ectx, &verdict_type, 0);
 	if (expr_evaluate(ctx, &stmt->expr) < 0)
 		return -1;
 
@@ -962,6 +1100,52 @@ static int stmt_evaluate(struct eval_ctx *ctx, struct stmt *stmt)
 	}
 }
 
+static int setelem_evaluate(struct eval_ctx *ctx, struct expr **expr)
+{
+	struct set *set;
+
+	set = get_set(ctx, &ctx->cmd->handle, ctx->cmd->handle.set);
+	if (set == NULL)
+		return -1;
+
+	ctx->set = set;
+	expr_set_context(&ctx->ectx, set->keytype, set->keylen);
+	if (expr_evaluate(ctx, expr) < 0)
+		return -1;
+	ctx->set = NULL;
+	return 0;
+}
+
+static int set_evaluate(struct eval_ctx *ctx, struct set *set)
+{
+	const char *type;
+
+	type = set->flags & SET_F_MAP ? "map" : "set";
+
+	if (set->keytype == NULL)
+		return set_error(ctx, set, "%s definition does not specify "
+				 "key data type", type);
+
+	set->keylen = set->keytype->size;
+	if (set->keylen == 0)
+		return set_error(ctx, set, "unqualified key data type "
+				 "specified in %s definition", type);
+
+	if (!(set->flags & SET_F_MAP))
+		return 0;
+
+	if (set->datatype == NULL)
+		return set_error(ctx, set, "map definition does not specify "
+				 "mapping data type");
+
+	set->datalen = set->datatype->size;
+	if (set->datalen == 0 && set->datatype->type != TYPE_VERDICT)
+		return set_error(ctx, set, "unqualified mapping data type "
+				 "specified in map definition");
+
+	return 0;
+}
+
 static int rule_evaluate(struct eval_ctx *ctx, struct rule *rule)
 {
 	struct stmt *stmt, *tstmt = NULL;
@@ -999,18 +1183,31 @@ static int chain_evaluate(struct eval_ctx *ctx, struct chain *chain)
 static int table_evaluate(struct eval_ctx *ctx, struct table *table)
 {
 	struct chain *chain;
+	struct set *set;
 
+	ctx->table = table;
+	list_for_each_entry(set, &table->sets, list) {
+		handle_merge(&set->handle, &table->handle);
+		if (set_evaluate(ctx, set) < 0)
+			return -1;
+	}
 	list_for_each_entry(chain, &table->chains, list) {
 		handle_merge(&chain->handle, &table->handle);
 		if (chain_evaluate(ctx, chain) < 0)
 			return -1;
 	}
+	ctx->table = NULL;
 	return 0;
 }
 
 static int cmd_evaluate_add(struct eval_ctx *ctx, struct cmd *cmd)
 {
 	switch (cmd->obj) {
+	case CMD_OBJ_SETELEM:
+		return setelem_evaluate(ctx, &cmd->expr);
+	case CMD_OBJ_SET:
+		handle_merge(&cmd->set->handle, &cmd->handle);
+		return set_evaluate(ctx, cmd->set);
 	case CMD_OBJ_RULE:
 		handle_merge(&cmd->rule->handle, &cmd->handle);
 		return rule_evaluate(ctx, cmd->rule);
@@ -1027,6 +1224,21 @@ static int cmd_evaluate_add(struct eval_ctx *ctx, struct cmd *cmd)
 	}
 }
 
+static int cmd_evaluate_delete(struct eval_ctx *ctx, struct cmd *cmd)
+{
+	switch (cmd->obj) {
+	case CMD_OBJ_SETELEM:
+		return setelem_evaluate(ctx, &cmd->expr);
+	case CMD_OBJ_SET:
+	case CMD_OBJ_RULE:
+	case CMD_OBJ_CHAIN:
+	case CMD_OBJ_TABLE:
+		return 0;
+	default:
+		BUG();
+	}
+}
+
 static int cmd_evaluate(struct eval_ctx *ctx, struct cmd *cmd)
 {
 #if TRACE
@@ -1035,10 +1247,12 @@ static int cmd_evaluate(struct eval_ctx *ctx, struct cmd *cmd)
 	erec_print(stdout, erec); printf("\n\n");
 #endif
 
+	ctx->cmd = cmd;
 	switch (cmd->op) {
 	case CMD_ADD:
 		return cmd_evaluate_add(ctx, cmd);
 	case CMD_DELETE:
+		return cmd_evaluate_delete(ctx, cmd);
 	case CMD_LIST:
 	case CMD_FLUSH:
 		return 0;
