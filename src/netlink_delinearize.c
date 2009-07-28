@@ -550,9 +550,10 @@ static void expr_postprocess(struct rule_pp_ctx *ctx,
 		break;
 	case EXPR_BINOP:
 		expr_postprocess(ctx, stmt, &expr->left);
-		expr_postprocess(ctx, stmt, &expr->right);
 		expr_set_type(expr->right, expr->left->dtype,
 			      expr->left->byteorder);
+		expr_postprocess(ctx, stmt, &expr->right);
+
 		expr_set_type(expr, expr->left->dtype,
 			      expr->left->byteorder);
 		break;
