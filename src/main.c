@@ -26,6 +26,9 @@
 #include <erec.h>
 
 unsigned int numeric_output;
+#ifdef DEBUG
+unsigned int debug_level;
+#endif
 
 const char *include_paths[INCLUDE_PATHS_MAX] = { DEFAULT_INCLUDE_PATH };
 static unsigned int num_include_paths = 1;
@@ -37,6 +40,7 @@ enum opt_vals {
 	OPT_INTERACTIVE		= 'i',
 	OPT_INCLUDEPATH		= 'I',
 	OPT_NUMERIC		= 'n',
+	OPT_DEBUG		= 'd',
 	OPT_INVALID		= '?',
 };
 
@@ -69,6 +73,13 @@ static const struct option options[] = {
 		.val		= OPT_INCLUDEPATH,
 		.has_arg	= 1,
 	},
+#ifdef DEBUG
+	{
+		.name		= "debug",
+		.val		= OPT_DEBUG,
+		.has_arg	= 1,
+	},
+#endif
 	{
 		.name		= NULL
 	}
@@ -90,6 +101,9 @@ static void show_help(const char *name)
 "  				When specified twice, also show Internet protocols,\n"
 "				Internet services, user IDs and group IDs numerically.\n"
 "  -i/--includepath <directory>	Add <directory> to the paths searched for include files.\n"
+#ifdef DEBUG
+"  --debug <level>		Specify debugging level\n"
+#endif
 "\n",
 	name);
 }
@@ -142,6 +156,11 @@ int main(int argc, char * const *argv)
 		case OPT_NUMERIC:
 			numeric_output++;
 			break;
+#ifdef DEBUG
+		case OPT_DEBUG:
+			debug_level |= DEBUG_NETLINK;
+			break;
+#endif
 		case OPT_INVALID:
 			exit(NFT_EXIT_FAILURE);
 		}

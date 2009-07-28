@@ -26,8 +26,6 @@
 #include <utils.h>
 #include <erec.h>
 
-#define TRACE	0
-
 static struct nl_sock *nf_sock;
 
 static void __init netlink_open_sock(void)
@@ -53,11 +51,16 @@ static void netlink_set_callback(nl_recvmsg_msg_cb_t func, void *arg)
 
 void netlink_dump_object(struct nl_object *obj)
 {
+#ifdef DEBUG
 	struct nl_dump_params params = {
 		.dp_fd		= stdout,
 		.dp_type	= NL_DUMP_DETAILS,
 	};
+
+	if (!(debug_level & DEBUG_NETLINK))
+		return;
 	nl_object_dump(obj, &params);
+#endif
 }
 
 static int netlink_io_error(struct netlink_ctx *ctx, const struct location *loc,
@@ -325,9 +328,8 @@ static void list_rule_cb(struct nl_object *obj, void *arg)
 	const struct nfnl_nft_rule *nlr = (struct nfnl_nft_rule *)obj;
 	struct netlink_ctx *ctx = arg;
 	struct rule *rule;
-#if TRACE
-	printf("\n"); netlink_dump_object(obj); printf("\n");
-#endif
+
+	netlink_dump_object(obj);
 	if (!nfnl_nft_rule_test_family(nlr) ||
 	    !nfnl_nft_rule_test_table(nlr) ||
 	    !nfnl_nft_rule_test_chain(nlr) ||
@@ -453,9 +455,8 @@ static void list_chain_cb(struct nl_object *obj, void *arg)
 	struct nfnl_nft_chain *nlc = (struct nfnl_nft_chain *)obj;
 	struct netlink_ctx *ctx = arg;
 	struct chain *chain;
-#if TRACE
+
 	netlink_dump_object(obj);;
-#endif
 	if (!nfnl_nft_chain_test_family(nlc) ||
 	    !nfnl_nft_chain_test_table(nlc) ||
 	    !nfnl_nft_chain_test_name(nlc)) {
@@ -559,9 +560,8 @@ static void list_table_cb(struct nl_object *obj, void *arg)
 	struct nfnl_nft_table *nlt = (struct nfnl_nft_table *)obj;
 	struct netlink_ctx *ctx = arg;
 	struct table *table;
-#if TRACE
+
 	netlink_dump_object(obj);
-#endif
 	if (!nfnl_nft_table_test_family(nlt) ||
 	    !nfnl_nft_table_test_name(nlt)) {
 		netlink_io_error(ctx, NULL, "Incomplete table received");
@@ -653,9 +653,7 @@ static void add_set_cb(struct nl_object *obj, void *arg)
 	struct netlink_ctx *ctx = arg;
 	struct set *set = ctx->set;
 
-#if TRACE
 	netlink_dump_object(OBJ_CAST(nls));
-#endif
 	set->handle.set = xstrdup(nfnl_nft_set_get_name(nls));
 }
 
@@ -678,9 +676,7 @@ int netlink_add_set(struct netlink_ctx *ctx, const struct handle *h,
 		nfnl_nft_set_set_datatype(nls, dtype_map_to_kernel(set->datatype));
 		nfnl_nft_set_set_datalen(nls, set->datalen / BITS_PER_BYTE);
 	}
-#if TRACE
 	netlink_dump_object(OBJ_CAST(nls));
-#endif
 
 	ctx->set = set;
 	netlink_set_callback(netlink_add_set_cb, ctx);
@@ -719,9 +715,8 @@ static void list_set_cb(struct nl_object *obj, void *arg)
 	const struct datatype *keytype, *datatype;
 	uint32_t flags;
 	struct set *set;
-#if TRACE
+
 	netlink_dump_object(obj);
-#endif
 	if (!nfnl_nft_set_test_family(nls) ||
 	    !nfnl_nft_set_test_table(nls) ||
 	    !nfnl_nft_set_test_name(nls) ||
@@ -788,9 +783,7 @@ int netlink_get_set(struct netlink_ctx *ctx, const struct handle *h)
 	int err;
 
 	nls = alloc_nft_set(h);
-#if TRACE
 	netlink_dump_object(OBJ_CAST(nls));
-#endif
 	netlink_set_callback(netlink_get_set_cb, ctx);
 	err = nfnl_nft_set_query(nf_sock, nls, 0);
 	if (err == 0)
@@ -832,9 +825,8 @@ int netlink_add_setelems(struct netlink_ctx *ctx, const struct handle *h,
 	int err;
 
 	nls = alloc_nft_set(h);
-#if TRACE
 	netlink_dump_object(OBJ_CAST(nls));
-#endif
+
 	err = alloc_setelem_cache(expr, &elements);
 	if (err < 0)
 		goto out;
@@ -881,9 +873,8 @@ static void list_setelem_cb(struct nl_object *obj, void *arg)
 	struct set *set = ctx->set;
 	struct expr *expr, *data;
 	uint32_t flags;
-#if TRACE
+
 	netlink_dump_object(obj);
-#endif
 	if (!nfnl_nft_setelem_test_key(nlse)) {
 		netlink_io_error(ctx, NULL, "Incomplete set element received");
 		return;
@@ -924,9 +915,8 @@ int netlink_get_setelems(struct netlink_ctx *ctx, const struct handle *h,
 	int err;
 
 	nls = alloc_nft_set(h);
-#if TRACE
 	netlink_dump_object(OBJ_CAST(nls));
-#endif
+
 	err = nfnl_nft_setelem_alloc_cache(nf_sock, nls, &elements);
 	if (err < 0)
 		goto out;

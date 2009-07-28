@@ -11,9 +11,14 @@ enum numeric_level {
 	NUMERIC_ALL,
 };
 
+enum debug_level {
+	DEBUG_NETLINK		= 0x1,
+};
+
 #define INCLUDE_PATHS_MAX	16
 
 extern unsigned int numeric_output;
+extern unsigned int debug_level;
 extern const char *include_paths[INCLUDE_PATHS_MAX];
 
 struct parser_state;

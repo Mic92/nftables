@@ -588,8 +588,6 @@ int netlink_linearize_rule(struct netlink_ctx *ctx, struct nfnl_nft_rule *nlr,
 	list_for_each_entry(stmt, &rule->stmts, list)
 		netlink_gen_stmt(&lctx, stmt);
 
-#ifdef DEBUG
 	netlink_dump_object(OBJ_CAST(nlr));
-#endif
 	return 0;
 }
