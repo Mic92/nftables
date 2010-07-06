@@ -79,10 +79,20 @@ extern void table_add_hash(struct table *table);
 extern struct table *table_lookup(const struct handle *h);
 
 /**
+ * enum chain_flags - chain flags
+ *
+ * @CHAIN_F_BASECHAIN:	chain is a base chain
+ */
+enum chain_flags {
+	CHAIN_F_BASECHAIN	= 0x1,
+};
+
+/**
  * struct chain - nftables chain
  *
  * @list:	list node in table list
  * @handle:	chain handle
+ * @flags:	chain flags
  * @hooknum:	hook number (base chains)
  * @priority:	hook priority (base chains)
  * @rules:	rules contained in the chain
@@ -90,6 +100,7 @@ extern struct table *table_lookup(const struct handle *h);
 struct chain {
 	struct list_head	list;
 	struct handle		handle;
+	uint32_t		flags;
 	unsigned int		hooknum;
 	unsigned int		priority;
 	struct scope		scope;

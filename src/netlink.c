@@ -422,7 +422,7 @@ int netlink_add_chain(struct netlink_ctx *ctx, const struct handle *h,
 	int err;
 
 	nlc = alloc_nft_chain(h);
-	if (chain != NULL && (chain->hooknum || chain->priority)) {
+	if (chain != NULL && chain->flags & CHAIN_F_BASECHAIN) {
 		nfnl_nft_chain_set_hooknum(nlc, chain->hooknum);
 		nfnl_nft_chain_set_priority(nlc, chain->priority);
 	}
