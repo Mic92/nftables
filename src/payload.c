@@ -141,8 +141,8 @@ payload_select_proto(const struct payload_desc *base, unsigned int num)
  * @base:	lower layer protocol description
  * @desc:	upper layer protocol description
  */
-static unsigned int payload_proto_val(const struct payload_desc *base,
-				      const struct payload_desc *desc)
+static int payload_proto_val(const struct payload_desc *base,
+			     const struct payload_desc *desc)
 {
 	unsigned int i;
 
@@ -150,7 +150,7 @@ static unsigned int payload_proto_val(const struct payload_desc *base,
 		if (base->protocols[i].desc == desc)
 			return base->protocols[i].num;
 	}
-	return 0;
+	return -1;
 }
 
 static const struct dev_payload_desc dev_payload_desc[] = {
@@ -297,7 +297,7 @@ int payload_gen_dependency(struct eval_ctx *ctx, const struct expr *expr,
 	const struct payload_desc *desc;
 	const struct payload_template *tmpl;
 	struct expr *dep, *left, *right;
-	unsigned int protocol;
+	int protocol;
 	uint16_t type;
 
 	if (expr->payload.base < h->base) {
@@ -328,9 +328,14 @@ int payload_gen_dependency(struct eval_ctx *ctx, const struct expr *expr,
 				  "no %s protocol specified",
 				  payload_base_names[expr->payload.base - 1]);
 
+	protocol = payload_proto_val(desc, expr->payload.desc);
+	if (protocol < 0)
+		return expr_error(ctx, expr,
+				  "conflicting protocols specified: %s vs. %s",
+				  desc->name, expr->payload.desc->name);
+
 	tmpl = &desc->templates[desc->protocol_key];
 	left = payload_expr_alloc(&expr->location, desc, desc->protocol_key);
-	protocol = payload_proto_val(desc, expr->payload.desc);
 	right = constant_expr_alloc(&expr->location, tmpl->dtype,
 				    BYTEORDER_HOST_ENDIAN,
 				    tmpl->len, &protocol);
