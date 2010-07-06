@@ -99,7 +99,7 @@ struct expr *payload_expr_alloc(const struct location *loc,
 	}
 
 	expr = expr_alloc(loc, &payload_expr_ops, tmpl->dtype,
-			  BYTEORDER_BIG_ENDIAN, tmpl->len);
+			  tmpl->dtype->byteorder, tmpl->len);
 	expr->payload.desc   = desc;
 	expr->payload.tmpl   = tmpl;
 	expr->payload.base   = base;

@@ -491,6 +491,9 @@ static void payload_match_postprocess(struct payload_ctx *ctx,
 		list_for_each_entry(left, &list, list) {
 			tmp = constant_expr_splice(right, left->len);
 			expr_set_type(tmp, left->dtype, left->byteorder);
+			if (tmp->byteorder == BYTEORDER_HOST_ENDIAN)
+				mpz_switch_byteorder(tmp->value, tmp->len / BITS_PER_BYTE);
+
 			nexpr = relational_expr_alloc(&expr->location, expr->op,
 						      left, tmp);
 			payload_ctx_update(ctx, nexpr);
@@ -525,6 +528,7 @@ static void expr_postprocess(struct rule_pp_ctx *ctx,
 			     struct stmt *stmt, struct expr **exprp)
 {
 	struct expr *expr = *exprp, *i;
+	unsigned int n;
 
 	//pr_debug("%s len %u\n", expr->ops->name, expr->len);
 
@@ -562,9 +566,6 @@ static void expr_postprocess(struct rule_pp_ctx *ctx,
 		case EXPR_PAYLOAD:
 			payload_match_postprocess(&ctx->pctx, stmt, expr);
 			return;
-		case EXPR_META:
-			meta_match_postprocess(&ctx->pctx, expr);
-			break;
 		default:
 			expr_postprocess(ctx, stmt, &expr->left);
 			break;
@@ -573,11 +574,15 @@ static void expr_postprocess(struct rule_pp_ctx *ctx,
 		expr_set_type(expr->right, expr->left->dtype, expr->left->byteorder);
 		expr_postprocess(ctx, stmt, &expr->right);
 
-		if (expr->left->ops->type == EXPR_BINOP &&
-		    expr->left->op == OP_AND &&
-		    expr->op == OP_NEQ &&
-		    expr->right->dtype->basetype->type == TYPE_BITMASK) {
-			unsigned int n;
+		switch (expr->left->ops->type) {
+		case EXPR_META:
+			meta_match_postprocess(&ctx->pctx, expr);
+			break;
+		case EXPR_BINOP:
+			if (expr->left->op != OP_AND ||
+			    expr->op != OP_NEQ ||
+			    expr->right->dtype->basetype->type != TYPE_BITMASK)
+				break;
 
 			expr_free(expr->right);
 			expr->right = list_expr_alloc(&expr->left->left->location);
@@ -594,6 +599,9 @@ static void expr_postprocess(struct rule_pp_ctx *ctx,
 			}
 			expr->left = expr->left->left;
 			expr->op = OP_FLAGCMP;
+			break;
+		default:
+			break;
 		}
 		break;
 	case EXPR_PAYLOAD:

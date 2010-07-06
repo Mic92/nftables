@@ -309,6 +309,7 @@ const struct datatype lladdr_type = {
 	.type		= TYPE_LLADDR,
 	.name		= "lladdr",
 	.desc		= "link layer address",
+	.byteorder	= BYTEORDER_HOST_ENDIAN,
 	.basetype	= &integer_type,
 	.print		= lladdr_type_print,
 	.parse		= lladdr_type_parse,
