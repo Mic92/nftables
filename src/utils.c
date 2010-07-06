@@ -41,7 +41,6 @@ void *xmalloc(size_t size)
 
 void *xrealloc(void *ptr, size_t size)
 {
-	assert(ptr != NULL);
 	ptr = realloc(ptr, size);
 	if (ptr == NULL && size != 0)
 		memory_allocation_error();
