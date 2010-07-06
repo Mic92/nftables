@@ -426,6 +426,7 @@ int netlink_add_chain(struct netlink_ctx *ctx, const struct handle *h,
 		nfnl_nft_chain_set_hooknum(nlc, chain->hooknum);
 		nfnl_nft_chain_set_priority(nlc, chain->priority);
 	}
+	netlink_dump_object(OBJ_CAST(nlc));
 	err = nfnl_nft_chain_add(nf_sock, nlc, NLM_F_EXCL);
 	nfnl_nft_chain_put(nlc);
 
@@ -441,6 +442,7 @@ int netlink_delete_chain(struct netlink_ctx *ctx, const struct handle *h)
 	int err;
 
 	nlc = alloc_nft_chain(h);
+	netlink_dump_object(OBJ_CAST(nlc));
 	err = nfnl_nft_chain_delete(nf_sock, nlc, 0);
 	nfnl_nft_chain_put(nlc);
 
@@ -456,7 +458,7 @@ static void list_chain_cb(struct nl_object *obj, void *arg)
 	struct netlink_ctx *ctx = arg;
 	struct chain *chain;
 
-	netlink_dump_object(obj);;
+	netlink_dump_object(obj);
 	if (!nfnl_nft_chain_test_family(nlc) ||
 	    !nfnl_nft_chain_test_table(nlc) ||
 	    !nfnl_nft_chain_test_name(nlc)) {
@@ -811,6 +813,7 @@ static int alloc_setelem_cache(const struct expr *set, struct nl_cache **res)
 		return err;
 	list_for_each_entry(expr, &set->expressions, list) {
 		nlse = alloc_nft_setelem(expr);
+		netlink_dump_object(OBJ_CAST(nlse));
 		nl_cache_add(elements, OBJ_CAST(nlse));
 	}
 	*res = elements;
