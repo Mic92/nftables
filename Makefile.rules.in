@@ -36,6 +36,10 @@ configure:		configure.ac
 			@echo -e "  PDF\t\t$@"
 			db2pdf -o $(SUBDIR) $<
 
+archive:
+			git archive --prefix=nftables-@PACKAGE_VERSION@/ HEAD | \
+				bzip2 -c > nftables-@PACKAGE_VERSION@.tar.bz2
+
 define program_template
 $(1)-obj		:= $$(patsubst %,$(SUBDIR)%,$$($(1)-obj))
 $(1)-extra-clean-files	:= $$(patsubst %,$(SUBDIR)%,$$($(1)-extra-clean-files))
