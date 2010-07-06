@@ -408,14 +408,13 @@ static void netlink_parse_nat(struct netlink_parse_ctx *ctx,
 
 	reg2 = nfnl_nft_nat_get_sreg_proto_max(nle);
 	if (reg2 && reg2 != reg1) {
-		proto = netlink_get_register(ctx, loc, reg1);
+		proto = netlink_get_register(ctx, loc, reg2);
 		if (proto == NULL)
 			return netlink_error(ctx, loc,
 					     "NAT statement has no proto "
 					     "expression");
 
 		expr_set_type(proto, &inet_service_type, BYTEORDER_BIG_ENDIAN);
-		stmt->nat.proto = proto;
 		if (stmt->nat.proto != NULL)
 			proto = range_expr_alloc(loc, stmt->nat.proto, proto);
 		stmt->nat.proto = proto;
@@ -628,6 +627,10 @@ static void expr_postprocess(struct rule_pp_ctx *ctx,
 			mpz_clear(tmp);
 			expr->len = len;
 		}
+		break;
+	case EXPR_RANGE:
+		expr_postprocess(ctx, stmt, &expr->left);
+		expr_postprocess(ctx, stmt, &expr->right);
 		break;
 	case EXPR_SET_REF:
 	case EXPR_EXTHDR:

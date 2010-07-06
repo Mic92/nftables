@@ -500,51 +500,51 @@ static void netlink_gen_nat_stmt(struct netlink_linearize_ctx *ctx,
 	struct nfnl_nft_expr *nle;
 	enum nft_registers amin_reg, amax_reg;
 	enum nft_registers pmin_reg, pmax_reg;
+	int registers = 0;
 
 	nle = alloc_nft_expr(nfnl_nft_nat_init);
 	nfnl_nft_nat_set_type(nle, stmt->nat.type);
 
 	if (stmt->nat.addr) {
-		switch (stmt->nat.addr->ops->type) {
-		default:
-			amin_reg = amax_reg = get_register(ctx);
-			netlink_gen_expr(ctx, stmt->nat.addr, amin_reg);
-			nfnl_nft_nat_set_sreg_addr_min(nle, amin_reg);
-			release_register(ctx);
-			break;
-		case EXPR_RANGE:
-			amin_reg = get_register(ctx);
+		amin_reg = get_register(ctx);
+		registers++;
+
+		if (stmt->nat.addr->ops->type == EXPR_RANGE) {
 			amax_reg = get_register(ctx);
+			registers++;
+
 			netlink_gen_expr(ctx, stmt->nat.addr->left, amin_reg);
 			netlink_gen_expr(ctx, stmt->nat.addr->right, amax_reg);
 			nfnl_nft_nat_set_sreg_addr_min(nle, amin_reg);
 			nfnl_nft_nat_set_sreg_addr_max(nle, amax_reg);
-			release_register(ctx);
-			release_register(ctx);
-			break;
+		} else {
+			netlink_gen_expr(ctx, stmt->nat.addr, amin_reg);
+			nfnl_nft_nat_set_sreg_addr_min(nle, amin_reg);
 		}
 
 	}
 
 	if (stmt->nat.proto) {
-		switch (stmt->nat.proto->ops->type) {
-		default:
-			pmin_reg = pmax_reg = get_register(ctx);
-			netlink_gen_expr(ctx, stmt->nat.proto, pmin_reg);
-			nfnl_nft_nat_set_sreg_proto_min(nle, pmin_reg);
-			release_register(ctx);
-			break;
-		case EXPR_RANGE:
-			pmin_reg = get_register(ctx);
+		pmin_reg = get_register(ctx);
+		registers++;
+
+		if (stmt->nat.proto->ops->type == EXPR_RANGE) {
 			pmax_reg = get_register(ctx);
+			registers++;
+
 			netlink_gen_expr(ctx, stmt->nat.proto->left, pmin_reg);
 			netlink_gen_expr(ctx, stmt->nat.proto->right, pmax_reg);
 			nfnl_nft_nat_set_sreg_proto_min(nle, pmin_reg);
 			nfnl_nft_nat_set_sreg_proto_max(nle, pmax_reg);
-			release_register(ctx);
-			release_register(ctx);
-			break;
+		} else {
+			netlink_gen_expr(ctx, stmt->nat.proto, pmin_reg);
+			nfnl_nft_nat_set_sreg_proto_min(nle, pmin_reg);
 		}
+	}
+
+	while (registers > 0) {
+		release_register(ctx);
+		registers--;
 	}
 
 	nfnl_nft_rule_add_expr(ctx->nlr, nle);
