@@ -32,23 +32,28 @@ static const char *byteorder_names[] = {
 	[BYTEORDER_BIG_ENDIAN]		= "big endian",
 };
 
-
-static int __fmtstring(4, 5) stmt_binary_error(struct eval_ctx *ctx,
-					       const struct stmt *s1,
-					       const struct stmt *s2,
-					       const char *fmt, ...)
+static int __fmtstring(4, 5) __stmt_binary_error(struct eval_ctx *ctx,
+						 const struct location *l1,
+						 const struct location *l2,
+						 const char *fmt, ...)
 {
 	struct error_record *erec;
 	va_list ap;
 
 	va_start(ap, fmt);
-	erec = erec_vcreate(EREC_ERROR, &s1->location, fmt, ap);
-	if (s2 != NULL)
-		erec_add_location(erec, &s2->location);
+	erec = erec_vcreate(EREC_ERROR, l1, fmt, ap);
+	if (l2 != NULL)
+		erec_add_location(erec, l2);
 	va_end(ap);
 	erec_queue(erec, ctx->msgs);
 	return -1;
+
 }
+
+#define stmt_error(ctx, s1, fmt, args...) \
+	__stmt_binary_error(ctx, &(s1)->location, NULL, fmt, ## args)
+#define stmt_binary_error(ctx, s1, s2, fmt, args...) \
+	__stmt_binary_error(ctx, &(s1)->location, &(s2)->location, fmt, ## args)
 
 static int __fmtstring(3, 4) set_error(struct eval_ctx *ctx,
 				       const struct set *set,
@@ -1050,6 +1055,7 @@ static int stmt_evaluate_reject(struct eval_ctx *ctx, struct stmt *stmt)
 
 static int stmt_evaluate_nat(struct eval_ctx *ctx, struct stmt *stmt)
 {
+	struct payload_ctx *pctx = &ctx->pctx;
 	int err;
 
 	if (stmt->nat.addr != NULL) {
@@ -1061,6 +1067,11 @@ static int stmt_evaluate_nat(struct eval_ctx *ctx, struct stmt *stmt)
 	}
 
 	if (stmt->nat.proto != NULL) {
+		if (pctx->protocol[PAYLOAD_BASE_TRANSPORT_HDR].desc == NULL)
+			return stmt_binary_error(ctx, stmt->nat.proto, stmt,
+						 "transport protocol mapping is only "
+						 "valid after transport protocol match");
+
 		expr_set_context(&ctx->ectx, &inet_service_type,
 				 2 * BITS_PER_BYTE);
 		err = expr_evaluate(ctx, &stmt->nat.proto);
