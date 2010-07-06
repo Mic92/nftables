@@ -482,7 +482,25 @@ common_block		:	INCLUDE		QUOTED_STRING	stmt_seperator
 line			:	common_block			{ $$ = NULL; }
 			|	stmt_seperator			{ $$ = NULL; }
 			|	base_cmd	stmt_seperator	{ $$ = $1; }
-			|	base_cmd	TOKEN_EOF	{ $$ = $1; }
+			|	base_cmd	TOKEN_EOF
+			{
+				/*
+				 * Very hackish workaround for bison >= 2.4: previous versions
+				 * terminated parsing after EOF, 2.4+ tries to get further input
+				 * in 'input' and calls the scanner again, causing a crash when
+				 * the final input buffer has been popped. Terminate manually to
+				 * avoid this. The correct fix should be to adjust the grammar
+				 * to accept EOF in input, but for unknown reasons it does not
+				 * work.
+				 */
+				if ($1 != NULL) {
+					$1->location = @1;
+					list_add_tail(&$1->list, &state->cmds);
+				}
+				$$ = NULL;
+
+				YYACCEPT;
+			}
 			|	base_cmd	error		{ $$ = $1; }
 			;
 

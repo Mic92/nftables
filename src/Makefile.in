@@ -1,5 +1,4 @@
 PROGRAMS		+= nft
-YACCFLAGS               += --skeleton=../../..$(shell pwd)/src/parser-skeleton.c
 
 nft-destdir		:= @sbindir@
 
