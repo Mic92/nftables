@@ -102,11 +102,39 @@ static void show_help(const char *name)
 "				Internet services, user IDs and group IDs numerically.\n"
 "  -i/--includepath <directory>	Add <directory> to the paths searched for include files.\n"
 #ifdef DEBUG
-"  --debug <level>		Specify debugging level\n"
+"  --debug <level [,level...]>	Specify debugging level (scanner, parser, eval, netlink, all)\n"
 #endif
 "\n",
 	name);
 }
+
+#ifdef DEBUG
+static const struct {
+	const char		*name;
+	enum debug_level	level;
+} debug_param[] = {
+	{
+		.name		= "scanner",
+		.level		= DEBUG_SCANNER,
+	},
+	{
+		.name		= "parser",
+		.level		= DEBUG_PARSER,
+	},
+	{
+		.name		= "eval",
+		.level		= DEBUG_EVALUATION,
+	},
+	{
+		.name		= "netlink",
+		.level		= DEBUG_NETLINK,
+	},
+	{
+		.name		= "all",
+		.level		= ~0,
+	},
+};
+#endif
 
 static const struct input_descriptor indesc_cmdline = {
 	.type	= INDESC_BUFFER,
@@ -158,7 +186,31 @@ int main(int argc, char * const *argv)
 			break;
 #ifdef DEBUG
 		case OPT_DEBUG:
-			debug_level |= DEBUG_NETLINK;
+			for (;;) {
+				unsigned int i;
+				char *end;
+
+				end = strchr(optarg, ',');
+				if (end)
+					*end = '\0';
+
+				for (i = 0; i < array_size(debug_param); i++) {
+					if (strcmp(debug_param[i].name, optarg))
+						continue;
+					debug_level |= debug_param[i].level;
+					break;
+				}
+
+				if (i == array_size(debug_param)) {
+					fprintf(stderr, "invalid debug parameter `%s'\n",
+						optarg);
+					exit(NFT_EXIT_FAILURE);
+				}
+
+				if (end == NULL)
+					break;
+				optarg = end + 1;
+			}
 			break;
 #endif
 		case OPT_INVALID:

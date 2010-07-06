@@ -101,9 +101,11 @@ static void location_update(struct location *loc, struct location *rhs, int n)
 
 %initial-action {
 	location_init(scanner, state, &yylloc);
-#if 0
-	nft_set_debug(1, scanner);
-	yydebug = 1;
+#ifdef DEBUG
+	if (debug_level & DEBUG_SCANNER)
+		nft_set_debug(1, scanner);
+	if (debug_level & DEBUG_PARSER)
+		yydebug = 1;
 #endif
 }
 

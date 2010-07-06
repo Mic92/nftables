@@ -23,8 +23,6 @@
 #include <gmputil.h>
 #include <utils.h>
 
-#define TRACE	0
-
 static int expr_evaluate(struct eval_ctx *ctx, struct expr **expr);
 static int stmt_evaluate(struct eval_ctx *ctx, struct stmt *stmt);
 
@@ -963,10 +961,12 @@ range:
 
 static int expr_evaluate(struct eval_ctx *ctx, struct expr **expr)
 {
-#if TRACE
-	struct error_record *erec;
-	erec = erec_create(EREC_INFORMATIONAL, &(*expr)->location, "Evaluate");
-	erec_print(stdout, erec); expr_print(*expr); printf("\n\n");
+#ifdef DEBUG
+	if (debug_level & DEBUG_EVALUATION) {
+		struct error_record *erec;
+		erec = erec_create(EREC_INFORMATIONAL, &(*expr)->location, "Evaluate");
+		erec_print(stdout, erec); expr_print(*expr); printf("\n\n");
+	}
 #endif
 
 	switch ((*expr)->ops->type) {
@@ -1074,10 +1074,12 @@ static int stmt_evaluate_nat(struct eval_ctx *ctx, struct stmt *stmt)
 
 static int stmt_evaluate(struct eval_ctx *ctx, struct stmt *stmt)
 {
-#if TRACE
-	struct error_record *erec;
-	erec = erec_create(EREC_INFORMATIONAL, &stmt->location, "Evaluate");
-	erec_print(stdout, erec); stmt_print(stmt); printf("\n\n");
+#ifdef DEBUG
+	if (debug_level & DEBUG_EVALUATION) {
+		struct error_record *erec;
+		erec = erec_create(EREC_INFORMATIONAL, &stmt->location, "Evaluate");
+		erec_print(stdout, erec); stmt_print(stmt); printf("\n\n");
+	}
 #endif
 
 	switch (stmt->ops->type) {
@@ -1241,10 +1243,12 @@ static int cmd_evaluate_delete(struct eval_ctx *ctx, struct cmd *cmd)
 
 static int cmd_evaluate(struct eval_ctx *ctx, struct cmd *cmd)
 {
-#if TRACE
-	struct error_record *erec;
-	erec = erec_create(EREC_INFORMATIONAL, &cmd->location, "Evaluate");
-	erec_print(stdout, erec); printf("\n\n");
+#ifdef DEBUG
+	if (debug_level & DEBUG_EVALUATION) {
+		struct error_record *erec;
+		erec = erec_create(EREC_INFORMATIONAL, &cmd->location, "Evaluate");
+		erec_print(stdout, erec); printf("\n\n");
+	}
 #endif
 
 	ctx->cmd = cmd;
