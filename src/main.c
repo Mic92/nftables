@@ -100,7 +100,7 @@ static void show_help(const char *name)
 "  -n/--numeric			When specified once, show network addresses numerically.\n"
 "  				When specified twice, also show Internet protocols,\n"
 "				Internet services, user IDs and group IDs numerically.\n"
-"  -i/--includepath <directory>	Add <directory> to the paths searched for include files.\n"
+"  -I/--includepath <directory>	Add <directory> to the paths searched for include files.\n"
 #ifdef DEBUG
 "  --debug <level [,level...]>	Specify debugging level (scanner, parser, eval, netlink, all)\n"
 #endif
