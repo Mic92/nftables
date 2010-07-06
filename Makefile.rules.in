@@ -86,4 +86,4 @@ install:		all $(SUBDIRS) $(install_targets)
 .PHONY: $(SUBDIRS)
 $(SUBDIRS):
 			@echo -e "  SUBDIR\t$@/"
-			@$(MAKE) -s -f Makefile.rules $(MAKECMDGOALS) SUBDIR="$@/"
+			@$(MAKE) -s -f Makefile.rules $(MAKECMDGOALS) SUBDIR="$@/" SUBDIRS=""
