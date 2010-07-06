@@ -234,7 +234,7 @@ int main(int argc, char * const *argv)
 
 		scanner_push_buffer(scanner, &indesc_cmdline, buf);
 	} else if (filename != NULL) {
-		if (scanner_read_file(scanner, filename, &internal_location) < 0)
+		if (scanner_read_file(scanner, filename, NULL) < 0)
 			goto out;
 	} else if (interactive) {
 		cli_init(scanner, &state);
