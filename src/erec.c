@@ -78,7 +78,7 @@ void erec_print(FILE *f, const struct error_record *erec)
 	const char *line = NULL; /* silence gcc */
 	char buf[1024];
 	unsigned int i, end;
-	int l;
+	int l, ret;
 
 	switch (indesc->type) {
 	case INDESC_BUFFER:
@@ -88,8 +88,9 @@ void erec_print(FILE *f, const struct error_record *erec)
 	case INDESC_FILE:
 		memset(buf, 0, sizeof(buf));
 		lseek(indesc->fd, loc->line_offset, SEEK_SET);
-		read(indesc->fd, buf, sizeof(buf) - 1);
-		*strchrnul(buf, '\n') = '\0';
+		ret = read(indesc->fd, buf, sizeof(buf) - 1);
+		if (ret > 0)
+			*strchrnul(buf, '\n') = '\0';
 		line = buf;
 		break;
 	case INDESC_INTERNAL:
