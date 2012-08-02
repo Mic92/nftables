@@ -898,7 +898,7 @@ static void list_setelem_cb(struct nl_object *obj, void *arg)
 		nld = nfnl_nft_setelem_get_data(nlse);
 
 		data = netlink_alloc_data(&internal_location, nld,
-					  set->datatype->type == EXPR_VERDICT ?
+					  set->datatype->type == TYPE_VERDICT ?
 					  NFT_REG_VERDICT : NFT_REG_1);
 		data->dtype = set->datatype;
 
