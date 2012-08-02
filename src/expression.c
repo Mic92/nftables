@@ -302,7 +302,7 @@ struct expr *constant_expr_splice(struct expr *expr, unsigned int len)
 
 static void prefix_expr_print(const struct expr *expr)
 {
-	expr_print(expr->expr);
+	expr_print(expr->prefix);
 	printf("/%u", expr->prefix_len);
 }
 
@@ -310,18 +310,18 @@ static void prefix_expr_set_type(const struct expr *expr,
 				 const struct datatype *type,
 				 enum byteorder byteorder)
 {
-	expr_set_type(expr->expr, type, byteorder);
+	expr_set_type(expr->prefix, type, byteorder);
 }
 
 static void prefix_expr_clone(struct expr *new, const struct expr *expr)
 {
-	new->expr       = expr_clone(expr->expr);
+	new->prefix     = expr_clone(expr->prefix);
 	new->prefix_len = expr->prefix_len;
 }
 
 static void prefix_expr_destroy(struct expr *expr)
 {
-	expr_free(expr->expr);
+	expr_free(expr->prefix);
 }
 
 static const struct expr_ops prefix_expr_ops = {
@@ -340,7 +340,7 @@ struct expr *prefix_expr_alloc(const struct location *loc,
 
 	prefix = expr_alloc(loc, &prefix_expr_ops, &invalid_type,
 			    BYTEORDER_INVALID, 0);
-	prefix->expr	   = expr;
+	prefix->prefix     = expr;
 	prefix->prefix_len = prefix_len;
 	return prefix;
 }
@@ -374,7 +374,7 @@ static void unary_expr_print(const struct expr *expr)
 
 static void unary_expr_clone(struct expr *new, const struct expr *expr)
 {
-	new->arg = expr_clone(expr->expr);
+	new->arg = expr_clone(expr->arg);
 }
 
 static void unary_expr_destroy(struct expr *expr)
@@ -680,20 +680,20 @@ struct expr *mapping_expr_alloc(const struct location *loc,
 
 static void map_expr_print(const struct expr *expr)
 {
-	expr_print(expr->expr);
+	expr_print(expr->map);
 	printf(" map ");
 	expr_print(expr->mappings);
 }
 
 static void map_expr_clone(struct expr *new, const struct expr *expr)
 {
-	new->expr     = expr_clone(expr->expr);
+	new->map      = expr_clone(expr->map);
 	new->mappings = expr_clone(expr->mappings);
 }
 
 static void map_expr_destroy(struct expr *expr)
 {
-	expr_free(expr->expr);
+	expr_free(expr->map);
 	expr_free(expr->mappings);
 }
 
@@ -711,7 +711,7 @@ struct expr *map_expr_alloc(const struct location *loc, struct expr *arg,
 	struct expr *expr;
 
 	expr = expr_alloc(loc, &map_expr_ops, &invalid_type, BYTEORDER_INVALID, 0);
-	expr->expr     = arg;
+	expr->map      = arg;
 	expr->mappings = mappings;
 	return expr;
 }

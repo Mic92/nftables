@@ -291,9 +291,9 @@ static int expr_evaluate_prefix(struct eval_ctx *ctx, struct expr **expr)
 {
 	struct expr *prefix = *expr, *base, *and, *mask;
 
-	if (expr_evaluate(ctx, &prefix->expr) < 0)
+	if (expr_evaluate(ctx, &prefix->prefix) < 0)
 		return -1;
-	base = prefix->expr;
+	base = prefix->prefix;
 
 	if (!expr_is_constant(base))
 		return expr_error(ctx, prefix,
@@ -317,10 +317,10 @@ static int expr_evaluate_prefix(struct eval_ctx *ctx, struct expr **expr)
 	mpz_prefixmask(mask->value, base->len, prefix->prefix_len);
 	and  = binop_expr_alloc(&prefix->location, OP_AND, base, mask);
 
-	prefix->expr = and;
-	if (expr_evaluate(ctx, &prefix->expr) < 0)
+	prefix->prefix = and;
+	if (expr_evaluate(ctx, &prefix->prefix) < 0)
 		return -1;
-	base = prefix->expr;
+	base = prefix->prefix;
 	assert(expr_is_constant(base));
 
 	prefix->dtype	  = base->dtype;
@@ -656,10 +656,10 @@ static int expr_evaluate_map(struct eval_ctx *ctx, struct expr **expr)
 	struct expr_ctx ectx = ctx->ectx;
 	struct expr *map = *expr, *mappings;
 
-	if (expr_evaluate(ctx, &map->expr) < 0)
+	if (expr_evaluate(ctx, &map->map) < 0)
 		return -1;
-	if (expr_is_constant(map->expr))
-		return expr_error(ctx, map->expr,
+	if (expr_is_constant(map->map))
+		return expr_error(ctx, map->map,
 				  "Map expression can not be constant");
 
 	mappings = map->mappings;
@@ -695,7 +695,7 @@ static int expr_evaluate_map(struct eval_ctx *ctx, struct expr **expr)
 
 	/* Data for range lookups needs to be in big endian order */
 	if (map->mappings->set_flags & SET_F_INTERVAL &&
-	    byteorder_conversion(ctx, &map->expr, BYTEORDER_BIG_ENDIAN) < 0)
+	    byteorder_conversion(ctx, &map->map, BYTEORDER_BIG_ENDIAN) < 0)
 		return -1;
 
 	return 0;
@@ -895,7 +895,7 @@ static int expr_evaluate_relational(struct eval_ctx *ctx, struct expr **expr)
 		case EXPR_RANGE:
 			goto range;
 		case EXPR_PREFIX:
-			if (byteorder_conversion(ctx, &right->expr, left->byteorder) < 0)
+			if (byteorder_conversion(ctx, &right->prefix, left->byteorder) < 0)
 				return -1;
 			break;
 		case EXPR_VALUE:

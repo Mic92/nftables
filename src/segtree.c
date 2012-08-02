@@ -240,7 +240,7 @@ static void range_low(mpz_t rop, struct expr *expr)
 	case EXPR_VALUE:
 		return mpz_set(rop, expr->value);
 	case EXPR_PREFIX:
-		return range_low(rop, expr->expr);
+		return range_low(rop, expr->prefix);
 	case EXPR_RANGE:
 		return range_low(rop, expr->left);
 	case EXPR_MAPPING:
@@ -258,7 +258,7 @@ static void range_high(mpz_t rop, const struct expr *expr)
 	case EXPR_VALUE:
 		return mpz_set(rop, expr->value);
 	case EXPR_PREFIX:
-		range_low(rop, expr->expr);
+		range_low(rop, expr->prefix);
 		mpz_init_bitmask(tmp, expr->len - expr->prefix_len);
 		mpz_add(rop, rop, tmp);
 		mpz_clear(tmp);

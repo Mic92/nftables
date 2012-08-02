@@ -533,7 +533,7 @@ static void expr_postprocess(struct rule_pp_ctx *ctx,
 
 	switch (expr->ops->type) {
 	case EXPR_MAP:
-		expr_postprocess(ctx, stmt, &expr->expr);
+		expr_postprocess(ctx, stmt, &expr->map);
 		expr_postprocess(ctx, stmt, &expr->mappings);
 		break;
 	case EXPR_MAPPING:

@@ -114,7 +114,7 @@ static void netlink_gen_map(struct netlink_linearize_ctx *ctx,
 	else
 		sreg = dreg;
 
-	netlink_gen_expr(ctx, expr->expr, sreg);
+	netlink_gen_expr(ctx, expr->map, sreg);
 
 	nle = alloc_nft_expr(nfnl_nft_lookup_init);
 	nfnl_nft_lookup_set_sreg(nle, sreg);

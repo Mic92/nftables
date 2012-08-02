@@ -195,7 +195,7 @@ struct expr {
 		};
 		struct {
 			/* EXPR_PREFIX */
-			struct expr		*expr;
+			struct expr		*prefix;
 			unsigned int		prefix_len;
 		};
 		struct {
@@ -219,7 +219,7 @@ struct expr {
 		};
 		struct {
 			/* EXPR_MAP */
-			struct expr		*expr;
+			struct expr		*map;
 			struct expr		*mappings;
 		};
 
