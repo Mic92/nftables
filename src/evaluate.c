@@ -493,11 +493,10 @@ static int expr_evaluate_shift(struct eval_ctx *ctx, struct expr **expr)
 
 static int expr_evaluate_bitwise(struct eval_ctx *ctx, struct expr **expr)
 {
-	struct expr *op = *expr, *left = op->left, *right = op->right;
+	struct expr *op = *expr, *left = op->left;
 
 	if (byteorder_conversion(ctx, &op->right, left->byteorder) < 0)
 		return -1;
-	right = op->right;
 
 	op->dtype     = left->dtype;
 	op->byteorder = left->byteorder;
