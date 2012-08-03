@@ -1,5 +1,5 @@
-rule add filter OUTPUT meta mark 123/0x000000ff
-rule add filter OUTPUT ip daddr 192.168.0.0/24
-rule add filter OUTPUT ip daddr 192.168.0.0/255.255.255.0
-rule add filter OUTPUT ip saddr . ip daddr 192.168.0.0/24 . 192.168.0.0/24
-rule add filter OUTPUT ip daddr { 192.168.0.0/24, 192.168.1.0/24}
+add rule filter OUTPUT meta mark 123/0x000000ff
+add rule filter OUTPUT ip daddr 192.168.0.0/24
+add rule filter OUTPUT ip daddr 192.168.0.0/255.255.255.0
+add rule filter OUTPUT ip saddr . ip daddr 192.168.0.0/24 . 192.168.0.0/24
+add rule filter OUTPUT ip daddr { 192.168.0.0/24, 192.168.1.0/24}

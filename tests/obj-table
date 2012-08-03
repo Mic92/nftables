@@ -1,11 +1,11 @@
 #! nft -f
 
 # table: add and delete table
-table add filter
+add table filter
 table delete filter
 
 # table: deleting table with chain must fail
 # FIXME: not implemented
-# table add filter
-# chain add filter output
+# add table filter
+# add chain filter output
 # table delete filter

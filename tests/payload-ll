@@ -1,15 +1,15 @@
 #! nft -f
 
-table add ip filter
-chain add ip filter input NF_INET_LOCAL_IN 0
+add table ip filter
+add chain ip filter input NF_INET_LOCAL_IN 0
 
 # mac source
-rule add ip filter input @ll,48,48 00:15:e9:f0:10:f8 counter
+add rule ip filter input @ll,48,48 00:15:e9:f0:10:f8 counter
 
 # mac dest
-rule add ip filter input @ll,0,48 00:1b:21:02:6f:ad counter
+add rule ip filter input @ll,0,48 00:1b:21:02:6f:ad counter
 
 # mac source and mac dest
-rule add ip filter input @ll,0,48 00:1b:21:02:6f:ad \
+add rule ip filter input @ll,0,48 00:1b:21:02:6f:ad \
 			 @ll,48,48 00:15:e9:f0:10:f8 \
 			 counter
