@@ -1350,6 +1350,13 @@ icmp_hdr_expr		:	ICMP	icmp_hdr_field
 			{
 				$$ = payload_expr_alloc(&@$, &payload_icmp, $2);
 			}
+			|	ICMP
+			{
+				uint8_t data = IPPROTO_ICMP;
+				$$ = constant_expr_alloc(&@$, &inet_protocol_type,
+							 BYTEORDER_HOST_ENDIAN,
+							 sizeof(data), &data);
+			}
 			;
 
 icmp_hdr_field		:	TYPE		{ $$ = ICMPHDR_TYPE; }
@@ -1381,6 +1388,13 @@ auth_hdr_expr		:	AH	auth_hdr_field
 			{
 				$$ = payload_expr_alloc(&@$, &payload_ah, $2);
 			}
+			|	AH
+			{
+				uint8_t data = IPPROTO_AH;
+				$$ = constant_expr_alloc(&@$, &inet_protocol_type,
+							 BYTEORDER_HOST_ENDIAN,
+							 sizeof(data), &data);
+			}
 			;
 
 auth_hdr_field		:	NEXTHDR		{ $$ = AHHDR_NEXTHDR; }
@@ -1394,6 +1408,13 @@ esp_hdr_expr		:	ESP	esp_hdr_field
 			{
 				$$ = payload_expr_alloc(&@$, &payload_esp, $2);
 			}
+			|	ESP
+			{
+				uint8_t data = IPPROTO_ESP;
+				$$ = constant_expr_alloc(&@$, &inet_protocol_type,
+							 BYTEORDER_HOST_ENDIAN,
+							 sizeof(data), &data);
+			}
 			;
 
 esp_hdr_field		:	SPI		{ $$ = ESPHDR_SPI; }
@@ -1403,6 +1424,13 @@ esp_hdr_field		:	SPI		{ $$ = ESPHDR_SPI; }
 comp_hdr_expr		:	COMP	comp_hdr_field
 			{
 				$$ = payload_expr_alloc(&@$, &payload_comp, $2);
+			}
+			|	COMP
+			{
+				uint8_t data = IPPROTO_COMP;
+				$$ = constant_expr_alloc(&@$, &inet_protocol_type,
+							 BYTEORDER_HOST_ENDIAN,
+							 sizeof(data), &data);
 			}
 			;
 
@@ -1414,6 +1442,13 @@ comp_hdr_field		:	NEXTHDR		{ $$ = COMPHDR_NEXTHDR; }
 udp_hdr_expr		:	UDP	udp_hdr_field
 			{
 				$$ = payload_expr_alloc(&@$, &payload_udp, $2);
+			}
+			|	UDP
+			{
+				uint8_t data = IPPROTO_UDP;
+				$$ = constant_expr_alloc(&@$, &inet_protocol_type,
+							 BYTEORDER_HOST_ENDIAN,
+							 sizeof(data), &data);
 			}
 			;
 
@@ -1427,6 +1462,13 @@ udplite_hdr_expr	:	UDPLITE	udplite_hdr_field
 			{
 				$$ = payload_expr_alloc(&@$, &payload_udplite, $2);
 			}
+			|	UDPLITE
+			{
+				uint8_t data = IPPROTO_UDPLITE;
+				$$ = constant_expr_alloc(&@$, &inet_protocol_type,
+							 BYTEORDER_HOST_ENDIAN,
+							 sizeof(data), &data);
+			}
 			;
 
 udplite_hdr_field	:	SPORT		{ $$ = UDPHDR_SPORT; }
@@ -1438,6 +1480,13 @@ udplite_hdr_field	:	SPORT		{ $$ = UDPHDR_SPORT; }
 tcp_hdr_expr		:	TCP	tcp_hdr_field
 			{
 				$$ = payload_expr_alloc(&@$, &payload_tcp, $2);
+			}
+			|	TCP
+			{
+				uint8_t data = IPPROTO_TCP;
+				$$ = constant_expr_alloc(&@$, &inet_protocol_type,
+							 BYTEORDER_HOST_ENDIAN,
+							 sizeof(data), &data);
 			}
 			;
 
@@ -1457,6 +1506,13 @@ dccp_hdr_expr		:	DCCP	dccp_hdr_field
 			{
 				$$ = payload_expr_alloc(&@$, &payload_dccp, $2);
 			}
+			|	DCCP
+			{
+				uint8_t data = IPPROTO_DCCP;
+				$$ = constant_expr_alloc(&@$, &inet_protocol_type,
+							 BYTEORDER_HOST_ENDIAN,
+							 sizeof(data), &data);
+			}
 			;
 
 dccp_hdr_field		:	SPORT		{ $$ = DCCPHDR_SPORT; }
@@ -1467,6 +1523,13 @@ dccp_hdr_field		:	SPORT		{ $$ = DCCPHDR_SPORT; }
 sctp_hdr_expr		:	SCTP	sctp_hdr_field
 			{
 				$$ = payload_expr_alloc(&@$, &payload_sctp, $2);
+			}
+			|	SCTP
+			{
+				uint8_t data = IPPROTO_SCTP;
+				$$ = constant_expr_alloc(&@$, &inet_protocol_type,
+							 BYTEORDER_HOST_ENDIAN,
+							 sizeof(data), &data);
 			}
 			;
 
