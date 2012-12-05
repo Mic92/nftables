@@ -875,6 +875,12 @@ static int expr_evaluate_relational(struct eval_ctx *ctx, struct expr **expr)
 		left = rel->left;
 		break;
 	case OP_EQ:
+		if (left->dtype != right->dtype)
+			return expr_binary_error(ctx, right, left,
+						 "datatype mismatch, expected %s, "
+						 "expression has type %s",
+						 left->dtype->desc,
+						 right->dtype->desc);
 		/*
 		 * Update payload context for payload and meta iiftype equality
 		 * expressions.
@@ -891,6 +897,13 @@ static int expr_evaluate_relational(struct eval_ctx *ctx, struct expr **expr)
 		}
 	case OP_NEQ:
 	case OP_FLAGCMP:
+		if (left->dtype != right->dtype)
+			return expr_binary_error(ctx, right, left,
+						 "datatype mismatch, expected %s, "
+						 "expression has type %s",
+						 left->dtype->desc,
+						 right->dtype->desc);
+
 		switch (right->ops->type) {
 		case EXPR_RANGE:
 			goto range;
@@ -910,6 +923,13 @@ static int expr_evaluate_relational(struct eval_ctx *ctx, struct expr **expr)
 	case OP_GT:
 	case OP_LTE:
 	case OP_GTE:
+		if (left->dtype != right->dtype)
+			return expr_binary_error(ctx, right, left,
+						 "datatype mismatch, expected %s, "
+						 "expression has type %s",
+						 left->dtype->desc,
+						 right->dtype->desc);
+
 		switch (left->ops->type) {
 		case EXPR_CONCAT:
 			return expr_binary_error(ctx, left, rel,
@@ -934,6 +954,13 @@ static int expr_evaluate_relational(struct eval_ctx *ctx, struct expr **expr)
 			return -1;
 		break;
 	case OP_RANGE:
+		if (left->dtype != right->dtype)
+			return expr_binary_error(ctx, right, left,
+						 "datatype mismatch, expected %s, "
+						 "expression has type %s",
+						 left->dtype->desc,
+						 right->dtype->desc);
+
 range:
 		switch (left->ops->type) {
 		case EXPR_CONCAT:
