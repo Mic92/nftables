@@ -1,0 +1,20 @@
+#! nft -f
+#
+
+add table ip filter
+add chain ip filter input { hook NF_INET_LOCAL_IN 0; }
+
+add chain ip filter chain1
+add filter chain1 counter
+
+add chain ip filter chain2
+add filter chain2 counter
+
+add chain ip filter chain3
+add filter chain3 counter
+
+add filter input ip saddr vmap { \
+	10.0.0.0/24 => jump chain1, \
+	10.0.0.0/8  => jump chain2, \
+	8.8.8.8 => jump chain3 \
+}
