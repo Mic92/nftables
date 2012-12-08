@@ -97,7 +97,7 @@ void erec_print(FILE *f, const struct error_record *erec)
 	case INDESC_NETLINK:
 		break;
 	default:
-		BUG();
+		BUG("invalid input descriptor type %u\n", indesc->type);
 	}
 
 	if (indesc->type == INDESC_NETLINK) {

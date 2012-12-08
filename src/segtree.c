@@ -246,7 +246,7 @@ static void range_low(mpz_t rop, struct expr *expr)
 	case EXPR_MAPPING:
 		return range_low(rop, expr->left);
 	default:
-		BUG();
+		BUG("invalid range expression type %s\n", expr->ops->name);
 	}
 }
 
@@ -268,7 +268,7 @@ static void range_high(mpz_t rop, const struct expr *expr)
 	case EXPR_MAPPING:
 		return range_high(rop, expr->left);
 	default:
-		BUG();
+		BUG("invalid range expression type %s\n", expr->ops->name);
 	}
 }
 

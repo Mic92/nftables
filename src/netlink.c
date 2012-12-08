@@ -246,7 +246,7 @@ struct nfnl_nft_data *netlink_gen_data(const struct expr *expr)
 	case EXPR_VERDICT:
 		return netlink_gen_verdict(expr);
 	default:
-		BUG();
+		BUG("invalid data expression type %s\n", expr->ops->name);
 	}
 }
 

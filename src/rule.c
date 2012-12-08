@@ -329,7 +329,7 @@ void cmd_free(struct cmd *cmd)
 			table_free(cmd->table);
 			break;
 		default:
-			BUG();
+			BUG("invalid command object type %u\n", cmd->obj);
 		}
 	}
 	xfree(cmd);
@@ -411,7 +411,7 @@ static int do_command_add(struct netlink_ctx *ctx, struct cmd *cmd)
 	case CMD_OBJ_SETELEM:
 		return do_add_setelems(ctx, &cmd->handle, cmd->expr);
 	default:
-		BUG();
+		BUG("invalid command object type %u\n", cmd->obj);
 	}
 	return 0;
 }
@@ -430,7 +430,7 @@ static int do_command_delete(struct netlink_ctx *ctx, struct cmd *cmd)
 	case CMD_OBJ_SETELEM:
 		return netlink_delete_setelems(ctx, &cmd->handle, cmd->expr);
 	default:
-		BUG();
+		BUG("invalid command object type %u\n", cmd->obj);
 	}
 }
 
@@ -493,7 +493,7 @@ static int do_command_list(struct netlink_ctx *ctx, struct cmd *cmd)
 		}
 		return 0;
 	default:
-		BUG();
+		BUG("invalid command object type %u\n", cmd->obj);
 	}
 
 	list_for_each_entry_safe(rule, nrule, &ctx->list, list) {
@@ -519,7 +519,7 @@ static int do_command_flush(struct netlink_ctx *ctx, struct cmd *cmd)
 	case CMD_OBJ_CHAIN:
 		return netlink_flush_chain(ctx, &cmd->handle);
 	default:
-		BUG();
+		BUG("invalid command object type %u\n", cmd->obj);
 	}
 	return 0;
 }
@@ -536,7 +536,7 @@ int do_command(struct netlink_ctx *ctx, struct cmd *cmd)
 	case CMD_FLUSH:
 		return do_command_flush(ctx, cmd);
 	default:
-		BUG();
+		BUG("invalid command object type %u\n", cmd->obj);
 	}
 }
 

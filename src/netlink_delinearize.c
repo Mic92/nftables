@@ -250,7 +250,8 @@ static void netlink_parse_byteorder(struct netlink_parse_ctx *ctx,
 		op = OP_HTON;
 		break;
 	default:
-		BUG();
+		BUG("invalid byteorder operation %u\n",
+		    nfnl_nft_byteorder_get_op(nle));
 	}
 
 	expr = unary_expr_alloc(loc, op, arg);
@@ -639,8 +640,7 @@ static void expr_postprocess(struct rule_pp_ctx *ctx,
 	case EXPR_VERDICT:
 		break;
 	default:
-		printf("%s\n", expr->ops->name);
-		BUG();
+		BUG("unknown expression type %s\n", expr->ops->name);
 	}
 }
 

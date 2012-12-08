@@ -142,7 +142,8 @@ static enum ops byteorder_conversion_op(struct expr *expr,
 	default:
 		break;
 	}
-	BUG();
+	BUG("invalid byte order conversion %u => %u\n",
+	    expr->byteorder, byteorder);
 }
 
 static int byteorder_conversion(struct eval_ctx *ctx, struct expr **expr,
@@ -239,7 +240,7 @@ static int expr_evaluate_value(struct eval_ctx *ctx, struct expr **expr)
 		}
 		break;
 	default:
-		BUG();
+		BUG("invalid basetype %s\n", expr_basetype(*expr)->name);
 	}
 	return 0;
 }
@@ -397,7 +398,7 @@ static int expr_evaluate_unary(struct eval_ctx *ctx, struct expr **expr)
 		byteorder = BYTEORDER_HOST_ENDIAN;
 		break;
 	default:
-		BUG();
+		BUG("invalid unary operation %u\n", unary->op);
 	}
 
 	unary->dtype	 = arg->dtype;
@@ -447,7 +448,7 @@ static int constant_binop_simplify(struct eval_ctx *ctx, struct expr **expr)
 		mpz_rshift_ui(val, mpz_get_uint32(right->value));
 		break;
 	default:
-		BUG();
+		BUG("invalid binary operation %u\n", op->op);
 	}
 
 	new = constant_expr_alloc(&op->location, op->dtype, op->byteorder,
@@ -563,7 +564,7 @@ static int expr_evaluate_binop(struct eval_ctx *ctx, struct expr **expr)
 	case OP_OR:
 		return expr_evaluate_bitwise(ctx, expr);
 	default:
-		BUG();
+		BUG("invalid binary operation %u\n", op->op);
 	}
 }
 
@@ -687,7 +688,8 @@ static int expr_evaluate_map(struct eval_ctx *ctx, struct expr **expr)
 					  "Expression is not a map");
 		break;
 	default:
-		BUG();
+		BUG("invalid mapping expression %s\n",
+		    map->mappings->ops->name);
 	}
 
 	map->dtype = ctx->ectx.dtype;
@@ -766,7 +768,7 @@ static int binop_transfer_one(struct eval_ctx *ctx,
 					    *right, expr_get(left->right));
 		break;
 	default:
-		BUG();
+		BUG("invalid binary operation %u\n", left->op);
 	}
 
 	return expr_evaluate(ctx, right);
@@ -916,7 +918,7 @@ static int expr_evaluate_relational(struct eval_ctx *ctx, struct expr **expr)
 				return -1;
 			break;
 		default:
-			BUG();
+			BUG("invalid expression type %s\n", right->ops->name);
 		}
 		break;
 	case OP_LT:
@@ -981,7 +983,7 @@ range:
 			return -1;
 		break;
 	default:
-		BUG();
+		BUG("invalid relational operation %u\n", rel->op);
 	}
 
 	if (binop_transfer(ctx, expr) < 0)
@@ -1035,7 +1037,7 @@ static int expr_evaluate(struct eval_ctx *ctx, struct expr **expr)
 	case EXPR_RELATIONAL:
 		return expr_evaluate_relational(ctx, expr);
 	default:
-		BUG();
+		BUG("unknown expression type %s\n", (*expr)->ops->name);
 	}
 }
 
@@ -1059,7 +1061,7 @@ static int stmt_evaluate_verdict(struct eval_ctx *ctx, struct stmt *stmt)
 	case EXPR_MAP:
 		break;
 	default:
-		BUG();
+		BUG("invalid verdict expression %s\n", stmt->expr->ops->name);
 	}
 	return 0;
 }
@@ -1135,7 +1137,7 @@ static int stmt_evaluate(struct eval_ctx *ctx, struct stmt *stmt)
 	case STMT_NAT:
 		return stmt_evaluate_nat(ctx, stmt);
 	default:
-		BUG();
+		BUG("unknown statement type %s\n", stmt->ops->name);
 	}
 }
 
@@ -1259,7 +1261,7 @@ static int cmd_evaluate_add(struct eval_ctx *ctx, struct cmd *cmd)
 			return 0;
 		return table_evaluate(ctx, cmd->table);
 	default:
-		BUG();
+		BUG("invalid command object type %u\n", cmd->obj);
 	}
 }
 
@@ -1274,7 +1276,7 @@ static int cmd_evaluate_delete(struct eval_ctx *ctx, struct cmd *cmd)
 	case CMD_OBJ_TABLE:
 		return 0;
 	default:
-		BUG();
+		BUG("invalid command object type %u\n", cmd->obj);
 	}
 }
 
@@ -1298,7 +1300,7 @@ static int cmd_evaluate(struct eval_ctx *ctx, struct cmd *cmd)
 	case CMD_FLUSH:
 		return 0;
 	default:
-		BUG();
+		BUG("invalid command operation %u\n", cmd->op);
 	};
 }
 

@@ -73,7 +73,7 @@ void datatype_print(const struct expr *expr)
 		return dtype->print(expr);
 	if (dtype->sym_tbl != NULL)
 		return symbolic_constant_print(dtype->sym_tbl, expr);
-	BUG();
+	BUG("datatype has no print method or symbol table\n");
 }
 
 struct error_record *symbol_parse(const struct expr *sym,
@@ -184,7 +184,7 @@ static void verdict_type_print(const struct expr *expr)
 		printf("return");
 		break;
 	default:
-		BUG();
+		BUG("invalid verdict value %u\n", expr->verdict);
 	}
 }
 

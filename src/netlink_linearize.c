@@ -25,7 +25,7 @@ struct netlink_linearize_ctx {
 static enum nft_registers get_register(struct netlink_linearize_ctx *ctx)
 {
 	if (ctx->reg_low > NFT_REG_MAX)
-		BUG();
+		BUG("register reg_low %u invalid\n", ctx->reg_low);
 	return ctx->reg_low++;
 }
 
@@ -164,7 +164,7 @@ static enum nft_cmp_ops netlink_gen_cmp_op(enum ops op)
 	case OP_GTE:
 		return NFT_CMP_GTE;
 	default:
-		BUG();
+		BUG("invalid comparison operation %u\n", op);
 	}
 }
 
@@ -274,7 +274,7 @@ static void netlink_gen_relational(struct netlink_linearize_ctx *ctx,
 	case OP_LOOKUP:
 		return netlink_gen_lookup(ctx, expr, dreg);
 	default:
-		BUG();
+		BUG("invalid relational operation %u\n", expr->op);
 	}
 }
 
@@ -331,7 +331,7 @@ static void netlink_gen_binop(struct netlink_linearize_ctx *ctx,
 			combine_binop(mask, xor, tmp, val);
 			break;
 		default:
-			BUG();
+			BUG("invalid binary operation %u\n", i->op);
 		}
 	}
 
@@ -364,7 +364,7 @@ static enum nft_byteorder_ops netlink_gen_unary_op(enum ops op)
 	case OP_NTOH:
 		return NFT_BYTEORDER_HTON;
 	default:
-		BUG();
+		BUG("invalid unary operation %u\n", op);
 	}
 }
 
@@ -424,7 +424,7 @@ static void netlink_gen_expr(struct netlink_linearize_ctx *ctx,
 	case EXPR_CT:
 		return netlink_gen_ct(ctx, expr, dreg);
 	default:
-		BUG();
+		BUG("unknown expression type %s\n", expr->ops->name);
 	}
 }
 
@@ -571,7 +571,7 @@ static void netlink_gen_stmt(struct netlink_linearize_ctx *ctx,
 	case STMT_NAT:
 		return netlink_gen_nat_stmt(ctx, stmt);
 	default:
-		BUG();
+		BUG("unknown statement type %s\n", stmt->ops->name);
 	}
 }
 
