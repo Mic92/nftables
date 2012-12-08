@@ -368,7 +368,7 @@ static int do_add_set(struct netlink_ctx *ctx, const struct handle *h,
 		return -1;
 	if (set->init != NULL) {
 		if (set->flags & SET_F_INTERVAL)
-			set_to_intervals(set->init);
+			set_to_intervals(set);
 		if (do_add_setelems(ctx, &set->handle, set->init) < 0)
 			return -1;
 	}

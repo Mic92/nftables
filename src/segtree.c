@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008 Patrick McHardy <kaber@trash.net>
+ * Copyright (c) 2008-2012 Patrick McHardy <kaber@trash.net>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 2 as
@@ -12,6 +12,7 @@
 #include <inttypes.h>
 #include <arpa/inet.h>
 
+#include <rule.h>
 #include <expression.h>
 #include <gmputil.h>
 #include <utils.h>
@@ -27,8 +28,10 @@
  */
 struct seg_tree {
 	struct rb_root			root;
-	const struct datatype		*type;
-	unsigned int			dwidth;
+	const struct datatype		*keytype;
+	unsigned int			keylen;
+	const struct datatype		*datatype;
+	unsigned int			datalen;
 	enum byteorder			byteorder;
 };
 
@@ -61,14 +64,16 @@ struct elementary_interval {
 	struct expr			*expr;
 };
 
-static void seg_tree_init(struct seg_tree *tree, const struct expr *set)
+static void seg_tree_init(struct seg_tree *tree, const struct set *set)
 {
 	struct expr *first;
 
-	first = list_entry(set->expressions.next, struct expr, list);
+	first = list_entry(set->init->expressions.next, struct expr, list);
 	tree->root	= RB_ROOT;
-	tree->dwidth	= set->len;
-	tree->type	= set->dtype;
+	tree->keytype	= set->keytype;
+	tree->keylen	= set->keylen;
+	tree->datatype	= set->datatype;
+	tree->datalen	= set->datalen;
 	tree->byteorder	= first->byteorder;
 }
 
@@ -167,7 +172,7 @@ static void ei_insert(struct seg_tree *tree, struct elementary_interval *new)
 	struct elementary_interval *lei, *rei;
 	mpz_t p;
 
-	mpz_init2(p, tree->dwidth);
+	mpz_init2(p, tree->keylen);
 
 	/*
 	 * Lookup the intervals containing the left and right endpoints.
@@ -321,8 +326,8 @@ static void set_to_segtree(struct expr *set, struct seg_tree *tree)
 	unsigned int n;
 	mpz_t low, high;
 
-	mpz_init2(low, tree->dwidth);
-	mpz_init2(high, tree->dwidth);
+	mpz_init2(low, tree->keylen);
+	mpz_init2(high, tree->keylen);
 
 	/*
 	 * Convert elements to intervals and sort by priority.
@@ -359,8 +364,8 @@ static void segtree_linearize(struct list_head *list, struct seg_tree *tree)
 	struct elementary_interval *ei, *nei, *prev = NULL;
 	mpz_t p, q;
 
-	mpz_init2(p, tree->dwidth);
-	mpz_init2(q, tree->dwidth);
+	mpz_init2(p, tree->keylen);
+	mpz_init2(q, tree->keylen);
 
 	/*
 	 * Convert the tree of open intervals to half-closed map expressions.
@@ -408,9 +413,9 @@ static void segtree_linearize(struct list_head *list, struct seg_tree *tree)
 	 * If the last segment doesn't end at the right side of the dimension,
 	 * insert a non-matching segment to cover (last_right, end].
 	 */
-	if (mpz_scan0(prev->right, 0) != tree->dwidth) {
+	if (mpz_scan0(prev->right, 0) != tree->keylen) {
 		mpz_add_ui(p, prev->right, 1);
-		mpz_bitmask(q, tree->dwidth);
+		mpz_bitmask(q, tree->keylen);
 		nei = ei_alloc(p, q, NULL, EI_F_INTERVAL_END);
 		list_add_tail(&nei->list, list);
 	}
@@ -424,8 +429,8 @@ static void set_insert_interval(struct expr *set, struct seg_tree *tree,
 {
 	struct expr *expr;
 
-	expr = constant_expr_alloc(&internal_location, tree->type,
-				   tree->byteorder, tree->dwidth, NULL);
+	expr = constant_expr_alloc(&internal_location, tree->keytype,
+				   tree->byteorder, tree->keylen, NULL);
 	mpz_set(expr->value, ei->left);
 
 	if (ei->expr != NULL && ei->expr->ops->type == EXPR_MAPPING)
@@ -438,25 +443,25 @@ static void set_insert_interval(struct expr *set, struct seg_tree *tree,
 	compound_expr_add(set, expr);
 }
 
-void set_to_intervals(struct expr *set)
+void set_to_intervals(struct set *set)
 {
 	struct elementary_interval *ei, *next;
 	struct seg_tree tree;
 	LIST_HEAD(list);
 
 	seg_tree_init(&tree, set);
-	set_to_segtree(set, &tree);
+	set_to_segtree(set->init, &tree);
 	segtree_linearize(&list, &tree);
 
 	list_for_each_entry_safe(ei, next, &list, list) {
 		pr_debug("list: [%.*Zx %.*Zx]\n",
-			 2 * tree.dwidth / BITS_PER_BYTE, ei->left,
-			 2 * tree.dwidth / BITS_PER_BYTE, ei->right);
-		set_insert_interval(set, &tree, ei);
+			 2 * tree.keylen / BITS_PER_BYTE, ei->left,
+			 2 * tree.keylen / BITS_PER_BYTE, ei->right);
+		set_insert_interval(set->init, &tree, ei);
 		ei_destroy(ei);
 	}
 
-	expr_print(set); printf("\n");
+	expr_print(set->init); printf("\n");
 }
 
 static bool range_is_prefix(const mpz_t range)
@@ -469,14 +474,21 @@ static bool range_is_prefix(const mpz_t range)
 	return !mpz_cmp_ui(tmp, 0);
 }
 
-// FIXME: does not support maps
 extern void interval_map_decompose(struct expr *set);
+
+static struct expr *expr_value(struct expr *expr)
+{
+	if (expr->ops->type == EXPR_MAPPING)
+		return expr->left;
+	else
+		return expr;
+}
 
 void interval_map_decompose(struct expr *set)
 {
 	struct expr *ranges[set->size];
-	struct expr *i, *tmp, *prefix, *low = NULL;
-	unsigned int n, size, prefix_len;
+	struct expr *i, *next, *low = NULL;
+	unsigned int n, size;
 	mpz_t range, p;
 
 	mpz_init(range);
@@ -484,7 +496,8 @@ void interval_map_decompose(struct expr *set)
 
 	size = set->size;
 	n = 0;
-	list_for_each_entry_safe_reverse(i, tmp, &set->expressions, list) {
+
+	list_for_each_entry_safe_reverse(i, next, &set->expressions, list) {
 		compound_expr_remove(set, i);
 		ranges[n++] = i;
 	}
@@ -509,26 +522,40 @@ void interval_map_decompose(struct expr *set)
 		} else
 			expr_get(low);
 
-		mpz_sub(range, i->value, low->value);
+		mpz_sub(range, expr_value(i)->value, expr_value(low)->value);
 		mpz_sub_ui(range, range, 1);
 
-		mpz_and(p, low->value, range);
+		mpz_and(p, expr_value(low)->value, range);
 
 		if (!mpz_cmp_ui(range, 0))
 			compound_expr_add(set, low);
 		else if (!range_is_prefix(range) || mpz_cmp_ui(p, 0)) {
-			mpz_add(range, range, low->value);
+			struct expr *tmp;
+
 			tmp = constant_expr_alloc(&low->location, low->dtype,
 						  low->byteorder, low->len,
 						  NULL);
+
+			mpz_add(range, range, expr_value(low)->value);
 			mpz_set(tmp->value, range);
 
-			tmp = range_expr_alloc(&low->location, low,tmp);
+			tmp = range_expr_alloc(&low->location, expr_value(low), tmp);
 			compound_expr_add(set, tmp);
+
+			printf("!prefix: "); expr_print(tmp); printf("\n");
+			low = expr_get(tmp->right);
 		} else {
-			prefix_len = i->len - mpz_scan0(range, 0);
-			prefix = prefix_expr_alloc(&low->location, low,
+			struct expr *prefix;
+			unsigned int prefix_len;
+
+			prefix_len = expr_value(i)->len - mpz_scan0(range, 0);
+			prefix = prefix_expr_alloc(&low->location, expr_value(low),
 						   prefix_len);
+
+			if (low->ops->type == EXPR_MAPPING)
+				prefix = mapping_expr_alloc(&low->location, prefix,
+							    expr_get(low->right));
+
 			compound_expr_add(set, prefix);
 		}
 
