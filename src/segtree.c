@@ -540,9 +540,11 @@ void interval_map_decompose(struct expr *set)
 			mpz_set(tmp->value, range);
 
 			tmp = range_expr_alloc(&low->location, expr_value(low), tmp);
+			if (low->ops->type == EXPR_MAPPING)
+				tmp = mapping_expr_alloc(&tmp->location, tmp, low->right);
+
 			compound_expr_add(set, tmp);
 
-			printf("!prefix: "); expr_print(tmp); printf("\n");
 			low = expr_get(tmp->right);
 		} else {
 			struct expr *prefix;
@@ -552,9 +554,12 @@ void interval_map_decompose(struct expr *set)
 			prefix = prefix_expr_alloc(&low->location, expr_value(low),
 						   prefix_len);
 
-			if (low->ops->type == EXPR_MAPPING)
+			if (low->ops->type == EXPR_MAPPING) {
 				prefix = mapping_expr_alloc(&low->location, prefix,
-							    expr_get(low->right));
+							    low->right);
+				/* Update mapping of "low" to the current mapping */
+				low->right = expr_get(i->right);
+			}
 
 			compound_expr_add(set, prefix);
 		}
