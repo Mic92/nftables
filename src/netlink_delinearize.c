@@ -474,9 +474,25 @@ static void netlink_parse_expr(struct nl_object *obj, void *arg)
 
 struct rule_pp_ctx {
 	struct payload_ctx	pctx;
+	enum payload_bases	pbase;
+	struct stmt		*pdep;
 };
 
-static void payload_match_postprocess(struct payload_ctx *ctx,
+/*
+ * Kill a redundant payload dependecy that is implied by a higher layer payload expression.
+ */
+static void payload_dependency_kill(struct rule_pp_ctx *ctx, struct expr *expr)
+{
+	if (ctx->pbase != PAYLOAD_BASE_INVALID &&
+	    ctx->pbase == expr->payload.base - 1 &&
+	    ctx->pdep != NULL) {
+		list_del(&ctx->pdep->list);
+		stmt_free(ctx->pdep);
+		ctx->pdep = NULL;
+	}
+}
+
+static void payload_match_postprocess(struct rule_pp_ctx *ctx,
 				      struct stmt *stmt, struct expr *expr)
 {
 	struct expr *left = expr->left, *right = expr->right, *tmp;
@@ -487,7 +503,7 @@ static void payload_match_postprocess(struct payload_ctx *ctx,
 	switch (expr->op) {
 	case OP_EQ:
 	case OP_NEQ:
-		payload_expr_expand(&list, left, ctx);
+		payload_expr_expand(&list, left, &ctx->pctx);
 		list_for_each_entry(left, &list, list) {
 			tmp = constant_expr_splice(right, left->len);
 			expr_set_type(tmp, left->dtype, left->byteorder);
@@ -496,16 +512,27 @@ static void payload_match_postprocess(struct payload_ctx *ctx,
 
 			nexpr = relational_expr_alloc(&expr->location, expr->op,
 						      left, tmp);
-			payload_ctx_update(ctx, nexpr);
+			payload_ctx_update(&ctx->pctx, nexpr);
 
 			nstmt = expr_stmt_alloc(&stmt->location, nexpr);
 			list_add_tail(&nstmt->list, &stmt->list);
+
+			/* Remember the first payload protocol expression to
+			 * kill it later on if made redundant by a higher layer
+			 * payload expression.
+			 */
+			if (ctx->pbase == PAYLOAD_BASE_INVALID &&
+			    left->payload.flags & PAYLOAD_PROTOCOL_EXPR) {
+				ctx->pbase = left->payload.base;
+				ctx->pdep  = nstmt;
+			} else
+				payload_dependency_kill(ctx, nexpr->left);
 		}
 		list_del(&stmt->list);
 		stmt_free(stmt);
 		break;
 	default:
-		payload_expr_complete(left, ctx);
+		payload_expr_complete(left, &ctx->pctx);
 		expr_set_type(expr->right, expr->left->dtype,
 			      expr->left->byteorder);
 		break;
@@ -564,7 +591,7 @@ static void expr_postprocess(struct rule_pp_ctx *ctx,
 	case EXPR_RELATIONAL:
 		switch (expr->left->ops->type) {
 		case EXPR_PAYLOAD:
-			payload_match_postprocess(&ctx->pctx, stmt, expr);
+			payload_match_postprocess(ctx, stmt, expr);
 			return;
 		default:
 			expr_postprocess(ctx, stmt, &expr->left);
@@ -606,6 +633,7 @@ static void expr_postprocess(struct rule_pp_ctx *ctx,
 		break;
 	case EXPR_PAYLOAD:
 		payload_expr_complete(expr, &ctx->pctx);
+		payload_dependency_kill(ctx, expr);
 		break;
 	case EXPR_VALUE:
 		// FIXME
@@ -649,6 +677,7 @@ static void rule_parse_postprocess(struct netlink_parse_ctx *ctx, struct rule *r
 	struct rule_pp_ctx rctx;
 	struct stmt *stmt, *next;
 
+	memset(&rctx, 0, sizeof(rctx));
 	payload_ctx_init(&rctx.pctx, rule->handle.family);
 
 	list_for_each_entry_safe(stmt, next, &rule->stmts, list) {
