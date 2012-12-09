@@ -291,11 +291,13 @@ struct expr *constant_expr_splice(struct expr *expr, unsigned int len)
 				    BYTEORDER_INVALID, len, NULL);
 	mpz_init2(mask, len);
 	mpz_bitmask(mask, len);
+	mpz_lshift_ui(mask, expr->len - len);
+
 	mpz_set(slice->value, expr->value);
 	mpz_and(slice->value, slice->value, mask);
+	mpz_rshift_ui(slice->value, expr->len - len);
 	mpz_clear(mask);
 
-	mpz_rshift_ui(expr->value, len);
 	expr->len -= len;
 	return slice;
 }
