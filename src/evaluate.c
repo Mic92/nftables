@@ -679,6 +679,8 @@ static int expr_evaluate_map(struct eval_ctx *ctx, struct expr **expr)
 		if (expr_evaluate(ctx, &map->mappings->set->init) < 0)
 			return -1;
 		ctx->set = NULL;
+
+		map->mappings->set->flags |= map->mappings->set->init->set_flags;
 		break;
 	case EXPR_SYMBOL:
 		if (expr_evaluate(ctx, &map->mappings) < 0)
@@ -696,7 +698,7 @@ static int expr_evaluate_map(struct eval_ctx *ctx, struct expr **expr)
 	map->flags |= EXPR_F_CONSTANT;
 
 	/* Data for range lookups needs to be in big endian order */
-	if (map->mappings->set_flags & SET_F_INTERVAL &&
+	if (map->mappings->set->flags & SET_F_INTERVAL &&
 	    byteorder_conversion(ctx, &map->map, BYTEORDER_BIG_ENDIAN) < 0)
 		return -1;
 
