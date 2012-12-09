@@ -1192,6 +1192,7 @@ static int set_evaluate(struct eval_ctx *ctx, struct set *set)
 static int rule_evaluate(struct eval_ctx *ctx, struct rule *rule)
 {
 	struct stmt *stmt, *tstmt = NULL;
+	struct error_record *erec;
 
 	payload_ctx_init(&ctx->pctx, rule->handle.family);
 	memset(&ctx->ectx, 0, sizeof(ctx->ectx));
@@ -1208,6 +1209,13 @@ static int rule_evaluate(struct eval_ctx *ctx, struct rule *rule)
 		if (stmt->flags & STMT_F_TERMINAL)
 			tstmt = stmt;
 	}
+
+	erec = rule_postprocess(rule);
+	if (erec != NULL) {
+		erec_queue(erec, ctx->msgs);
+		return -1;
+	}
+
 	return 0;
 }
 

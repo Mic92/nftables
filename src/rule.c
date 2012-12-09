@@ -637,6 +637,5 @@ do_merge:
 struct error_record *rule_postprocess(struct rule *rule)
 {
 	payload_try_merge(rule);
-	rule_print(rule);
 	return NULL;
 }
