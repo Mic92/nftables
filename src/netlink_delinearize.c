@@ -555,7 +555,7 @@ static void expr_postprocess(struct rule_pp_ctx *ctx,
 			     struct stmt *stmt, struct expr **exprp)
 {
 	struct expr *expr = *exprp, *i;
-	unsigned int n;
+	unsigned long n;
 
 	//pr_debug("%s len %u\n", expr->ops->name, expr->len);
 
