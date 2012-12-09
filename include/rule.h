@@ -19,7 +19,7 @@ struct handle {
 	const char		*table;
 	const char		*chain;
 	const char		*set;
-	uint32_t		handle;
+	uint64_t		handle;
 };
 
 extern void handle_merge(struct handle *dst, const struct handle *src);
