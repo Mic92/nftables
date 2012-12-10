@@ -1,0 +1,7 @@
+#! nft -f
+
+# Circular regular jumps: chain1 -> chain2 -> chain3 -> chain1
+flush table filter
+add filter chain1 jump chain2
+add filter chain2 jump chain3
+add filter chain3 jump chain1
