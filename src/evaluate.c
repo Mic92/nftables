@@ -76,6 +76,7 @@ static struct expr *implicit_set_declaration(struct eval_ctx *ctx,
 {
 	struct cmd *cmd;
 	struct set *set;
+	struct handle h;
 
 	set = set_alloc(&expr->location);
 	set->flags	= SET_F_CONSTANT | SET_F_ANONYMOUS | expr->set_flags;
@@ -88,7 +89,9 @@ static struct expr *implicit_set_declaration(struct eval_ctx *ctx,
 		list_add_tail(&set->list, &ctx->table->sets);
 	else {
 		handle_merge(&set->handle, &ctx->cmd->handle);
-		cmd = cmd_alloc(CMD_ADD, CMD_OBJ_SET, &set->handle, set);
+		memset(&h, 0, sizeof(h));
+		handle_merge(&h, &set->handle);
+		cmd = cmd_alloc(CMD_ADD, CMD_OBJ_SET, &h, set);
 		cmd->location = set->location;
 		list_add_tail(&cmd->list, &ctx->cmd->list);
 	}
