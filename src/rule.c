@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008 Patrick McHardy <kaber@trash.net>
+ * Copyright (c) 2008-2012 Patrick McHardy <kaber@trash.net>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 2 as
@@ -332,6 +332,7 @@ void cmd_free(struct cmd *cmd)
 			BUG("invalid command object type %u\n", cmd->obj);
 		}
 	}
+	xfree(cmd->arg);
 	xfree(cmd);
 }
 
@@ -524,6 +525,31 @@ static int do_command_flush(struct netlink_ctx *ctx, struct cmd *cmd)
 	return 0;
 }
 
+static int do_command_rename(struct netlink_ctx *ctx, struct cmd *cmd)
+{
+	struct table *table;
+	struct chain *chain;
+	int err;
+
+	table = table_alloc();
+	handle_merge(&table->handle, &cmd->handle);
+	table_add_hash(table);
+
+	switch (cmd->obj) {
+	case CMD_OBJ_CHAIN:
+		err = netlink_get_chain(ctx, &cmd->handle);
+		if (err < 0)
+			return err;
+		list_splice_tail_init(&ctx->list, &table->chains);
+		chain = chain_lookup(table, &cmd->handle);
+
+		return netlink_rename_chain(ctx, &chain->handle, cmd->arg);
+	default:
+		BUG("invalid command object type %u\n", cmd->obj);
+	}
+	return 0;
+}
+
 int do_command(struct netlink_ctx *ctx, struct cmd *cmd)
 {
 	switch (cmd->op) {
@@ -535,6 +561,8 @@ int do_command(struct netlink_ctx *ctx, struct cmd *cmd)
 		return do_command_list(ctx, cmd);
 	case CMD_FLUSH:
 		return do_command_flush(ctx, cmd);
+	case CMD_RENAME:
+		return do_command_rename(ctx, cmd);
 	default:
 		BUG("invalid command object type %u\n", cmd->obj);
 	}

@@ -57,6 +57,8 @@ extern int netlink_get_rule(struct netlink_ctx *ctx, const struct handle *h);
 
 extern int netlink_add_chain(struct netlink_ctx *ctx, const struct handle *h,
 			     const struct chain *chain);
+extern int netlink_rename_chain(struct netlink_ctx *ctx, const struct handle *h,
+				const char *name);
 extern int netlink_delete_chain(struct netlink_ctx *ctx, const struct handle *h);
 extern int netlink_list_chains(struct netlink_ctx *ctx, const struct handle *h);
 extern int netlink_get_chain(struct netlink_ctx *ctx, const struct handle *h);

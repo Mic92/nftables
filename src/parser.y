@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007-2008 Patrick McHardy <kaber@trash.net>
+ * Copyright (c) 2007-2012 Patrick McHardy <kaber@trash.net>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 2 as
@@ -169,6 +169,7 @@ static void location_update(struct location *loc, struct location *rhs, int n)
 %token DELETE			"delete"
 %token LIST			"list"
 %token FLUSH			"flush"
+%token RENAME			"rename"
 %token DESCRIBE			"describe"
 
 %token ACCEPT			"accept"
@@ -327,8 +328,8 @@ static void location_update(struct location *loc, struct location *rhs, int n)
 %type <cmd>			line
 %destructor { cmd_free($$); }	line
 
-%type <cmd>			base_cmd add_cmd delete_cmd list_cmd flush_cmd
-%destructor { cmd_free($$); }	base_cmd add_cmd delete_cmd list_cmd flush_cmd
+%type <cmd>			base_cmd add_cmd delete_cmd list_cmd flush_cmd rename_cmd
+%destructor { cmd_free($$); }	base_cmd add_cmd delete_cmd list_cmd flush_cmd rename_cmd
 
 %type <handle>			table_spec chain_spec chain_identifier ruleid_spec
 %destructor { handle_free(&$$); } table_spec chain_spec chain_identifier ruleid_spec
@@ -511,6 +512,7 @@ base_cmd		:	/* empty */	add_cmd		{ $$ = $1; }
 			|	DELETE		delete_cmd	{ $$ = $2; }
 			|	LIST		list_cmd	{ $$ = $2; }
 			|	FLUSH		flush_cmd	{ $$ = $2; }
+			|	RENAME		rename_cmd	{ $$ = $2; }
 			|	DESCRIBE	primary_expr
 			{
 				expr_describe($2);
@@ -620,6 +622,13 @@ flush_cmd		:	TABLE		table_spec
 			|	SET		set_spec
 			{
 				$$ = cmd_alloc(CMD_FLUSH, CMD_OBJ_SET, &$2, NULL);
+			}
+			;
+
+rename_cmd		:	CHAIN		chain_spec	identifier
+			{
+				$$ = cmd_alloc(CMD_RENAME, CMD_OBJ_CHAIN, &$2, NULL);
+				$$->arg = $3;
 			}
 			;
 

@@ -245,6 +245,7 @@ addrstring	({macaddr}|{ip4addr}|{ip6addr})
 "delete"		{ return DELETE; }
 "list"			{ return LIST; }
 "flush"			{ return FLUSH; }
+"rename"		{ return RENAME; }
 
 "counter"		{ return COUNTER; }
 

@@ -1311,6 +1311,7 @@ static int cmd_evaluate(struct eval_ctx *ctx, struct cmd *cmd)
 		return cmd_evaluate_delete(ctx, cmd);
 	case CMD_LIST:
 	case CMD_FLUSH:
+	case CMD_RENAME:
 		return 0;
 	default:
 		BUG("invalid command operation %u\n", cmd->op);

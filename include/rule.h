@@ -190,6 +190,7 @@ extern void set_print(const struct set *set);
  * @CMD_DELETE:		delete object
  * @CMD_LIST:		list container
  * @CMD_FLUSH:		flush container
+ * @CMD_RENAME:		rename object
  */
 enum cmd_ops {
 	CMD_INVALID,
@@ -197,6 +198,7 @@ enum cmd_ops {
 	CMD_DELETE,
 	CMD_LIST,
 	CMD_FLUSH,
+	CMD_RENAME,
 };
 
 /**
@@ -229,6 +231,7 @@ enum cmd_obj {
  * @obj:	object type to perform operation on
  * @handle:	handle for operations working without full objects
  * @union:	object
+ * @arg:	argument data
  */
 struct cmd {
 	struct list_head	list;
@@ -244,6 +247,7 @@ struct cmd {
 		struct chain	*chain;
 		struct table	*table;
 	};
+	const void		*arg;
 };
 
 extern struct cmd *cmd_alloc(enum cmd_ops op, enum cmd_obj obj,

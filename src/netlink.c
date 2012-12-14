@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008 Patrick McHardy <kaber@trash.net>
+ * Copyright (c) 2008-2012 Patrick McHardy <kaber@trash.net>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 2 as
@@ -100,6 +100,8 @@ struct nfnl_nft_chain *alloc_nft_chain(const struct handle *h)
 		memory_allocation_error();
 	nfnl_nft_chain_set_family(nlc, h->family);
 	nfnl_nft_chain_set_table(nlc, h->table, strlen(h->table) + 1);
+	if (h->handle != 0)
+		nfnl_nft_chain_set_handle(nlc, h->handle);
 	if (h->chain != NULL)
 		nfnl_nft_chain_set_name(nlc, h->chain, strlen(h->chain) + 1);
 	return nlc;
@@ -437,6 +439,24 @@ int netlink_add_chain(struct netlink_ctx *ctx, const struct handle *h,
 	return err;
 }
 
+int netlink_rename_chain(struct netlink_ctx *ctx, const struct handle *h,
+			 const char *name)
+{
+	struct nfnl_nft_chain *nlc;
+	int err;
+
+	nlc = alloc_nft_chain(h);
+	nfnl_nft_chain_set_name(nlc, name, strlen(name) + 1);
+	netlink_dump_object(OBJ_CAST(nlc));
+	err = nfnl_nft_chain_add(nf_sock, nlc, 0);
+	nfnl_nft_chain_put(nlc);
+
+	if (err < 0)
+		netlink_io_error(ctx, NULL, "Could not rename chain: %s",
+				 nl_geterror(err));
+	return err;
+}
+
 int netlink_delete_chain(struct netlink_ctx *ctx, const struct handle *h)
 {
 	struct nfnl_nft_chain *nlc;
@@ -470,6 +490,7 @@ static void list_chain_cb(struct nl_object *obj, void *arg)
 	chain = chain_alloc(nfnl_nft_chain_get_name(nlc));
 	chain->handle.family = nfnl_nft_chain_get_family(nlc);
 	chain->handle.table  = xstrdup(nfnl_nft_chain_get_table(nlc));
+	chain->handle.handle = nfnl_nft_chain_get_handle(nlc);
 	chain->hooknum       = nfnl_nft_chain_get_hooknum(nlc);
 	chain->priority      = nfnl_nft_chain_get_priority(nlc);
 	list_add_tail(&chain->list, &ctx->list);
