@@ -166,6 +166,7 @@ static void location_update(struct location *loc, struct location *rhs, int n)
 %token HANDLE			"handle"
 
 %token ADD			"add"
+%token INSERT			"insert"
 %token DELETE			"delete"
 %token LIST			"list"
 %token FLUSH			"flush"
@@ -328,8 +329,8 @@ static void location_update(struct location *loc, struct location *rhs, int n)
 %type <cmd>			line
 %destructor { cmd_free($$); }	line
 
-%type <cmd>			base_cmd add_cmd delete_cmd list_cmd flush_cmd rename_cmd
-%destructor { cmd_free($$); }	base_cmd add_cmd delete_cmd list_cmd flush_cmd rename_cmd
+%type <cmd>			base_cmd add_cmd insert_cmd delete_cmd list_cmd flush_cmd rename_cmd
+%destructor { cmd_free($$); }	base_cmd add_cmd insert_cmd delete_cmd list_cmd flush_cmd rename_cmd
 
 %type <handle>			table_spec chain_spec chain_identifier ruleid_spec
 %destructor { handle_free(&$$); } table_spec chain_spec chain_identifier ruleid_spec
@@ -509,6 +510,7 @@ line			:	common_block			{ $$ = NULL; }
 
 base_cmd		:	/* empty */	add_cmd		{ $$ = $1; }
 	  		|	ADD		add_cmd		{ $$ = $2; }
+			|	INSERT		insert_cmd	{ $$ = $2; }
 			|	DELETE		delete_cmd	{ $$ = $2; }
 			|	LIST		list_cmd	{ $$ = $2; }
 			|	FLUSH		flush_cmd	{ $$ = $2; }
@@ -568,6 +570,12 @@ add_cmd			:	TABLE		table_spec
 			|	ELEMENT		set_spec	set_expr
 			{
 				$$ = cmd_alloc(CMD_ADD, CMD_OBJ_SETELEM, &$2, $3);
+			}
+			;
+
+insert_cmd		:	RULE		ruleid_spec	rule
+			{
+				$$ = cmd_alloc(CMD_INSERT, CMD_OBJ_RULE, &$2, $3);
 			}
 			;
 

@@ -242,6 +242,7 @@ addrstring	({macaddr}|{ip4addr}|{ip6addr})
 "queue"			{ return QUEUE; }
 
 "add"			{ return ADD; }
+"insert"		{ return INSERT; }
 "delete"		{ return DELETE; }
 "list"			{ return LIST; }
 "flush"			{ return FLUSH; }

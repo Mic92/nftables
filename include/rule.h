@@ -187,6 +187,7 @@ extern void set_print(const struct set *set);
  *
  * @CMD_INVALID:	invalid
  * @CMD_ADD:		add object
+ * @CMD_INSERT:		insert object
  * @CMD_DELETE:		delete object
  * @CMD_LIST:		list container
  * @CMD_FLUSH:		flush container
@@ -195,6 +196,7 @@ extern void set_print(const struct set *set);
 enum cmd_ops {
 	CMD_INVALID,
 	CMD_ADD,
+	CMD_INSERT,
 	CMD_DELETE,
 	CMD_LIST,
 	CMD_FLUSH,

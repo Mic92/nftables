@@ -1306,6 +1306,7 @@ static int cmd_evaluate(struct eval_ctx *ctx, struct cmd *cmd)
 	ctx->cmd = cmd;
 	switch (cmd->op) {
 	case CMD_ADD:
+	case CMD_INSERT:
 		return cmd_evaluate_add(ctx, cmd);
 	case CMD_DELETE:
 		return cmd_evaluate_delete(ctx, cmd);

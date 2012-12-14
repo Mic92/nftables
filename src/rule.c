@@ -347,7 +347,8 @@ static int do_add_chain(struct netlink_ctx *ctx, const struct handle *h,
 		return -1;
 	if (chain != NULL) {
 		list_for_each_entry(rule, &chain->rules, list) {
-			if (netlink_add_rule(ctx, &rule->handle, rule) < 0)
+			if (netlink_add_rule(ctx, &rule->handle, rule,
+					     NLM_F_APPEND) < 0)
 				return -1;
 		}
 	}
@@ -406,11 +407,23 @@ static int do_command_add(struct netlink_ctx *ctx, struct cmd *cmd)
 	case CMD_OBJ_CHAIN:
 		return do_add_chain(ctx, &cmd->handle, cmd->chain);
 	case CMD_OBJ_RULE:
-		return netlink_add_rule(ctx, &cmd->handle, cmd->rule);
+		return netlink_add_rule(ctx, &cmd->handle, cmd->rule,
+					NLM_F_APPEND);
 	case CMD_OBJ_SET:
 		return do_add_set(ctx, &cmd->handle, cmd->set);
 	case CMD_OBJ_SETELEM:
 		return do_add_setelems(ctx, &cmd->handle, cmd->expr);
+	default:
+		BUG("invalid command object type %u\n", cmd->obj);
+	}
+	return 0;
+}
+
+static int do_command_insert(struct netlink_ctx *ctx, struct cmd *cmd)
+{
+	switch (cmd->obj) {
+	case CMD_OBJ_RULE:
+		return netlink_add_rule(ctx, &cmd->handle, cmd->rule, 0);
 	default:
 		BUG("invalid command object type %u\n", cmd->obj);
 	}
@@ -555,6 +568,8 @@ int do_command(struct netlink_ctx *ctx, struct cmd *cmd)
 	switch (cmd->op) {
 	case CMD_ADD:
 		return do_command_add(ctx, cmd);
+	case CMD_INSERT:
+		return do_command_insert(ctx, cmd);
 	case CMD_DELETE:
 		return do_command_delete(ctx, cmd);
 	case CMD_LIST:

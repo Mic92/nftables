@@ -293,7 +293,7 @@ struct expr *netlink_alloc_data(const struct location *loc,
 }
 
 int netlink_add_rule(struct netlink_ctx *ctx, const struct handle *h,
-		     const struct rule *rule)
+		     const struct rule *rule, uint32_t flags)
 {
 	struct nfnl_nft_rule *nlr;
 	int err;
@@ -301,7 +301,7 @@ int netlink_add_rule(struct netlink_ctx *ctx, const struct handle *h,
 	nlr = alloc_nft_rule(&rule->handle);
 	err = netlink_linearize_rule(ctx, nlr, rule);
 	if (err == 0) {
-		err = nfnl_nft_rule_add(nf_sock, nlr, NLM_F_EXCL | NLM_F_APPEND);
+		err = nfnl_nft_rule_add(nf_sock, nlr, flags | NLM_F_EXCL);
 		if (err < 0)
 			netlink_io_error(ctx, &rule->location,
 					 "Could not add rule: %s", nl_geterror(err));

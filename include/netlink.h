@@ -51,7 +51,7 @@ extern struct rule *netlink_delinearize_rule(struct netlink_ctx *ctx,
 					     const struct nl_object *obj);
 
 extern int netlink_add_rule(struct netlink_ctx *ctx, const struct handle *h,
-			    const struct rule *rule);
+			    const struct rule *rule, uint32_t flags);
 extern int netlink_delete_rule(struct netlink_ctx *ctx, const struct handle *h);
 extern int netlink_get_rule(struct netlink_ctx *ctx, const struct handle *h);
 
