@@ -372,9 +372,10 @@ int netlink_get_rule(struct netlink_ctx *ctx, const struct handle *h)
 	int err;
 
 	nlr = alloc_nft_rule(h);
-	nfnl_nft_rule_query(nf_sock, nlr, 0);
 	netlink_set_callback(netlink_get_rule_cb, ctx);
-	err = nl_recvmsgs_default(nf_sock);
+	err = nfnl_nft_rule_query(nf_sock, nlr, 0);
+	if (err == 0)
+		err = nl_recvmsgs_default(nf_sock);
 	nfnl_nft_rule_put(nlr);
 
 	if (err < 0)
@@ -504,9 +505,11 @@ int netlink_get_chain(struct netlink_ctx *ctx, const struct handle *h)
 	int err;
 
 	nlc = alloc_nft_chain(h);
-	nfnl_nft_chain_query(nf_sock, nlc, 0);
 	netlink_set_callback(netlink_get_chain_cb, ctx);
-	err = nl_recvmsgs_default(nf_sock);
+	err = nfnl_nft_chain_query(nf_sock, nlc, 0);
+	if (err == 0)
+		err = nl_recvmsgs_default(nf_sock);
+	netlink_set_callback(NULL, NULL);
 	nfnl_nft_chain_put(nlc);
 
 	if (err < 0)
@@ -606,9 +609,10 @@ int netlink_get_table(struct netlink_ctx *ctx, const struct handle *h)
 	int err;
 
 	nlt = alloc_nft_table(h);
-	nfnl_nft_table_query(nf_sock, nlt, 0);
 	netlink_set_callback(netlink_get_table_cb, ctx);
-	err = nl_recvmsgs_default(nf_sock);
+	err = nfnl_nft_table_query(nf_sock, nlt, 0);
+	if (err == 0)
+		err = nl_recvmsgs_default(nf_sock);
 	nfnl_nft_table_put(nlt);
 
 	if (err < 0)
