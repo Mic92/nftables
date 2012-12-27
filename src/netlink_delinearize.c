@@ -64,7 +64,6 @@ static struct expr *netlink_get_register(struct netlink_parse_ctx *ctx,
 	}
 
 	expr = ctx->registers[reg];
-	ctx->registers[reg] = NULL;
 	return expr;
 }
 
