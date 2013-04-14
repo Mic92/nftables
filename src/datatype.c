@@ -23,6 +23,7 @@
 #include <erec.h>
 
 static const struct datatype *datatypes[TYPE_MAX + 1] = {
+	[TYPE_INVALID]		= &invalid_type,
 	[TYPE_VERDICT]		= &verdict_type,
 	[TYPE_BITMASK]		= &bitmask_type,
 	[TYPE_INTEGER]		= &integer_type,
@@ -642,3 +643,39 @@ const struct datatype time_type = {
 	.basetype	= &integer_type,
 	.print		= time_type_print,
 };
+
+static struct error_record *concat_type_parse(const struct expr *sym,
+					      struct expr **res)
+{
+	return error(&sym->location, "invalid data type, expected %s",
+		     sym->dtype->desc);
+}
+
+const struct datatype *concat_type_alloc(const struct expr *expr)
+{
+	struct datatype *dtype;
+	struct expr *i;
+	char desc[256] = "concatenation of ";
+	unsigned int type = 0;
+
+	list_for_each_entry(i, &expr->expressions, list) {
+		if (type != 0)
+			strncat(desc, ", ", sizeof(desc) - strlen(desc) - 1);
+		strncat(desc, i->dtype->desc, sizeof(desc) - strlen(desc) - 1);
+
+		type <<= 8;
+		type  |= i->dtype->type;
+	}
+
+	dtype		= xzalloc(sizeof(*dtype));
+	dtype->type	= type;
+	dtype->desc	= xstrdup(desc);
+	dtype->parse	= concat_type_parse;
+
+	return dtype;
+}
+
+void concat_type_destroy(const struct datatype *dtype)
+{
+	xfree(dtype);
+}

@@ -566,6 +566,12 @@ void compound_expr_remove(struct expr *compound, struct expr *expr)
 	list_del(&expr->list);
 }
 
+static void concat_expr_destroy(struct expr *expr)
+{
+	concat_type_destroy(expr->dtype);
+	compound_expr_destroy(expr);
+}
+
 static void concat_expr_print(const struct expr *expr)
 {
 	compound_expr_print(expr, " . ");
@@ -576,7 +582,7 @@ static const struct expr_ops concat_expr_ops = {
 	.name		= "concat",
 	.print		= concat_expr_print,
 	.clone		= compound_expr_clone,
-	.destroy	= compound_expr_destroy,
+	.destroy	= concat_expr_destroy,
 };
 
 struct expr *concat_expr_alloc(const struct location *loc)

@@ -117,6 +117,12 @@ extern struct error_record *symbol_parse(const struct expr *sym,
 					 struct expr **res);
 extern void datatype_print(const struct expr *expr);
 
+static inline bool datatype_equal(const struct datatype *d1,
+				  const struct datatype *d2)
+{
+	return d1->type == d2->type;
+}
+
 /**
  * struct symbolic_constant - symbol <-> constant mapping
  *
@@ -167,5 +173,8 @@ extern const struct datatype inet_protocol_type;
 extern const struct datatype inet_service_type;
 extern const struct datatype mark_type;
 extern const struct datatype time_type;
+
+extern const struct datatype *concat_type_alloc(const struct expr *expr);
+extern void concat_type_destroy(const struct datatype *dtype);
 
 #endif /* NFTABLES_DATATYPE_H */

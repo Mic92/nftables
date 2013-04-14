@@ -583,16 +583,29 @@ static int list_member_evaluate(struct eval_ctx *ctx, struct expr **expr)
 
 static int expr_evaluate_concat(struct eval_ctx *ctx, struct expr **expr)
 {
-	unsigned int flags = EXPR_F_CONSTANT;
+	const struct datatype *dtype = ctx->ectx.dtype, *tmp;
+	unsigned int type = dtype ? dtype->type : 0;
+	unsigned int flags = EXPR_F_CONSTANT | EXPR_F_SINGLETON;
 	struct expr *i, *next;
+	unsigned int n;
 
+	n = 1;
 	list_for_each_entry_safe(i, next, &(*expr)->expressions, list) {
+		tmp = datatype_lookup((type >> 8 * ((*expr)->size - n)) & 0xff);
+		expr_set_context(&ctx->ectx, tmp, tmp->size);
+
 		if (list_member_evaluate(ctx, &i) < 0)
 			return -1;
 		flags &= i->flags;
+
+		n++;
 	}
 
 	(*expr)->flags |= flags;
+	(*expr)->dtype = concat_type_alloc(*expr);
+
+	expr_set_context(&ctx->ectx, (*expr)->dtype, (*expr)->len);
+
 	return 0;
 }
 
@@ -865,7 +878,7 @@ static int expr_evaluate_relational(struct eval_ctx *ctx, struct expr **expr)
 		if (right->ops->type == EXPR_SET)
 			right = rel->right =
 				implicit_set_declaration(ctx, left->dtype, left->len, right);
-		else if (left->dtype != right->dtype)
+		else if (!datatype_equal(left->dtype, right->dtype))
 			return expr_binary_error(ctx, right, left,
 						 "datatype mismatch, expected %s, "
 						 "set has type %s",
@@ -880,7 +893,7 @@ static int expr_evaluate_relational(struct eval_ctx *ctx, struct expr **expr)
 		left = rel->left;
 		break;
 	case OP_EQ:
-		if (left->dtype != right->dtype)
+		if (!datatype_equal(left->dtype, right->dtype))
 			return expr_binary_error(ctx, right, left,
 						 "datatype mismatch, expected %s, "
 						 "expression has type %s",
@@ -897,12 +910,14 @@ static int expr_evaluate_relational(struct eval_ctx *ctx, struct expr **expr)
 		case EXPR_META:
 			payload_ctx_update_meta(&ctx->pctx, rel);
 			break;
+		case EXPR_CONCAT:
+			return 0;
 		default:
 			break;
 		}
 	case OP_NEQ:
 	case OP_FLAGCMP:
-		if (left->dtype != right->dtype)
+		if (!datatype_equal(left->dtype, right->dtype))
 			return expr_binary_error(ctx, right, left,
 						 "datatype mismatch, expected %s, "
 						 "expression has type %s",
@@ -928,7 +943,7 @@ static int expr_evaluate_relational(struct eval_ctx *ctx, struct expr **expr)
 	case OP_GT:
 	case OP_LTE:
 	case OP_GTE:
-		if (left->dtype != right->dtype)
+		if (datatype_equal(left->dtype, right->dtype))
 			return expr_binary_error(ctx, right, left,
 						 "datatype mismatch, expected %s, "
 						 "expression has type %s",
@@ -959,7 +974,7 @@ static int expr_evaluate_relational(struct eval_ctx *ctx, struct expr **expr)
 			return -1;
 		break;
 	case OP_RANGE:
-		if (left->dtype != right->dtype)
+		if (datatype_equal(left->dtype, right->dtype))
 			return expr_binary_error(ctx, right, left,
 						 "datatype mismatch, expected %s, "
 						 "expression has type %s",
