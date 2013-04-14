@@ -253,9 +253,7 @@ static int expr_evaluate_value(struct eval_ctx *ctx, struct expr **expr)
  */
 static int expr_evaluate_primary(struct eval_ctx *ctx, struct expr **expr)
 {
-	ctx->ectx.dtype	= (*expr)->dtype;
-	ctx->ectx.len	= (*expr)->len;
-	(*expr)->flags |= EXPR_F_PRIMARY;
+	expr_set_context(&ctx->ectx, (*expr)->dtype, (*expr)->len);
 	return 0;
 }
 

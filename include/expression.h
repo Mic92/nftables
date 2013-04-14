@@ -133,16 +133,14 @@ struct expr_ops {
 /**
  * enum expr_flags
  *
- * @EXPR_F_PRIMARY:		primary expression
  * @EXPR_F_CONSTANT:		constant expression
  * @EXPR_F_SINGLETON:		singleton (implies primary and constant)
  * @EXPR_F_INTERVAL_END:	set member ends an open interval
  */
 enum expr_flags {
-	EXPR_F_PRIMARY		= 0x1,
-	EXPR_F_CONSTANT		= 0x2,
-	EXPR_F_SINGLETON	= 0x4,
-	EXPR_F_INTERVAL_END	= 0x8,
+	EXPR_F_CONSTANT		= 0x1,
+	EXPR_F_SINGLETON	= 0x2,
+	EXPR_F_INTERVAL_END	= 0x4,
 };
 
 #include <payload.h>
@@ -268,11 +266,6 @@ extern int expr_binary_error(struct eval_ctx *ctx,
 
 #define expr_error(ctx, expr, fmt, args...) \
 	expr_binary_error(ctx, expr, NULL, fmt, ## args)
-
-static inline bool expr_is_primary(const struct expr *expr)
-{
-	return expr->flags & EXPR_F_PRIMARY ? true : false;
-}
 
 static inline bool expr_is_constant(const struct expr *expr)
 {
