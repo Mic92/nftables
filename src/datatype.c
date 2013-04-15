@@ -30,6 +30,7 @@ static const struct datatype *datatypes[TYPE_MAX + 1] = {
 	[TYPE_LLADDR]		= &lladdr_type,
 	[TYPE_IPADDR]		= &ipaddr_type,
 	[TYPE_IP6ADDR]		= &ip6addr_type,
+	[TYPE_ETHERADDR]	= &etheraddr_type,
 	[TYPE_ETHERTYPE]	= &ethertype_type,
 	[TYPE_INET_PROTOCOL]	= &inet_protocol_type,
 	[TYPE_INET_SERVICE]	= &inet_service_type,

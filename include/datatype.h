@@ -12,6 +12,7 @@
  * @TYPE_LLADDR:	link layer address (integer subtype)
  * @TYPE_IPADDR:	IPv4 address (integer subtype)
  * @TYPE_IP6ADDR:	IPv6 address (integer subtype)
+ * @TYPE_ETHERADDR:	Ethernet address (lladdr subtype)
  * @TYPE_ETHERTYPE:	EtherType (integer subtype)
  * @TYPE_ARPOP:		ARP operation (integer subtype)
  * @TYPE_INET_PROTOCOL:	internet protocol (integer subtype)
@@ -41,6 +42,7 @@ enum datatypes {
 	TYPE_LLADDR,
 	TYPE_IPADDR,
 	TYPE_IP6ADDR,
+	TYPE_ETHERADDR,
 	TYPE_ETHERTYPE,
 	TYPE_ARPOP,
 	TYPE_INET_PROTOCOL,
@@ -158,6 +160,7 @@ extern const struct datatype string_type;
 extern const struct datatype lladdr_type;
 extern const struct datatype ipaddr_type;
 extern const struct datatype ip6addr_type;
+extern const struct datatype etheraddr_type;
 extern const struct datatype ethertype_type;
 extern const struct datatype arphrd_type;
 extern const struct datatype inet_protocol_type;

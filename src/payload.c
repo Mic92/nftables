@@ -911,6 +911,15 @@ const struct payload_desc payload_vlan = {
  * Ethernet
  */
 
+const struct datatype etheraddr_type = {
+	.type		= TYPE_ETHERADDR,
+	.name		= "etheraddr",
+	.desc		= "Ethernet address",
+	.byteorder	= BYTEORDER_HOST_ENDIAN,
+	.size		= ETH_ALEN * BITS_PER_BYTE,
+	.basetype	= &lladdr_type,
+};
+
 static const struct symbol_table ethertype_tbl = {
 	.symbols	= {
 		SYMBOL("ip",		ETH_P_IP),
@@ -936,7 +945,7 @@ const struct datatype ethertype_type = {
 #define ETHHDR_TYPE(__name, __member) \
 	ETHHDR_TEMPLATE(__name, &ethertype_type, __member)
 #define ETHHDR_ADDR(__name, __member) \
-	ETHHDR_TEMPLATE(__name, &lladdr_type, __member)
+	ETHHDR_TEMPLATE(__name, &etheraddr_type, __member)
 
 const struct payload_desc payload_eth = {
 	.name		= "eth",
