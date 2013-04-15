@@ -69,10 +69,13 @@ void datatype_print(const struct expr *expr)
 {
 	const struct datatype *dtype = expr->dtype;
 
-	if (dtype->print != NULL)
-		return dtype->print(expr);
-	if (dtype->sym_tbl != NULL)
-		return symbolic_constant_print(dtype->sym_tbl, expr);
+	do {
+		if (dtype->print != NULL)
+			return dtype->print(expr);
+		if (dtype->sym_tbl != NULL)
+			return symbolic_constant_print(dtype->sym_tbl, expr);
+	} while ((dtype = dtype->basetype));
+
 	BUG("datatype has no print method or symbol table\n");
 }
 
@@ -85,10 +88,13 @@ struct error_record *symbol_parse(const struct expr *sym,
 
 	if (dtype == NULL)
 		return error(&sym->location, "No symbol type information");
-	if (dtype->parse != NULL)
-		return dtype->parse(sym, res);
-	if (dtype->sym_tbl != NULL)
-		return symbolic_constant_parse(sym, dtype->sym_tbl, res);
+	do {
+		if (dtype->parse != NULL)
+			return dtype->parse(sym, res);
+		if (dtype->sym_tbl != NULL)
+			return symbolic_constant_parse(sym, dtype->sym_tbl,
+						       res);
+	} while ((dtype = dtype->basetype));
 
 	return error(&sym->location,
 		     "Can't parse symbolic %s expressions",
@@ -301,7 +307,7 @@ static struct error_record *lladdr_type_parse(const struct expr *sym,
 		s = ++p;
 	}
 
-	*res = constant_expr_alloc(&sym->location, &lladdr_type,
+	*res = constant_expr_alloc(&sym->location, sym->dtype,
 				   BYTEORDER_HOST_ENDIAN, len * BITS_PER_BYTE,
 				   buf);
 	return NULL;
