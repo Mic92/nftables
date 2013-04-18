@@ -501,7 +501,10 @@ static int do_command_list(struct netlink_ctx *ctx, struct cmd *cmd)
 	case CMD_OBJ_CHAIN:
 		if (do_list_sets(ctx, table) < 0)
 			return -1;
-		if (netlink_list_chain(ctx, &cmd->handle) < 0)
+		if (netlink_list_chains(ctx, &cmd->handle) < 0)
+			return -1;
+		list_splice_tail_init(&ctx->list, &table->chains);
+		if (netlink_list_table(ctx, &cmd->handle) < 0)
 			return -1;
 		break;
 	case CMD_OBJ_SETS:
