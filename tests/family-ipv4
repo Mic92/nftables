@@ -1,10 +1,14 @@
 #! nft -f
 
+flush chain ip filter output
+delete chain ip filter output
+delete table filter
+
 add table ip filter
-add chain ip filter output NF_INET_LOCAL_OUT 0
+add chain ip filter output { hook NF_INET_LOCAL_IN 0; }
 
 # IP address
 add rule ip filter output ip daddr 192.168.0.1 counter
 
 # TCP ports
-add rule ip filter output ip protocol 6 tcp dport 22 counter
+add rule ip filter output tcp dport 22 counter
