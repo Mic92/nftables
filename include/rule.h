@@ -62,12 +62,14 @@ extern struct symbol *symbol_lookup(const struct scope *scope,
  *
  * @list:	list node
  * @handle:	table handle
+ * @location:	location the table was defined at
  * @chains:	chains contained in the table
  * @sets:	sets contained in the table
  */
 struct table {
 	struct list_head	list;
 	struct handle		handle;
+	struct location		location;
 	struct scope		scope;
 	struct list_head	chains;
 	struct list_head	sets;
@@ -92,6 +94,7 @@ enum chain_flags {
  *
  * @list:	list node in table list
  * @handle:	chain handle
+ * @location:	location the chain was defined at
  * @flags:	chain flags
  * @hooknum:	hook number (base chains)
  * @priority:	hook priority (base chains)
@@ -100,6 +103,7 @@ enum chain_flags {
 struct chain {
 	struct list_head	list;
 	struct handle		handle;
+	struct location		location;
 	uint32_t		flags;
 	unsigned int		hooknum;
 	unsigned int		priority;
@@ -253,7 +257,8 @@ struct cmd {
 };
 
 extern struct cmd *cmd_alloc(enum cmd_ops op, enum cmd_obj obj,
-			     const struct handle *h, void *data);
+			     const struct handle *h, const struct location *loc,
+			     void *data);
 extern void cmd_free(struct cmd *cmd);
 
 #include <payload.h>

@@ -296,15 +296,17 @@ static void table_print(const struct table *table)
 }
 
 struct cmd *cmd_alloc(enum cmd_ops op, enum cmd_obj obj,
-		      const struct handle *h, void *data)
+		      const struct handle *h, const struct location *loc,
+		      void *data)
 {
 	struct cmd *cmd;
 
 	cmd = xzalloc(sizeof(*cmd));
-	cmd->op     = op;
-	cmd->obj    = obj;
-	cmd->handle = *h;
-	cmd->data   = data;
+	cmd->op       = op;
+	cmd->obj      = obj;
+	cmd->handle   = *h;
+	cmd->location = *loc;
+	cmd->data     = data;
 	return cmd;
 }
 
@@ -339,11 +341,11 @@ void cmd_free(struct cmd *cmd)
 #include <netlink.h>
 
 static int do_add_chain(struct netlink_ctx *ctx, const struct handle *h,
-			struct chain *chain)
+			const struct location *loc, struct chain *chain)
 {
 	struct rule *rule;
 
-	if (netlink_add_chain(ctx, h, chain) < 0)
+	if (netlink_add_chain(ctx, h, loc, chain) < 0)
 		return -1;
 	if (chain != NULL) {
 		list_for_each_entry(rule, &chain->rules, list) {
@@ -378,12 +380,12 @@ static int do_add_set(struct netlink_ctx *ctx, const struct handle *h,
 }
 
 static int do_add_table(struct netlink_ctx *ctx, const struct handle *h,
-			struct table *table)
+			const struct location *loc, struct table *table)
 {
 	struct chain *chain;
 	struct set *set;
 
-	if (netlink_add_table(ctx, h, table) < 0)
+	if (netlink_add_table(ctx, h, loc, table) < 0)
 		return -1;
 	if (table != NULL) {
 		list_for_each_entry(set, &table->sets, list) {
@@ -392,7 +394,8 @@ static int do_add_table(struct netlink_ctx *ctx, const struct handle *h,
 				return -1;
 		}
 		list_for_each_entry(chain, &table->chains, list) {
-			if (do_add_chain(ctx, &chain->handle, chain) < 0)
+			if (do_add_chain(ctx, &chain->handle, &chain->location,
+					 chain) < 0)
 				return -1;
 		}
 	}
@@ -403,9 +406,11 @@ static int do_command_add(struct netlink_ctx *ctx, struct cmd *cmd)
 {
 	switch (cmd->obj) {
 	case CMD_OBJ_TABLE:
-		return do_add_table(ctx, &cmd->handle, cmd->table);
+		return do_add_table(ctx, &cmd->handle, &cmd->location,
+				    cmd->table);
 	case CMD_OBJ_CHAIN:
-		return do_add_chain(ctx, &cmd->handle, cmd->chain);
+		return do_add_chain(ctx, &cmd->handle, &cmd->location,
+				    cmd->chain);
 	case CMD_OBJ_RULE:
 		return netlink_add_rule(ctx, &cmd->handle, cmd->rule,
 					NLM_F_APPEND);
@@ -434,13 +439,13 @@ static int do_command_delete(struct netlink_ctx *ctx, struct cmd *cmd)
 {
 	switch (cmd->obj) {
 	case CMD_OBJ_TABLE:
-		return netlink_delete_table(ctx, &cmd->handle);
+		return netlink_delete_table(ctx, &cmd->handle, &cmd->location);
 	case CMD_OBJ_CHAIN:
-		return netlink_delete_chain(ctx, &cmd->handle);
+		return netlink_delete_chain(ctx, &cmd->handle, &cmd->location);
 	case CMD_OBJ_RULE:
-		return netlink_delete_rule(ctx, &cmd->handle);
+		return netlink_delete_rule(ctx, &cmd->handle, &cmd->location);
 	case CMD_OBJ_SET:
-		return netlink_delete_set(ctx, &cmd->handle);
+		return netlink_delete_set(ctx, &cmd->handle, &cmd->location);
 	case CMD_OBJ_SETELEM:
 		return netlink_delete_setelems(ctx, &cmd->handle, cmd->expr);
 	default:
@@ -448,16 +453,17 @@ static int do_command_delete(struct netlink_ctx *ctx, struct cmd *cmd)
 	}
 }
 
-static int do_list_sets(struct netlink_ctx *ctx, struct table *table)
+static int do_list_sets(struct netlink_ctx *ctx, const struct location *loc,
+			struct table *table)
 {
 	struct set *set, *nset;
 
-	if (netlink_list_sets(ctx, &table->handle) < 0)
+	if (netlink_list_sets(ctx, &table->handle, loc) < 0)
 		return -1;
 
 	list_for_each_entry_safe(set, nset, &ctx->list, list) {
 		if (set->flags & SET_F_ANONYMOUS &&
-		    netlink_get_setelems(ctx, &set->handle, set) < 0)
+		    netlink_get_setelems(ctx, &set->handle, loc, set) < 0)
 			return -1;
 		list_move_tail(&set->list, &table->sets);
 	}
@@ -481,7 +487,8 @@ static int do_command_list(struct netlink_ctx *ctx, struct cmd *cmd)
 			/* List all existing tables */
 			struct table *table;
 
-			if (netlink_list_tables(ctx, &cmd->handle) < 0)
+			if (netlink_list_tables(ctx, &cmd->handle,
+						&cmd->location) < 0)
 				return -1;
 
 			list_for_each_entry(table, &ctx->list, list) {
@@ -490,34 +497,35 @@ static int do_command_list(struct netlink_ctx *ctx, struct cmd *cmd)
 			return 0;
 		}
 		/* List content of this table */
-		if (do_list_sets(ctx, table) < 0)
+		if (do_list_sets(ctx, &cmd->location, table) < 0)
 			return -1;
-		if (netlink_list_chains(ctx, &cmd->handle) < 0)
+		if (netlink_list_chains(ctx, &cmd->handle, &cmd->location) < 0)
 			return -1;
 		list_splice_tail_init(&ctx->list, &table->chains);
-		if (netlink_list_table(ctx, &cmd->handle) < 0)
+		if (netlink_list_table(ctx, &cmd->handle, &cmd->location) < 0)
 			return -1;
 		break;
 	case CMD_OBJ_CHAIN:
-		if (do_list_sets(ctx, table) < 0)
+		if (do_list_sets(ctx, &cmd->location, table) < 0)
 			return -1;
-		if (netlink_list_chains(ctx, &cmd->handle) < 0)
+		if (netlink_list_chains(ctx, &cmd->handle, &cmd->location) < 0)
 			return -1;
 		list_splice_tail_init(&ctx->list, &table->chains);
-		if (netlink_list_table(ctx, &cmd->handle) < 0)
+		if (netlink_list_table(ctx, &cmd->handle, &cmd->location) < 0)
 			return -1;
 		break;
 	case CMD_OBJ_SETS:
-		if (netlink_list_sets(ctx, &cmd->handle) < 0)
+		if (netlink_list_sets(ctx, &cmd->handle, &cmd->location) < 0)
 			return -1;
 		list_for_each_entry_safe(set, nset, &ctx->list, list)
 			list_move_tail(&set->list, &table->sets);
 		break;
 	case CMD_OBJ_SET:
-		if (netlink_get_set(ctx, &cmd->handle) < 0)
+		if (netlink_get_set(ctx, &cmd->handle, &cmd->location) < 0)
 			return -1;
 		list_for_each_entry(set, &ctx->list, list) {
-			if (netlink_get_setelems(ctx, &cmd->handle, set) < 0)
+			if (netlink_get_setelems(ctx, &cmd->handle,
+						 &cmd->location, set) < 0)
 				return -1;
 			set_print(set);
 		}
@@ -545,9 +553,9 @@ static int do_command_flush(struct netlink_ctx *ctx, struct cmd *cmd)
 {
 	switch (cmd->obj) {
 	case CMD_OBJ_TABLE:
-		return netlink_flush_table(ctx, &cmd->handle);
+		return netlink_flush_table(ctx, &cmd->handle, &cmd->location);
 	case CMD_OBJ_CHAIN:
-		return netlink_flush_chain(ctx, &cmd->handle);
+		return netlink_flush_chain(ctx, &cmd->handle, &cmd->location);
 	default:
 		BUG("invalid command object type %u\n", cmd->obj);
 	}
@@ -566,13 +574,14 @@ static int do_command_rename(struct netlink_ctx *ctx, struct cmd *cmd)
 
 	switch (cmd->obj) {
 	case CMD_OBJ_CHAIN:
-		err = netlink_get_chain(ctx, &cmd->handle);
+		err = netlink_get_chain(ctx, &cmd->handle, &cmd->location);
 		if (err < 0)
 			return err;
 		list_splice_tail_init(&ctx->list, &table->chains);
 		chain = chain_lookup(table, &cmd->handle);
 
-		return netlink_rename_chain(ctx, &chain->handle, cmd->arg);
+		return netlink_rename_chain(ctx, &chain->handle, &cmd->location,
+					    cmd->arg);
 	default:
 		BUG("invalid command object type %u\n", cmd->obj);
 	}

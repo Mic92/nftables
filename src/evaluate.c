@@ -91,7 +91,7 @@ static struct expr *implicit_set_declaration(struct eval_ctx *ctx,
 		handle_merge(&set->handle, &ctx->cmd->handle);
 		memset(&h, 0, sizeof(h));
 		handle_merge(&h, &set->handle);
-		cmd = cmd_alloc(CMD_ADD, CMD_OBJ_SET, &h, set);
+		cmd = cmd_alloc(CMD_ADD, CMD_OBJ_SET, &h, &expr->location, set);
 		cmd->location = set->location;
 		list_add_tail(&cmd->list, &ctx->cmd->list);
 	}
@@ -122,7 +122,7 @@ static struct set *get_set(struct eval_ctx *ctx, const struct handle *h,
 	memset(&handle, 0, sizeof(handle));
 	handle_merge(&handle, h);
 	handle.set = xstrdup(identifier);
-	err = netlink_get_set(&nctx, &handle);
+	err = netlink_get_set(&nctx, &handle, &internal_location);
 	handle_free(&handle);
 
 	if (err < 0)

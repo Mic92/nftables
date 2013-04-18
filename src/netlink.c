@@ -311,7 +311,8 @@ int netlink_add_rule(struct netlink_ctx *ctx, const struct handle *h,
 	return err;
 }
 
-int netlink_delete_rule(struct netlink_ctx *ctx, const struct handle *h)
+int netlink_delete_rule(struct netlink_ctx *ctx, const struct handle *h,
+			const struct location *loc)
 {
 	struct nfnl_nft_rule *nlr;
 	int err;
@@ -321,7 +322,7 @@ int netlink_delete_rule(struct netlink_ctx *ctx, const struct handle *h)
 	nfnl_nft_rule_put(nlr);
 
 	if (err < 0)
-		netlink_io_error(ctx, NULL, "Could not delete rule: %s",
+		netlink_io_error(ctx, loc, "Could not delete rule: %s",
 				 nl_geterror(err));
 	return err;
 }
@@ -345,7 +346,8 @@ static void list_rule_cb(struct nl_object *obj, void *arg)
 	list_add_tail(&rule->list, &ctx->list);
 }
 
-static int netlink_list_rules(struct netlink_ctx *ctx, const struct handle *h)
+static int netlink_list_rules(struct netlink_ctx *ctx, const struct handle *h,
+			      const struct location *loc)
 {
 	struct nl_cache *rule_cache;
 	struct nfnl_nft_rule *nlr;
@@ -353,7 +355,7 @@ static int netlink_list_rules(struct netlink_ctx *ctx, const struct handle *h)
 
 	err = nfnl_nft_rule_alloc_cache(nf_sock, &rule_cache);
 	if (err < 0)
-		return netlink_io_error(ctx, NULL,
+		return netlink_io_error(ctx, loc,
 					"Could not receive rules from kernel: %s",
 					nl_geterror(err));
 
@@ -369,7 +371,8 @@ static int netlink_get_rule_cb(struct nl_msg *msg, void *arg)
 	return nl_msg_parse(msg, list_rule_cb, arg);
 }
 
-int netlink_get_rule(struct netlink_ctx *ctx, const struct handle *h)
+int netlink_get_rule(struct netlink_ctx *ctx, const struct handle *h,
+		     const struct location *loc)
 {
 	struct nfnl_nft_rule *nlr;
 	int err;
@@ -382,7 +385,7 @@ int netlink_get_rule(struct netlink_ctx *ctx, const struct handle *h)
 	nfnl_nft_rule_put(nlr);
 
 	if (err < 0)
-		return netlink_io_error(ctx, NULL,
+		return netlink_io_error(ctx, loc,
 					"Could not receive rule from kernel: %s",
 					nl_geterror(err));
 	return err;
@@ -400,7 +403,8 @@ static void flush_rule_cb(struct nl_object *obj, void *arg)
 				 nl_geterror(err));
 }
 
-static int netlink_flush_rules(struct netlink_ctx *ctx, const struct handle *h)
+static int netlink_flush_rules(struct netlink_ctx *ctx, const struct handle *h,
+			       const struct location *loc)
 {
 	struct nl_cache *rule_cache;
 	struct nfnl_nft_rule *nlr;
@@ -408,7 +412,7 @@ static int netlink_flush_rules(struct netlink_ctx *ctx, const struct handle *h)
 
 	err = nfnl_nft_rule_alloc_cache(nf_sock, &rule_cache);
 	if (err < 0)
-		return netlink_io_error(ctx, NULL,
+		return netlink_io_error(ctx, loc,
 					"Could not receive rules from kernel: %s",
 					nl_geterror(err));
 
@@ -420,7 +424,7 @@ static int netlink_flush_rules(struct netlink_ctx *ctx, const struct handle *h)
 }
 
 int netlink_add_chain(struct netlink_ctx *ctx, const struct handle *h,
-		      const struct chain *chain)
+		      const struct location *loc, const struct chain *chain)
 {
 	struct nfnl_nft_chain *nlc;
 	int err;
@@ -435,13 +439,13 @@ int netlink_add_chain(struct netlink_ctx *ctx, const struct handle *h,
 	nfnl_nft_chain_put(nlc);
 
 	if (err < 0)
-		netlink_io_error(ctx, NULL, "Could not add chain: %s",
+		netlink_io_error(ctx, loc, "Could not add chain: %s",
 				 nl_geterror(err));
 	return err;
 }
 
 int netlink_rename_chain(struct netlink_ctx *ctx, const struct handle *h,
-			 const char *name)
+			 const struct location *loc, const char *name)
 {
 	struct nfnl_nft_chain *nlc;
 	int err;
@@ -453,12 +457,13 @@ int netlink_rename_chain(struct netlink_ctx *ctx, const struct handle *h,
 	nfnl_nft_chain_put(nlc);
 
 	if (err < 0)
-		netlink_io_error(ctx, NULL, "Could not rename chain: %s",
+		netlink_io_error(ctx, loc, "Could not rename chain: %s",
 				 nl_geterror(err));
 	return err;
 }
 
-int netlink_delete_chain(struct netlink_ctx *ctx, const struct handle *h)
+int netlink_delete_chain(struct netlink_ctx *ctx, const struct handle *h,
+			 const struct location *loc)
 {
 	struct nfnl_nft_chain *nlc;
 	int err;
@@ -469,7 +474,7 @@ int netlink_delete_chain(struct netlink_ctx *ctx, const struct handle *h)
 	nfnl_nft_chain_put(nlc);
 
 	if (err < 0)
-		netlink_io_error(ctx, NULL, "Could not delete chain: %s",
+		netlink_io_error(ctx, loc, "Could not delete chain: %s",
 				 nl_geterror(err));
 	return err;
 }
@@ -497,7 +502,8 @@ static void list_chain_cb(struct nl_object *obj, void *arg)
 	list_add_tail(&chain->list, &ctx->list);
 }
 
-int netlink_list_chains(struct netlink_ctx *ctx, const struct handle *h)
+int netlink_list_chains(struct netlink_ctx *ctx, const struct handle *h,
+			const struct location *loc)
 {
 	struct nl_cache *chain_cache;
 	struct nfnl_nft_chain *nlc;
@@ -506,7 +512,7 @@ int netlink_list_chains(struct netlink_ctx *ctx, const struct handle *h)
 
 	err = nfnl_nft_chain_alloc_cache(nf_sock, &chain_cache);
 	if (err < 0)
-		return netlink_io_error(ctx, NULL,
+		return netlink_io_error(ctx, loc,
 					"Could not receive chains from kernel: %s",
 					nl_geterror(err));
 
@@ -536,7 +542,8 @@ static int netlink_get_chain_cb(struct nl_msg *msg, void *arg)
 	return nl_msg_parse(msg, list_chain_cb, arg);
 }
 
-int netlink_get_chain(struct netlink_ctx *ctx, const struct handle *h)
+int netlink_get_chain(struct netlink_ctx *ctx, const struct handle *h,
+		      const struct location *loc)
 {
 	struct nfnl_nft_chain *nlc;
 	int err;
@@ -550,24 +557,26 @@ int netlink_get_chain(struct netlink_ctx *ctx, const struct handle *h)
 	nfnl_nft_chain_put(nlc);
 
 	if (err < 0)
-		return netlink_io_error(ctx, NULL,
+		return netlink_io_error(ctx, loc,
 					"Could not receive chain from kernel: %s",
 					nl_geterror(err));
 	return err;
 }
 
-int netlink_list_chain(struct netlink_ctx *ctx, const struct handle *h)
+int netlink_list_chain(struct netlink_ctx *ctx, const struct handle *h,
+		       const struct location *loc)
 {
-	return netlink_list_rules(ctx, h);
+	return netlink_list_rules(ctx, h, loc);
 }
 
-int netlink_flush_chain(struct netlink_ctx *ctx, const struct handle *h)
+int netlink_flush_chain(struct netlink_ctx *ctx, const struct handle *h,
+			const struct location *loc)
 {
-	return netlink_flush_rules(ctx, h);
+	return netlink_flush_rules(ctx, h, loc);
 }
 
 int netlink_add_table(struct netlink_ctx *ctx, const struct handle *h,
-		      const struct table *table)
+		      const struct location *loc, const struct table *table)
 {
 	struct nfnl_nft_table *nlt;
 	int err;
@@ -577,12 +586,13 @@ int netlink_add_table(struct netlink_ctx *ctx, const struct handle *h,
 	nfnl_nft_table_put(nlt);
 
 	if (err < 0)
-		netlink_io_error(ctx, NULL, "Could not add table: %s",
+		netlink_io_error(ctx, loc, "Could not add table: %s",
 				 nl_geterror(err));
 	return err;
 }
 
-int netlink_delete_table(struct netlink_ctx *ctx, const struct handle *h)
+int netlink_delete_table(struct netlink_ctx *ctx, const struct handle *h,
+			 const struct location *loc)
 {
 	struct nfnl_nft_table *nlt;
 	int err;
@@ -592,7 +602,7 @@ int netlink_delete_table(struct netlink_ctx *ctx, const struct handle *h)
 	nfnl_nft_table_put(nlt);
 
 	if (err < 0)
-		netlink_io_error(ctx, NULL, "Could not delete table: %s",
+		netlink_io_error(ctx, loc, "Could not delete table: %s",
 				 nl_geterror(err));
 	return err;
 }
@@ -616,7 +626,8 @@ static void list_table_cb(struct nl_object *obj, void *arg)
 	list_add_tail(&table->list, &ctx->list);
 }
 
-int netlink_list_tables(struct netlink_ctx *ctx, const struct handle *h)
+int netlink_list_tables(struct netlink_ctx *ctx, const struct handle *h,
+			const struct location *loc)
 {
 	struct nl_cache *table_cache;
 	struct nfnl_nft_table *nlt;
@@ -624,7 +635,7 @@ int netlink_list_tables(struct netlink_ctx *ctx, const struct handle *h)
 
 	err = nfnl_nft_table_alloc_cache(nf_sock, &table_cache);
 	if (err < 0)
-		return netlink_io_error(ctx, NULL,
+		return netlink_io_error(ctx, loc,
 					"Could not receive tables from kernel: %s",
 					nl_geterror(err));
 
@@ -640,7 +651,8 @@ static int netlink_get_table_cb(struct nl_msg *msg, void *arg)
 	return nl_msg_parse(msg, list_table_cb, arg);
 }
 
-int netlink_get_table(struct netlink_ctx *ctx, const struct handle *h)
+int netlink_get_table(struct netlink_ctx *ctx, const struct handle *h,
+		      const struct location *loc)
 {
 	struct nfnl_nft_table *nlt;
 	int err;
@@ -653,21 +665,23 @@ int netlink_get_table(struct netlink_ctx *ctx, const struct handle *h)
 	nfnl_nft_table_put(nlt);
 
 	if (err < 0)
-		return netlink_io_error(ctx, NULL,
+		return netlink_io_error(ctx, loc,
 					"Could not receive table from kernel: %s",
 					nl_geterror(err));
 	return err;
 }
 
 
-int netlink_list_table(struct netlink_ctx *ctx, const struct handle *h)
+int netlink_list_table(struct netlink_ctx *ctx, const struct handle *h,
+		       const struct location *loc)
 {
-	return netlink_list_rules(ctx, h);
+	return netlink_list_rules(ctx, h, loc);
 }
 
-int netlink_flush_table(struct netlink_ctx *ctx, const struct handle *h)
+int netlink_flush_table(struct netlink_ctx *ctx, const struct handle *h,
+			const struct location *loc)
 {
-	return netlink_flush_rules(ctx, h);
+	return netlink_flush_rules(ctx, h, loc);
 }
 
 static enum nft_data_types dtype_map_to_kernel(const struct datatype *dtype)
@@ -736,7 +750,8 @@ int netlink_add_set(struct netlink_ctx *ctx, const struct handle *h,
 	return err;
 }
 
-int netlink_delete_set(struct netlink_ctx *ctx, const struct handle *h)
+int netlink_delete_set(struct netlink_ctx *ctx, const struct handle *h,
+		       const struct location *loc)
 {
 	struct nfnl_nft_set *nls;
 	int err;
@@ -746,7 +761,7 @@ int netlink_delete_set(struct netlink_ctx *ctx, const struct handle *h)
 	nfnl_nft_set_put(nls);
 
 	if (err < 0)
-		netlink_io_error(ctx, NULL, "Could not delete set: %s",
+		netlink_io_error(ctx, loc, "Could not delete set: %s",
 				 nl_geterror(err));
 	return err;
 }
@@ -799,14 +814,15 @@ static void list_set_cb(struct nl_object *obj, void *arg)
 	list_add_tail(&set->list, &ctx->list);
 }
 
-int netlink_list_sets(struct netlink_ctx *ctx, const struct handle *h)
+int netlink_list_sets(struct netlink_ctx *ctx, const struct handle *h,
+		      const struct location *loc)
 {
 	struct nl_cache *set_cache;
 	int err;
 
 	err = nfnl_nft_set_alloc_cache(nf_sock, h->family, h->table, &set_cache);
 	if (err < 0)
-		return netlink_io_error(ctx, NULL,
+		return netlink_io_error(ctx, loc,
 					"Could not receive sets from kernel: %s",
 					nl_geterror(err));
 
@@ -820,7 +836,8 @@ static int netlink_get_set_cb(struct nl_msg *msg, void *arg)
 	return nl_msg_parse(msg, list_set_cb, arg);
 }
 
-int netlink_get_set(struct netlink_ctx *ctx, const struct handle *h)
+int netlink_get_set(struct netlink_ctx *ctx, const struct handle *h,
+		    const struct location *loc)
 {
 	struct nfnl_nft_set *nls;
 	int err;
@@ -836,7 +853,7 @@ int netlink_get_set(struct netlink_ctx *ctx, const struct handle *h)
 	nfnl_nft_set_put(nls);
 
 	if (err < 0)
-		return netlink_io_error(ctx, NULL,
+		return netlink_io_error(ctx, loc,
 					"Could not receive set from kernel: %s",
 					nl_geterror(err));
 	return err;
@@ -881,7 +898,8 @@ int netlink_add_setelems(struct netlink_ctx *ctx, const struct handle *h,
 out:
 	nfnl_nft_set_put(nls);
 	if (err < 0)
-		netlink_io_error(ctx, NULL, "Could not add set elements: %s",
+		netlink_io_error(ctx, &expr->location,
+				 "Could not add set elements: %s",
 				 nl_geterror(err));
 	return err;
 }
@@ -904,7 +922,8 @@ int netlink_delete_setelems(struct netlink_ctx *ctx, const struct handle *h,
 out:
 	nfnl_nft_set_put(nls);
 	if (err < 0)
-		netlink_io_error(ctx, NULL, "Could not delete set elements: %s",
+		netlink_io_error(ctx, &expr->location,
+				 "Could not delete set elements: %s",
 				 nl_geterror(err));
 	return err;
 }
@@ -952,7 +971,7 @@ static void list_setelem_cb(struct nl_object *obj, void *arg)
 extern void interval_map_decompose(struct expr *set);
 
 int netlink_get_setelems(struct netlink_ctx *ctx, const struct handle *h,
-			 struct set *set)
+			 const struct location *loc, struct set *set)
 {
 	struct nl_cache *elements;
 	struct nfnl_nft_set *nls;
@@ -969,7 +988,7 @@ int netlink_get_setelems(struct netlink_ctx *ctx, const struct handle *h,
 		goto out;
 
 	ctx->set = set;
-	set->init = set_expr_alloc(&internal_location);
+	set->init = set_expr_alloc(loc);
 	nl_cache_foreach(elements, list_setelem_cb, ctx);
 	nl_cache_free(elements);
 	ctx->set = NULL;
@@ -979,7 +998,7 @@ int netlink_get_setelems(struct netlink_ctx *ctx, const struct handle *h,
 out:
 	nfnl_nft_set_put(nls);
 	if (err < 0)
-		netlink_io_error(ctx, NULL, "Could not receive set elements: %s",
+		netlink_io_error(ctx, loc, "Could not receive set elements: %s",
 				 nl_geterror(err));
 	return err;
 }

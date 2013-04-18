@@ -526,121 +526,121 @@ base_cmd		:	/* empty */	add_cmd		{ $$ = $1; }
 
 add_cmd			:	TABLE		table_spec
 			{
-				$$ = cmd_alloc(CMD_ADD, CMD_OBJ_TABLE, &$2, NULL);
+				$$ = cmd_alloc(CMD_ADD, CMD_OBJ_TABLE, &$2, &@$, NULL);
 			}
 			|	TABLE		table_spec	table_block_alloc
 						'{'	table_block	'}'
 			{
 				handle_merge(&$3->handle, &$2);
 				close_scope(state);
-				$$ = cmd_alloc(CMD_ADD, CMD_OBJ_TABLE, &$2, $5);
+				$$ = cmd_alloc(CMD_ADD, CMD_OBJ_TABLE, &$2, &@$, $5);
 			}
 			|	CHAIN		chain_spec
 			{
-				$$ = cmd_alloc(CMD_ADD, CMD_OBJ_CHAIN, &$2, NULL);
+				$$ = cmd_alloc(CMD_ADD, CMD_OBJ_CHAIN, &$2, &@$, NULL);
 			}
 			|	CHAIN		chain_spec	chain_block_alloc
 						'{'	chain_block	'}'
 			{
 				handle_merge(&$3->handle, &$2);
 				close_scope(state);
-				$$ = cmd_alloc(CMD_ADD, CMD_OBJ_CHAIN, &$2, $5);
+				$$ = cmd_alloc(CMD_ADD, CMD_OBJ_CHAIN, &$2, &@$, $5);
 			}
 			|	RULE		ruleid_spec	rule
 			{
-				$$ = cmd_alloc(CMD_ADD, CMD_OBJ_RULE, &$2, $3);
+				$$ = cmd_alloc(CMD_ADD, CMD_OBJ_RULE, &$2, &@$, $3);
 			}
 			|	/* empty */	ruleid_spec	rule
 			{
-				$$ = cmd_alloc(CMD_ADD, CMD_OBJ_RULE, &$1, $2);
+				$$ = cmd_alloc(CMD_ADD, CMD_OBJ_RULE, &$1, &@$, $2);
 			}
 			|	SET		set_spec	set_block_alloc
 						'{'	set_block	'}'
 			{
 				$5->location = @5;
 				handle_merge(&$3->handle, &$2);
-				$$ = cmd_alloc(CMD_ADD, CMD_OBJ_SET, &$2, $5);
+				$$ = cmd_alloc(CMD_ADD, CMD_OBJ_SET, &$2, &@$, $5);
 			}
 			|	MAP		set_spec	map_block_alloc
 						'{'	map_block	'}'
 			{
 				$5->location = @5;
 				handle_merge(&$3->handle, &$2);
-				$$ = cmd_alloc(CMD_ADD, CMD_OBJ_SET, &$2, $5);
+				$$ = cmd_alloc(CMD_ADD, CMD_OBJ_SET, &$2, &@$, $5);
 			}
 			|	ELEMENT		set_spec	set_expr
 			{
-				$$ = cmd_alloc(CMD_ADD, CMD_OBJ_SETELEM, &$2, $3);
+				$$ = cmd_alloc(CMD_ADD, CMD_OBJ_SETELEM, &$2, &@$, $3);
 			}
 			;
 
 insert_cmd		:	RULE		ruleid_spec	rule
 			{
-				$$ = cmd_alloc(CMD_INSERT, CMD_OBJ_RULE, &$2, $3);
+				$$ = cmd_alloc(CMD_INSERT, CMD_OBJ_RULE, &$2, &@$, $3);
 			}
 			;
 
 delete_cmd		:	TABLE		table_spec
 			{
-				$$ = cmd_alloc(CMD_DELETE, CMD_OBJ_TABLE, &$2, NULL);
+				$$ = cmd_alloc(CMD_DELETE, CMD_OBJ_TABLE, &$2, &@$, NULL);
 			}
 			|	CHAIN		chain_spec
 			{
-				$$ = cmd_alloc(CMD_DELETE, CMD_OBJ_CHAIN, &$2, NULL);
+				$$ = cmd_alloc(CMD_DELETE, CMD_OBJ_CHAIN, &$2, &@$, NULL);
 			}
 			|	RULE		ruleid_spec
 			{
-				$$ = cmd_alloc(CMD_DELETE, CMD_OBJ_RULE, &$2, NULL);
+				$$ = cmd_alloc(CMD_DELETE, CMD_OBJ_RULE, &$2, &@$, NULL);
 			}
 			|	SET		set_spec
 			{
-				$$ = cmd_alloc(CMD_DELETE, CMD_OBJ_SET, &$2, NULL);
+				$$ = cmd_alloc(CMD_DELETE, CMD_OBJ_SET, &$2, &@$, NULL);
 			}
 			|	ELEMENT		set_spec	set_expr
 			{
-				$$ = cmd_alloc(CMD_DELETE, CMD_OBJ_SETELEM, &$2, $3);
+				$$ = cmd_alloc(CMD_DELETE, CMD_OBJ_SETELEM, &$2, &@$, $3);
 			}
 			;
 
 list_cmd		:	TABLE		table_spec
 			{
-				$$ = cmd_alloc(CMD_LIST, CMD_OBJ_TABLE, &$2, NULL);
+				$$ = cmd_alloc(CMD_LIST, CMD_OBJ_TABLE, &$2, &@$, NULL);
 			}
 			|	TABLES		tables_spec
 			{
-				$$ = cmd_alloc(CMD_LIST, CMD_OBJ_TABLE, &$2, NULL);
+				$$ = cmd_alloc(CMD_LIST, CMD_OBJ_TABLE, &$2, &@$, NULL);
 			}
 			|	CHAIN		chain_spec
 			{
-				$$ = cmd_alloc(CMD_LIST, CMD_OBJ_CHAIN, &$2, NULL);
+				$$ = cmd_alloc(CMD_LIST, CMD_OBJ_CHAIN, &$2, &@$, NULL);
 			}
 			|	SETS		table_spec
 			{
-				$$ = cmd_alloc(CMD_LIST, CMD_OBJ_SETS, &$2, NULL);
+				$$ = cmd_alloc(CMD_LIST, CMD_OBJ_SETS, &$2, &@$, NULL);
 			}
 			|	SET		set_spec
 			{
-				$$ = cmd_alloc(CMD_LIST, CMD_OBJ_SET, &$2, NULL);
+				$$ = cmd_alloc(CMD_LIST, CMD_OBJ_SET, &$2, &@$, NULL);
 			}
 			;
 
 flush_cmd		:	TABLE		table_spec
 			{
-				$$ = cmd_alloc(CMD_FLUSH, CMD_OBJ_TABLE, &$2, NULL);
+				$$ = cmd_alloc(CMD_FLUSH, CMD_OBJ_TABLE, &$2, &@$, NULL);
 			}
 			|	CHAIN		chain_spec
 			{
-				$$ = cmd_alloc(CMD_FLUSH, CMD_OBJ_CHAIN, &$2, NULL);
+				$$ = cmd_alloc(CMD_FLUSH, CMD_OBJ_CHAIN, &$2, &@$, NULL);
 			}
 			|	SET		set_spec
 			{
-				$$ = cmd_alloc(CMD_FLUSH, CMD_OBJ_SET, &$2, NULL);
+				$$ = cmd_alloc(CMD_FLUSH, CMD_OBJ_SET, &$2, &@$, NULL);
 			}
 			;
 
 rename_cmd		:	CHAIN		chain_spec	identifier
 			{
-				$$ = cmd_alloc(CMD_RENAME, CMD_OBJ_CHAIN, &$2, NULL);
+				$$ = cmd_alloc(CMD_RENAME, CMD_OBJ_CHAIN, &$2, &@$, NULL);
 				$$->arg = $3;
 			}
 			;

@@ -52,38 +52,55 @@ extern struct rule *netlink_delinearize_rule(struct netlink_ctx *ctx,
 
 extern int netlink_add_rule(struct netlink_ctx *ctx, const struct handle *h,
 			    const struct rule *rule, uint32_t flags);
-extern int netlink_delete_rule(struct netlink_ctx *ctx, const struct handle *h);
-extern int netlink_get_rule(struct netlink_ctx *ctx, const struct handle *h);
+extern int netlink_delete_rule(struct netlink_ctx *ctx, const struct handle *h,
+			       const struct location *loc);
+extern int netlink_get_rule(struct netlink_ctx *ctx, const struct handle *h,
+			    const struct location *loc);
 
 extern int netlink_add_chain(struct netlink_ctx *ctx, const struct handle *h,
+			     const struct location *loc,
 			     const struct chain *chain);
 extern int netlink_rename_chain(struct netlink_ctx *ctx, const struct handle *h,
-				const char *name);
-extern int netlink_delete_chain(struct netlink_ctx *ctx, const struct handle *h);
-extern int netlink_list_chains(struct netlink_ctx *ctx, const struct handle *h);
-extern int netlink_get_chain(struct netlink_ctx *ctx, const struct handle *h);
-extern int netlink_list_chain(struct netlink_ctx *ctx, const struct handle *h);
-extern int netlink_flush_chain(struct netlink_ctx *ctx, const struct handle *h);
+				const struct location *loc, const char *name);
+extern int netlink_delete_chain(struct netlink_ctx *ctx, const struct handle *h,
+				const struct location *loc);
+extern int netlink_list_chains(struct netlink_ctx *ctx, const struct handle *h,
+			       const struct location *loc);
+extern int netlink_get_chain(struct netlink_ctx *ctx, const struct handle *h,
+			     const struct location *loc);
+extern int netlink_list_chain(struct netlink_ctx *ctx, const struct handle *h,
+			      const struct location *loc);
+extern int netlink_flush_chain(struct netlink_ctx *ctx, const struct handle *h,
+			       const struct location *loc);
 
 extern int netlink_add_table(struct netlink_ctx *ctx, const struct handle *h,
+			     const struct location *loc,
 			     const struct table *table);
-extern int netlink_delete_table(struct netlink_ctx *ctx, const struct handle *h);
-extern int netlink_list_tables(struct netlink_ctx *ctx, const struct handle *h);
-extern int netlink_get_table(struct netlink_ctx *ctx, const struct handle *h);
-extern int netlink_list_table(struct netlink_ctx *ctx, const struct handle *h);
-extern int netlink_flush_table(struct netlink_ctx *ctx, const struct handle *h);
+extern int netlink_delete_table(struct netlink_ctx *ctx, const struct handle *h,
+				const struct location *loc);
+extern int netlink_list_tables(struct netlink_ctx *ctx, const struct handle *h,
+			       const struct location *loc);
+extern int netlink_get_table(struct netlink_ctx *ctx, const struct handle *h,
+			     const struct location *loc);
+extern int netlink_list_table(struct netlink_ctx *ctx, const struct handle *h,
+			      const struct location *loc);
+extern int netlink_flush_table(struct netlink_ctx *ctx, const struct handle *h,
+			       const struct location *loc);
 
 extern int netlink_add_set(struct netlink_ctx *ctx, const struct handle *h,
 			   struct set *set);
-extern int netlink_delete_set(struct netlink_ctx *ctx, const struct handle *h);
-extern int netlink_list_sets(struct netlink_ctx *ctx, const struct handle *h);
-extern int netlink_get_set(struct netlink_ctx *ctx, const struct handle *h);
+extern int netlink_delete_set(struct netlink_ctx *ctx, const struct handle *h,
+			      const struct location *loc);
+extern int netlink_list_sets(struct netlink_ctx *ctx, const struct handle *h,
+			     const struct location *loc);
+extern int netlink_get_set(struct netlink_ctx *ctx, const struct handle *h,
+			   const struct location *loc);
 
 extern int netlink_add_setelems(struct netlink_ctx *ctx, const struct handle *h,
 				const struct expr *expr);
 extern int netlink_delete_setelems(struct netlink_ctx *ctx, const struct handle *h,
 				   const struct expr *expr);
 extern int netlink_get_setelems(struct netlink_ctx *ctx, const struct handle *h,
-				struct set *set);
+				const struct location *loc, struct set *set);
 
 #endif /* NFTABLES_NETLINK_H */
