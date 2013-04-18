@@ -477,6 +477,19 @@ static int do_command_list(struct netlink_ctx *ctx, struct cmd *cmd)
 
 	switch (cmd->obj) {
 	case CMD_OBJ_TABLE:
+		if (!cmd->handle.table) {
+			/* List all existing tables */
+			struct table *table;
+
+			if (netlink_list_tables(ctx, &cmd->handle) < 0)
+				return -1;
+
+			list_for_each_entry(table, &ctx->list, list) {
+				printf("table %s\n", table->handle.table);
+			}
+			return 0;
+		}
+		/* List content of this table */
 		if (do_list_sets(ctx, table) < 0)
 			return -1;
 		if (netlink_list_chains(ctx, &cmd->handle) < 0)

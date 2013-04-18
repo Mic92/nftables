@@ -157,6 +157,7 @@ static void location_update(struct location *loc, struct location *rhs, int n)
 %token HOOK			"hook"
 %token <val> HOOKNUM		"hooknum"
 %token TABLE			"table"
+%token TABLES			"tables"
 %token CHAIN			"chain"
 %token RULE			"rule"
 %token SETS			"sets"
@@ -332,8 +333,8 @@ static void location_update(struct location *loc, struct location *rhs, int n)
 %type <cmd>			base_cmd add_cmd insert_cmd delete_cmd list_cmd flush_cmd rename_cmd
 %destructor { cmd_free($$); }	base_cmd add_cmd insert_cmd delete_cmd list_cmd flush_cmd rename_cmd
 
-%type <handle>			table_spec chain_spec chain_identifier ruleid_spec
-%destructor { handle_free(&$$); } table_spec chain_spec chain_identifier ruleid_spec
+%type <handle>			table_spec tables_spec chain_spec chain_identifier ruleid_spec
+%destructor { handle_free(&$$); } table_spec tables_spec chain_spec chain_identifier ruleid_spec
 %type <handle>			set_spec set_identifier
 %destructor { handle_free(&$$); } set_spec set_identifier
 %type <val>			handle_spec family_spec
@@ -605,6 +606,10 @@ list_cmd		:	TABLE		table_spec
 			{
 				$$ = cmd_alloc(CMD_LIST, CMD_OBJ_TABLE, &$2, NULL);
 			}
+			|	TABLES		tables_spec
+			{
+				$$ = cmd_alloc(CMD_LIST, CMD_OBJ_TABLE, &$2, NULL);
+			}
 			|	CHAIN		chain_spec
 			{
 				$$ = cmd_alloc(CMD_LIST, CMD_OBJ_CHAIN, &$2, NULL);
@@ -786,6 +791,14 @@ table_spec		:	family_spec	identifier
 				memset(&$$, 0, sizeof($$));
 				$$.family	= $1;
 				$$.table	= $2;
+			}
+			;
+
+tables_spec		:	family_spec
+			{
+				memset(&$$, 0, sizeof($$));
+				$$.family	= $1;
+				$$.table	= NULL;
 			}
 			;
 

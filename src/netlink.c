@@ -87,7 +87,8 @@ struct nfnl_nft_table *alloc_nft_table(const struct handle *h)
 	if (nlt == NULL)
 		memory_allocation_error();
 	nfnl_nft_table_set_family(nlt, h->family);
-	nfnl_nft_table_set_name(nlt, h->table, strlen(h->table) + 1);
+	if (h->table != NULL)
+		nfnl_nft_table_set_name(nlt, h->table, strlen(h->table) + 1);
 	return nlt;
 }
 

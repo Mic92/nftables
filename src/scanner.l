@@ -225,6 +225,7 @@ addrstring	({macaddr}|{ip4addr}|{ip6addr})
 
 "hook"			{ return HOOK; }
 "table"			{ return TABLE; }
+"tables"		{ return TABLES; }
 "chain"			{ return CHAIN; }
 "rule"			{ return RULE; }
 "sets"			{ return SETS; }
