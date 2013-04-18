@@ -244,7 +244,7 @@ int main(int argc, char * const *argv)
 	}
 
 	ret = nft_parse(scanner, &state);
-	if (ret < 0)
+	if (ret != 0)
 		goto out;
 
 	memset(&ctx, 0, sizeof(ctx));
