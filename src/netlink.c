@@ -501,6 +501,7 @@ int netlink_list_chains(struct netlink_ctx *ctx, const struct handle *h)
 {
 	struct nl_cache *chain_cache;
 	struct nfnl_nft_chain *nlc;
+	struct chain *chain;
 	int err;
 
 	err = nfnl_nft_chain_alloc_cache(nf_sock, &chain_cache);
@@ -513,7 +514,21 @@ int netlink_list_chains(struct netlink_ctx *ctx, const struct handle *h)
 	nl_cache_foreach_filter(chain_cache, OBJ_CAST(nlc), list_chain_cb, ctx);
 	nfnl_nft_chain_put(nlc);
 	nl_cache_free(chain_cache);
-	return 0;
+
+	/* Caller wants all existing chains */
+	if (h->chain == NULL)
+		return 0;
+
+	/* Check if this chain exists, otherwise return an error */
+	list_for_each_entry(chain, &ctx->list, list) {
+		if (strcmp(chain->handle.chain, h->chain) == 0)
+			return 0;
+	}
+
+	return netlink_io_error(ctx, NULL,
+				"Could not find chain `%s' in table `%s': %s",
+				h->chain, h->table,
+				nl_geterror(NLE_OBJ_NOTFOUND));
 }
 
 static int netlink_get_chain_cb(struct nl_msg *msg, void *arg)
