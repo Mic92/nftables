@@ -1,17 +1,17 @@
 #! nft -f
 
 add table ip filter
-add chain ip filter output NF_INET_LOCAL_OUT 0
+add chain ip filter output { hook NF_INET_LOCAL_OUT 0 ; }
 
 # ct: state
-add rule ip filter output ct state 0 counter
+add rule ip filter output ct state new,established counter
 
 # ct: direction original/reply
-add rule ip filter output ct direction 0 counter
-add rule ip filter output ct direction 1 counter
+add rule ip filter output ct direction original counter
+add rule ip filter output ct direction reply counter
 
 # ct: status
-add rule ip filter output ct status 0 counter
+add rule ip filter output ct status expected counter
 
 # ct: mark
 add rule ip filter output ct mark 0 counter
