@@ -585,6 +585,13 @@ static void mark_type_print(const struct expr *expr)
 static struct error_record *mark_type_parse(const struct expr *sym,
 					    struct expr **res)
 {
+	struct error_record *erec;
+
+	erec = sym->dtype->basetype->parse(sym, res);
+	if (erec != NULL)
+		return erec;
+	if (*res)
+		return NULL;
 	return symbolic_constant_parse(sym, mark_tbl, res);
 }
 
