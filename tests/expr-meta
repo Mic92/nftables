@@ -1,7 +1,7 @@
 #! nft -f
 
 add table ip filter
-add chain ip filter output NF_INET_LOCAL_OUT 0
+add chain ip filter output { hook NF_INET_LOCAL_OUT 0 ; }
 
 # meta: skb len
 add rule ip filter output meta length 1000 counter
@@ -13,13 +13,13 @@ add rule ip filter output meta protocol 0x0800 counter
 add rule ip filter output meta mark 0 counter
 
 # meta: skb iif
-add rule ip filter output meta iif 1 counter
+add rule ip filter output meta iif lo counter
 
 # meta: skb iifname
 add rule ip filter output meta iifname "eth0" counter
 
 # meta: skb oif
-add rule ip filter output meta oif 1 counter
+add rule ip filter output meta oif lo counter
 
 # meta: skb oifname
 add rule ip filter output meta oifname "eth0" counter
@@ -30,11 +30,11 @@ add rule ip filter output meta skuid 1000 counter
 # meta: skb sk gid
 add rule ip filter output meta skgid 1000 counter
 
-# meta: nftrace - broken, probably should be removed to avoid abuse
-#add rule ip filter output meta nftrace 0 counter
+# meta: nftrace
+add rule ip filter output meta nftrace 1 counter
 
-# meta: rtclassid
-add rule ip filter output meta rtclassid 1 counter
+# meta: rtclassid (see /etc/iproute2/rt_realms)
+add rule ip filter output meta rtclassid cosmos counter
 
 # meta: secmark
 add rule ip filter output meta secmark 0 counter
