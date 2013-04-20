@@ -7,8 +7,8 @@ add chain filter testchain
 delete chain filter testchain
 
 # chains: add and delete base chain
-add chain filter input NF_INET_LOCAL_OUT 0
-delete chain filter input NF_INET_LOCAL_OUT 0
+add chain filter input { hook NF_INET_LOCAL_OUT 0 ; }
+delete chain filter input
 
 # chains: can not delete chain while referenced
 add chain filter testchain
@@ -16,7 +16,7 @@ add chain filter testchain2
 
 add rule filter testchain handle 1 jump testchain2
 delete chain filter testchain2
-rule delete filter testchain handle 1
+delete rule filter testchain handle 1
 
 delete chain filter testchain2
 delete chain filter testchain
