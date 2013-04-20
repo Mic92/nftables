@@ -219,8 +219,12 @@ static struct error_record *uid_type_parse(const struct expr *sym,
 	struct passwd *pw;
 
 	pw = getpwnam(sym->identifier);
-	if (pw == NULL)
-		return error(&sym->location, "User does not exist");
+	if (pw == NULL) {
+		/* Try harder, lookup based on UID */
+		pw = getpwuid(atol(sym->identifier));
+		if (pw == NULL)
+			return error(&sym->location, "User does not exist");
+	}
 
 	*res = constant_expr_alloc(&sym->location, sym->dtype,
 				   BYTEORDER_HOST_ENDIAN,
@@ -260,8 +264,12 @@ static struct error_record *gid_type_parse(const struct expr *sym,
 	struct group *gr;
 
 	gr = getgrnam(sym->identifier);
-	if (gr == NULL)
-		return error(&sym->location, "Group does not exist");
+	if (gr == NULL) {
+		/* Try harder, lookup based on GID */
+		gr = getgrgid(atol(sym->identifier));
+		if (gr == NULL)
+			return error(&sym->location, "Group does not exist");
+	}
 
 	*res = constant_expr_alloc(&sym->location, sym->dtype,
 				   BYTEORDER_HOST_ENDIAN,
