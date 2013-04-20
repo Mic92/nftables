@@ -1,52 +1,52 @@
 #! nft -f
 #
 add table ip filter
-add chain ip filter OUTPUT NF_INET_LOCAL_OUT 0
+add chain ip filter output { hook NF_INET_LOCAL_OUT 0 ; }
 
 add chain ip filter chain1
-add rule ip filter chain1 handle 1 counter
+add rule ip filter chain1 counter
 
 add chain ip filter chain2
-add rule ip filter chain2 handle 1 counter
+add rule ip filter chain2 counter
 
 # must succeed: expr { expr, ... }
-add rule ip filter OUTPUT ip protocol 6 tcp dport { \
+add rule ip filter OUTPUT tcp dport { \
 	22, \
 	23, \
 }
 
 # must fail: expr { type1, type2, ... }
-add rule ip filter OUTPUT ip protocol 6 tcp dport { \
+add rule ip filter OUTPUT tcp dport { \
 	22, \
 	192.168.0.1, \
 }
 
 # must succeed: expr { expr => verdict, ... }
-add rule ip filter OUTPUT ip protocol 6 tcp dport { \
+add rule ip filter OUTPUT tcp dport vmap { \
 	22 => jump chain1, \
 	23 => jump chain2, \
 }
 
 # must fail: expr { expr => verdict, expr => expr, ... }
-add rule ip filter OUTPUT ip protocol 6 tcp dport { \
+add rule ip filter OUTPUT tcp dport vmap { \
 	22 => jump chain1, \
 	23 => 0x100, \
 }
 
 # must fail: expr { expr => expr, ...}
-add rule ip filter OUTPUT ip protocol 6 tcp dport { \
+add rule ip filter OUTPUT tcp dport vmap { \
 	22 => 0x100, \
 	23 => 0x200, \
 }
 
 # must succeed: expr MAP { expr => expr, ... } expr
-add rule ip filter OUTPUT ip protocol 6 map tcp dport { \
+add rule ip filter OUTPUT meta mark set tcp dport map { \
 	22 => 1, \
 	23 => 2, \
-} 2
+}
 
 # must fail: expr MAP { expr => type1, expr => type2, .. } expr
-add rule ip filter OUTPUT ip protocol 6 map tcp dport { \
+add rule ip filter OUTPUT meta mark set tcp dport map { \
 	22 => 1, \
 	23 => 192.168.0.1, \
-} 2
+}
