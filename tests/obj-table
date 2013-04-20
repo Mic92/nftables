@@ -5,7 +5,5 @@ add table filter
 table delete filter
 
 # table: deleting table with chain must fail
-# FIXME: not implemented
-# add table filter
-# add chain filter output
-# table delete filter
+add chain filter output
+table delete filter
