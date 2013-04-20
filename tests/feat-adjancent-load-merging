@@ -1,7 +1,7 @@
 #! nft -f
 
 # adjacent payload expressions: 4 bytes in order
-add rule filter output ip protocol 6 tcp sport 1024 tcp dport 22 counter
+add rule filter output tcp sport 1024 tcp dport 22 counter
 
 # adjacent payload expressions: 8 bytes in order
 add rule filter output ip saddr 192.168.0.1 ip daddr 192.168.0.100 counter
