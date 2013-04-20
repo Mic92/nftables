@@ -1,7 +1,7 @@
 #! nft -f
 
 add table filter
-add chain filter output NF_INET_LOCAL_OUT 0
+add chain filter output { hook NF_INET_LOCAL_OUT 0 ; }
 
 # set: IP addresses
 add rule filter output ip daddr { \
@@ -11,4 +11,4 @@ add rule filter output ip daddr { \
 }
 
 # set: tcp ports
-add rule filter output ip protocol 6 tcp dport { 22, 23 } counter
+add rule filter output tcp dport { 22, 23 } counter
