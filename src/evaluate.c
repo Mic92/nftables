@@ -585,13 +585,19 @@ static int expr_evaluate_concat(struct eval_ctx *ctx, struct expr **expr)
 {
 	const struct datatype *dtype = ctx->ectx.dtype, *tmp;
 	unsigned int type = dtype ? dtype->type : 0;
+	int off = dtype ? dtype->size: 0;
 	unsigned int flags = EXPR_F_CONSTANT | EXPR_F_SINGLETON;
 	struct expr *i, *next;
 	unsigned int n;
 
 	n = 1;
 	list_for_each_entry_safe(i, next, &(*expr)->expressions, list) {
-		tmp = datatype_lookup((type >> 8 * ((*expr)->size - n)) & 0xff);
+		if (dtype && off == 0)
+			return expr_binary_error(ctx, i, *expr,
+						 "unexpected concat component, "
+						 "expecting %s",
+						 dtype->desc);
+		tmp = datatype_lookup((type >> 8 * --off) & 0xff);
 		expr_set_context(&ctx->ectx, tmp, tmp->size);
 
 		if (list_member_evaluate(ctx, &i) < 0)
@@ -603,6 +609,12 @@ static int expr_evaluate_concat(struct eval_ctx *ctx, struct expr **expr)
 
 	(*expr)->flags |= flags;
 	(*expr)->dtype = concat_type_alloc(*expr);
+
+	if (off > 0)
+		return expr_error(ctx, *expr,
+				  "datatype mismatch, expected %s, "
+				  "expression has type %s",
+				  dtype->desc, (*expr)->dtype->desc);
 
 	expr_set_context(&ctx->ectx, (*expr)->dtype, (*expr)->len);
 

@@ -662,20 +662,23 @@ const struct datatype *concat_type_alloc(const struct expr *expr)
 {
 	struct datatype *dtype;
 	struct expr *i;
-	char desc[256] = "concatenation of ";
-	unsigned int type = 0;
+	char desc[256] = "concatenation of (";
+	unsigned int type = 0, size = 0;
 
 	list_for_each_entry(i, &expr->expressions, list) {
-		if (type != 0)
+		if (size != 0)
 			strncat(desc, ", ", sizeof(desc) - strlen(desc) - 1);
 		strncat(desc, i->dtype->desc, sizeof(desc) - strlen(desc) - 1);
 
 		type <<= 8;
 		type  |= i->dtype->type;
+		size++;
 	}
+	strncat(desc, ")", sizeof(desc) - strlen(desc) - 1);
 
 	dtype		= xzalloc(sizeof(*dtype));
 	dtype->type	= type;
+	dtype->size	= size;
 	dtype->desc	= xstrdup(desc);
 	dtype->parse	= concat_type_parse;
 
