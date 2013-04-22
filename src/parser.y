@@ -1391,7 +1391,7 @@ icmp_hdr_expr		:	ICMP	icmp_hdr_field
 				uint8_t data = IPPROTO_ICMP;
 				$$ = constant_expr_alloc(&@$, &inet_protocol_type,
 							 BYTEORDER_HOST_ENDIAN,
-							 sizeof(data), &data);
+							 sizeof(data) * BITS_PER_BYTE, &data);
 			}
 			;
 
@@ -1429,7 +1429,7 @@ auth_hdr_expr		:	AH	auth_hdr_field
 				uint8_t data = IPPROTO_AH;
 				$$ = constant_expr_alloc(&@$, &inet_protocol_type,
 							 BYTEORDER_HOST_ENDIAN,
-							 sizeof(data), &data);
+							 sizeof(data) * BITS_PER_BYTE, &data);
 			}
 			;
 
@@ -1449,7 +1449,7 @@ esp_hdr_expr		:	ESP	esp_hdr_field
 				uint8_t data = IPPROTO_ESP;
 				$$ = constant_expr_alloc(&@$, &inet_protocol_type,
 							 BYTEORDER_HOST_ENDIAN,
-							 sizeof(data), &data);
+							 sizeof(data) * BITS_PER_BYTE, &data);
 			}
 			;
 
@@ -1466,7 +1466,7 @@ comp_hdr_expr		:	COMP	comp_hdr_field
 				uint8_t data = IPPROTO_COMP;
 				$$ = constant_expr_alloc(&@$, &inet_protocol_type,
 							 BYTEORDER_HOST_ENDIAN,
-							 sizeof(data), &data);
+							 sizeof(data) * BITS_PER_BYTE, &data);
 			}
 			;
 
@@ -1484,7 +1484,7 @@ udp_hdr_expr		:	UDP	udp_hdr_field
 				uint8_t data = IPPROTO_UDP;
 				$$ = constant_expr_alloc(&@$, &inet_protocol_type,
 							 BYTEORDER_HOST_ENDIAN,
-							 sizeof(data), &data);
+							 sizeof(data) * BITS_PER_BYTE, &data);
 			}
 			;
 
@@ -1503,7 +1503,7 @@ udplite_hdr_expr	:	UDPLITE	udplite_hdr_field
 				uint8_t data = IPPROTO_UDPLITE;
 				$$ = constant_expr_alloc(&@$, &inet_protocol_type,
 							 BYTEORDER_HOST_ENDIAN,
-							 sizeof(data), &data);
+							 sizeof(data) * BITS_PER_BYTE, &data);
 			}
 			;
 
@@ -1522,7 +1522,7 @@ tcp_hdr_expr		:	TCP	tcp_hdr_field
 				uint8_t data = IPPROTO_TCP;
 				$$ = constant_expr_alloc(&@$, &inet_protocol_type,
 							 BYTEORDER_HOST_ENDIAN,
-							 sizeof(data), &data);
+							 sizeof(data) * BITS_PER_BYTE, &data);
 			}
 			;
 
@@ -1547,7 +1547,7 @@ dccp_hdr_expr		:	DCCP	dccp_hdr_field
 				uint8_t data = IPPROTO_DCCP;
 				$$ = constant_expr_alloc(&@$, &inet_protocol_type,
 							 BYTEORDER_HOST_ENDIAN,
-							 sizeof(data), &data);
+							 sizeof(data) * BITS_PER_BYTE, &data);
 			}
 			;
 
@@ -1565,7 +1565,7 @@ sctp_hdr_expr		:	SCTP	sctp_hdr_field
 				uint8_t data = IPPROTO_SCTP;
 				$$ = constant_expr_alloc(&@$, &inet_protocol_type,
 							 BYTEORDER_HOST_ENDIAN,
-							 sizeof(data), &data);
+							 sizeof(data) * BITS_PER_BYTE, &data);
 			}
 			;
 
