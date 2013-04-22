@@ -1078,6 +1078,12 @@ concat_expr		:	basic_expr
 					$$ = concat_expr_alloc(&@$);
 					compound_expr_add($$, $1);
 				} else {
+					struct location rhs[] = {
+						[1]	= @2,
+						[2]	= @3,
+					};
+					location_update(&$3->location, rhs, 2);
+
 					$$ = $1;
 					$$->location = @$;
 				}
