@@ -25,7 +25,7 @@ extern unsigned int debug_level;
 extern const char *include_paths[INCLUDE_PATHS_MAX];
 
 struct parser_state;
-extern int cli_init(void *scanner, struct parser_state *state);
+extern int cli_init(struct parser_state *state);
 extern void cli_exit(void);
 extern void cli_display(const char *fmt, va_list ap) __fmtstring(1, 0);
 
@@ -100,5 +100,7 @@ struct input_descriptor {
 	off_t				token_offset;
 	off_t				line_offset;
 };
+
+int nft_run(void *scanner, struct parser_state *state, struct list_head *msgs);
 
 #endif /* NFTABLES_NFTABLES_H */

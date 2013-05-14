@@ -32,6 +32,7 @@
 
 static const struct input_descriptor indesc_cli = {
 	.type	= INDESC_CLI,
+	.name   = "<cli>",
 };
 
 static struct parser_state *state;
@@ -86,6 +87,7 @@ static void cli_complete(char *line)
 {
 	const HIST_ENTRY *hist;
 	const char *c;
+	LIST_HEAD(msgs);
 
 	line = cli_append_multiline(line);
 	if (line == NULL)
@@ -102,10 +104,10 @@ static void cli_complete(char *line)
 	if (hist == NULL || strcmp(hist->line, line))
 		add_history(line);
 
+	parser_init(state, &msgs);
 	scanner_push_buffer(scanner, &indesc_cli, line);
-	nft_parse(scanner, state);
-
-	erec_print_list(stdout, state->msgs);
+	nft_run(scanner, state, &msgs);
+	erec_print_list(stdout, &msgs);
 	xfree(line);
 }
 
@@ -140,7 +142,7 @@ void __fmtstring(1, 0) cli_display(const char *fmt, va_list ap)
 	rl_forced_update_display();
 }
 
-int cli_init(void *_scanner, struct parser_state *_state)
+int cli_init(struct parser_state *_state)
 {
 	const char *home;
 
@@ -159,8 +161,8 @@ int cli_init(void *_scanner, struct parser_state *_state)
 	read_history(histfile);
 	history_set_pos(history_length);
 
-	scanner = _scanner;
 	state	= _state;
+	scanner = scanner_init(state);
 
 	while (!eof)
 		rl_callback_read_char();

@@ -142,7 +142,6 @@ void rule_print(const struct rule *rule)
 struct scope *scope_init(struct scope *scope, const struct scope *parent)
 {
 	scope->parent = parent;
-	init_list_head(&scope->symbols);
 	return scope;
 }
 
@@ -189,6 +188,7 @@ struct chain *chain_alloc(const char *name)
 
 	chain = xzalloc(sizeof(*chain));
 	init_list_head(&chain->rules);
+	init_list_head(&chain->scope.symbols);
 	if (name != NULL)
 		chain->handle.chain = xstrdup(name);
 	return chain;
@@ -240,6 +240,7 @@ struct table *table_alloc(void)
 	table = xzalloc(sizeof(*table));
 	init_list_head(&table->chains);
 	init_list_head(&table->sets);
+	init_list_head(&table->scope.symbols);
 	return table;
 }
 
@@ -472,14 +473,20 @@ static int do_list_sets(struct netlink_ctx *ctx, const struct location *loc,
 
 static int do_command_list(struct netlink_ctx *ctx, struct cmd *cmd)
 {
-	struct table *table;
-	struct chain *chain;
+	struct table *table = NULL;
+	struct chain *chain, *nchain;
 	struct rule *rule, *nrule;
 	struct set *set, *nset;
 
-	table = table_alloc();
-	handle_merge(&table->handle, &cmd->handle);
-	table_add_hash(table);
+	/* No need to allocate the table object when listing all tables */
+	if (cmd->handle.table != NULL) {
+		table = table_lookup(&cmd->handle);
+		if (table == NULL) {
+			table = table_alloc();
+			handle_merge(&table->handle, &cmd->handle);
+			table_add_hash(table);
+		}
+	}
 
 	switch (cmd->obj) {
 	case CMD_OBJ_TABLE:
@@ -546,6 +553,12 @@ static int do_command_list(struct netlink_ctx *ctx, struct cmd *cmd)
 	}
 
 	table_print(table);
+
+	list_for_each_entry_safe(chain, nchain, &table->chains, list) {
+		list_del(&chain->list);
+		chain_free(chain);
+	}
+
 	return 0;
 }
 

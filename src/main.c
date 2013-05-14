@@ -141,17 +141,48 @@ static const struct input_descriptor indesc_cmdline = {
 	.name	= "<cmdline>",
 };
 
+int nft_run(void *scanner, struct parser_state *state, struct list_head *msgs)
+{
+	struct eval_ctx ctx;
+	int ret;
+
+	ret = nft_parse(scanner, state);
+	if (ret != 0)
+		return -1;
+
+	memset(&ctx, 0, sizeof(ctx));
+	ctx.msgs = msgs;
+	if (evaluate(&ctx, &state->cmds) < 0)
+		return -1;
+
+	{
+		struct netlink_ctx ctx;
+		struct cmd *cmd, *next;
+
+		list_for_each_entry_safe(cmd, next, &state->cmds, list) {
+			memset(&ctx, 0, sizeof(ctx));
+			ctx.msgs = msgs;
+			init_list_head(&ctx.list);
+			ret = do_command(&ctx, cmd);
+			list_del(&cmd->list);
+			cmd_free(cmd);
+			if (ret < 0)
+				return ret;
+		}
+	}
+
+	return 0;
+}
+
 int main(int argc, char * const *argv)
 {
 	struct parser_state state;
-	struct eval_ctx ctx;
 	void *scanner;
 	LIST_HEAD(msgs);
 	char *buf = NULL, *filename = NULL;
 	unsigned int len;
 	bool interactive = false;
 	int i, val;
-	int ret;
 
 	while (1) {
 		val = getopt_long(argc, argv, OPTSTRING, options, NULL);
@@ -218,9 +249,6 @@ int main(int argc, char * const *argv)
 		}
 	}
 
-	parser_init(&state, &msgs);
-	scanner = scanner_init(&state);
-
 	if (optind != argc) {
 		for (len = 0, i = optind; i < argc; i++)
 			len += strlen(argv[i]) + strlen(" ");
@@ -231,44 +259,25 @@ int main(int argc, char * const *argv)
 			if (i + 1 < argc)
 				strcat(buf, " ");
 		}
-
+		parser_init(&state, &msgs);
+		scanner = scanner_init(&state);
 		scanner_push_buffer(scanner, &indesc_cmdline, buf);
 	} else if (filename != NULL) {
+		parser_init(&state, &msgs);
+		scanner = scanner_init(&state);
 		if (scanner_read_file(scanner, filename, &internal_location) < 0)
 			goto out;
 	} else if (interactive) {
-		cli_init(scanner, &state);
+		cli_init(&state);
+		return 0;
 	} else {
 		fprintf(stderr, "%s: no command specified\n", argv[0]);
 		exit(NFT_EXIT_FAILURE);
 	}
 
-	ret = nft_parse(scanner, &state);
-	if (ret != 0)
-		goto out;
-
-	memset(&ctx, 0, sizeof(ctx));
-	ctx.msgs = &msgs;
-	if (evaluate(&ctx, &state.cmds) < 0)
-		goto out;
-
-	{
-		struct netlink_ctx ctx;
-		struct cmd *cmd, *next;
-
-		list_for_each_entry_safe(cmd, next, &state.cmds, list) {
-			memset(&ctx, 0, sizeof(ctx));
-			ctx.msgs = &msgs;
-			init_list_head(&ctx.list);
-			if (do_command(&ctx, cmd) < 0)
-				goto out;
-			list_del(&cmd->list);
-			cmd_free(cmd);
-		}
-	}
+	nft_run(scanner, &state, &msgs);
 out:
 	scanner_destroy(scanner);
-	scope_release(&state.top_scope);
 	erec_print_list(stdout, &msgs);
 
 	xfree(buf);
