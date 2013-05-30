@@ -150,13 +150,13 @@
 		<title>Tables</title>
 		<para>
 			<cmdsynopsis>
-				<command>table</command>
 				<group choice="req">
 					<arg>add</arg>
 					<arg>delete</arg>
 					<arg>list</arg>
 					<arg>flush</arg>
 				</group>
+				<command>table</command>
 				<arg choice="opt"><replaceable>family</replaceable></arg>
 				<arg choice="req"><replaceable>table</replaceable></arg>
 			</cmdsynopsis>
@@ -216,8 +216,8 @@
 		<title>Chains</title>
 		<para>
 			<cmdsynopsis>
-				<command>chain</command>
 				<arg choice="req">add</arg>
+				<command>chain</command>
 				<arg choice="opt"><replaceable>family</replaceable></arg>
 				<arg choice="req"><replaceable>table</replaceable></arg>
 				<arg choice="req"><replaceable>chain</replaceable></arg>
@@ -225,13 +225,13 @@
 				<arg choice="req"><replaceable>priority</replaceable></arg>
 			</cmdsynopsis>
 			<cmdsynopsis>
-				<command>chain</command>
 				<group choice="req">
 					<arg>add</arg>
 					<arg>delete</arg>
 					<arg>list</arg>
 					<arg>flush</arg>
 				</group>
+				<command>chain</command>
 				<arg choice="opt"><replaceable>family</replaceable></arg>
 				<arg choice="req"><replaceable>table</replaceable></arg>
 				<arg choice="req"><replaceable>chain</replaceable></arg>
@@ -287,11 +287,11 @@
 		<title>Rules</title>
 		<para>
 			<cmdsynopsis>
-				<command>rule</command>
 				<group choice="req">
 					<arg>add</arg>
 					<arg>delete</arg>
 				</group>
+				<command>rule</command>
 				<arg choice="opt"><replaceable>family</replaceable></arg>
 				<arg choice="req"><replaceable>table</replaceable></arg>
 				<arg choice="req"><replaceable>chain</replaceable></arg>
