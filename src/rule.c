@@ -13,6 +13,7 @@
 #include <stdio.h>
 #include <stdint.h>
 #include <string.h>
+#include <inttypes.h>
 
 #include <statement.h>
 #include <rule.h>
@@ -136,6 +137,8 @@ void rule_print(const struct rule *rule)
 		printf(" ");
 		stmt->ops->print(stmt);
 	}
+	if (handle_output > 0)
+		printf(" # handle %" PRIu64, rule->handle.handle);
 	printf("\n");
 }
 

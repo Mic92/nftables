@@ -26,6 +26,7 @@
 #include <erec.h>
 
 unsigned int numeric_output;
+unsigned int handle_output;
 #ifdef DEBUG
 unsigned int debug_level;
 #endif
@@ -41,10 +42,11 @@ enum opt_vals {
 	OPT_INCLUDEPATH		= 'I',
 	OPT_NUMERIC		= 'n',
 	OPT_DEBUG		= 'd',
+	OPT_HANDLE_OUTPUT	= 'a',
 	OPT_INVALID		= '?',
 };
 
-#define OPTSTRING	"hvf:iI:vn"
+#define OPTSTRING	"hvf:iI:vna"
 
 static const struct option options[] = {
 	{
@@ -81,6 +83,10 @@ static const struct option options[] = {
 	},
 #endif
 	{
+		.name		= "handle",
+		.val		= OPT_HANDLE_OUTPUT,
+	},
+	{
 		.name		= NULL
 	}
 };
@@ -100,6 +106,7 @@ static void show_help(const char *name)
 "  -n/--numeric			When specified once, show network addresses numerically.\n"
 "  				When specified twice, also show Internet protocols,\n"
 "				Internet services, user IDs and group IDs numerically.\n"
+"  -a/--handle			Output rule handle.\n"
 "  -I/--includepath <directory>	Add <directory> to the paths searched for include files.\n"
 #ifdef DEBUG
 "  --debug <level [,level...]>	Specify debugging level (scanner, parser, eval, netlink, all)\n"
@@ -244,6 +251,9 @@ int main(int argc, char * const *argv)
 			}
 			break;
 #endif
+		case OPT_HANDLE_OUTPUT:
+			handle_output++;
+			break;
 		case OPT_INVALID:
 			exit(NFT_EXIT_FAILURE);
 		}
