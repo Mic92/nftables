@@ -466,8 +466,7 @@ static int do_list_sets(struct netlink_ctx *ctx, const struct location *loc,
 		return -1;
 
 	list_for_each_entry_safe(set, nset, &ctx->list, list) {
-		if (set->flags & SET_F_ANONYMOUS &&
-		    netlink_get_setelems(ctx, &set->handle, loc, set) < 0)
+		if (netlink_get_setelems(ctx, &set->handle, loc, set) < 0)
 			return -1;
 		list_move_tail(&set->list, &table->sets);
 	}
