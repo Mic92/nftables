@@ -99,6 +99,11 @@ static void cli_complete(char *line)
 	if (*c == '\0')
 		return;
 
+	if (!strcmp(line, "quit")) {
+		cli_exit();
+		exit(0);
+	}
+
 	/* avoid duplicate history entries */
 	hist = history_get(history_length);
 	if (hist == NULL || strcmp(hist->line, line))
