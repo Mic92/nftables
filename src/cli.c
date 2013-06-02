@@ -90,8 +90,11 @@ static void cli_complete(char *line)
 	LIST_HEAD(msgs);
 
 	line = cli_append_multiline(line);
-	if (line == NULL)
+	if (line == NULL) {
+		printf("\n");
+		cli_exit();
 		return;
+	}
 
 	for (c = line; *c != '\0'; c++)
 		if (!isspace(*c))
