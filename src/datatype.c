@@ -658,6 +658,16 @@ static struct error_record *concat_type_parse(const struct expr *sym,
 		     sym->dtype->desc);
 }
 
+static struct datatype *dtype_alloc(void)
+{
+	struct datatype *dtype;
+
+	dtype = xzalloc(sizeof(*dtype));
+	dtype->flags = DTYPE_F_ALLOC;
+
+	return dtype;
+}
+
 const struct datatype *concat_type_alloc(const struct expr *expr)
 {
 	struct datatype *dtype;
@@ -676,7 +686,7 @@ const struct datatype *concat_type_alloc(const struct expr *expr)
 	}
 	strncat(desc, ")", sizeof(desc) - strlen(desc) - 1);
 
-	dtype		= xzalloc(sizeof(*dtype));
+	dtype		= dtype_alloc();
 	dtype->type	= type;
 	dtype->size	= size;
 	dtype->desc	= xstrdup(desc);
@@ -687,5 +697,6 @@ const struct datatype *concat_type_alloc(const struct expr *expr)
 
 void concat_type_destroy(const struct datatype *dtype)
 {
-	xfree(dtype);
+	if (dtype->flags & DTYPE_F_ALLOC)
+		xfree(dtype);
 }

@@ -81,11 +81,16 @@ enum byteorder {
 
 struct expr;
 
+enum datatype_flags {
+	DTYPE_F_ALLOC		= (1 << 0),
+};
+
 /**
  * struct datatype
  *
  * @type:	numeric identifier
  * @byteorder:	byteorder of type (non-basetypes only)
+ * @flags:	flags
  * @size:	type size (fixed sized non-basetypes only)
  * @name:	type name
  * @desc:	type description
@@ -96,8 +101,9 @@ struct expr;
  * @sym_tbl:	symbol table for this type
  */
 struct datatype {
-	enum datatypes			type;
+	uint32_t			type;
 	enum byteorder			byteorder;
+	unsigned int			flags;
 	unsigned int			size;
 	const char			*name;
 	const char			*desc;
