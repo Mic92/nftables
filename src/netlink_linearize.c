@@ -440,6 +440,10 @@ static void netlink_gen_counter_stmt(struct netlink_linearize_ctx *ctx,
 	struct nfnl_nft_expr *nle;
 
 	nle = alloc_nft_expr(nfnl_nft_counter_init);
+	if (stmt->counter.packets)
+		nfnl_nft_counter_set_packets(nle, stmt->counter.packets);
+	if (stmt->counter.bytes)
+		nfnl_nft_counter_set_bytes(nle, stmt->counter.bytes);
 	nfnl_nft_rule_add_expr(ctx->nlr, nle);
 }
 

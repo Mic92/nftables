@@ -300,6 +300,8 @@ static void location_update(struct location *loc, struct location *rhs, int n)
 %token PROTO_DST		"proto-dst"
 
 %token COUNTER			"counter"
+%token PACKETS			"packets"
+%token BYTES			"bytes"
 
 %token LOG			"log"
 %token PREFIX			"prefix"
@@ -356,8 +358,8 @@ static void location_update(struct location *loc, struct location *rhs, int n)
 %destructor { stmt_list_free($$); xfree($$); } stmt_list
 %type <stmt>			stmt match_stmt verdict_stmt
 %destructor { stmt_free($$); }	stmt match_stmt verdict_stmt
-%type <stmt>			counter_stmt
-%destructor { stmt_free($$); }	counter_stmt
+%type <stmt>			counter_stmt counter_stmt_alloc
+%destructor { stmt_free($$); }	counter_stmt counter_stmt_alloc
 %type <stmt>			meta_stmt
 %destructor { stmt_free($$); }	meta_stmt
 %type <stmt>			log_stmt log_stmt_alloc
@@ -892,9 +894,29 @@ verdict_stmt		:	verdict_expr
 			}
 			;
 
-counter_stmt		:	COUNTER
+counter_stmt		:	counter_stmt_alloc
+			|	counter_stmt_alloc	counter_args
+
+counter_stmt_alloc	:	COUNTER
 			{
 				$$ = counter_stmt_alloc(&@$);
+			}
+			;
+
+counter_args		:	counter_arg
+			{
+				$<stmt>$	= $<stmt>0;
+			}
+			|	counter_args	counter_arg
+			;
+
+counter_arg		:	PACKETS			NUM
+			{
+				$<stmt>0->counter.packets = $2;
+			}
+			|	BYTES			NUM
+			{
+				$<stmt>0->counter.bytes	 = $2;
 			}
 			;
 

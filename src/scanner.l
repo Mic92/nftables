@@ -250,6 +250,8 @@ addrstring	({macaddr}|{ip4addr}|{ip6addr})
 "rename"		{ return RENAME; }
 
 "counter"		{ return COUNTER; }
+"packets"		{ return PACKETS; }
+"bytes"			{ return BYTES; }
 
 "log"			{ return LOG; }
 "prefix"		{ return PREFIX; }
