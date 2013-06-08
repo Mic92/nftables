@@ -19,6 +19,8 @@
 #include <rule.h>
 #include <utils.h>
 
+#include <netinet/ip.h>
+#include <linux/netfilter.h>
 
 void handle_free(struct handle *h)
 {
@@ -224,11 +226,32 @@ struct chain *chain_lookup(const struct table *table, const struct handle *h)
 	return NULL;
 }
 
+static const char *hooknum2str_array[NF_INET_NUMHOOKS] = {
+	[NF_INET_PRE_ROUTING]	= "NF_INET_PRE_ROUTING",
+	[NF_INET_LOCAL_IN]	= "NF_INET_LOCAL_IN",
+	[NF_INET_FORWARD]	= "NF_INET_FORWARD",
+	[NF_INET_LOCAL_OUT]	= "NF_INET_LOCAL_OUT",
+	[NF_INET_POST_ROUTING]	= "NF_INET_POST_ROUTING",
+};
+
+static const char *hooknum2str(unsigned int hooknum)
+{
+	if (hooknum >= NF_INET_NUMHOOKS)
+		return "UNKNOWN";
+
+	return hooknum2str_array[hooknum];
+}
+
 static void chain_print(const struct chain *chain)
 {
 	struct rule *rule;
 
 	printf("\tchain %s {\n", chain->handle.chain);
+	if (chain->hooknum) {
+		printf("\t\t hook %s %u;\n",
+		hooknum2str(chain->hooknum),
+		chain->priority);
+	}
 	list_for_each_entry(rule, &chain->rules, list) {
 		printf("\t\t");
 		rule_print(rule);
