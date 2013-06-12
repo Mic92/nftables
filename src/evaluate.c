@@ -955,7 +955,7 @@ static int expr_evaluate_relational(struct eval_ctx *ctx, struct expr **expr)
 	case OP_GT:
 	case OP_LTE:
 	case OP_GTE:
-		if (datatype_equal(left->dtype, right->dtype))
+		if (!datatype_equal(left->dtype, right->dtype))
 			return expr_binary_error(ctx, right, left,
 						 "datatype mismatch, expected %s, "
 						 "expression has type %s",
@@ -986,7 +986,7 @@ static int expr_evaluate_relational(struct eval_ctx *ctx, struct expr **expr)
 			return -1;
 		break;
 	case OP_RANGE:
-		if (datatype_equal(left->dtype, right->dtype))
+		if (!datatype_equal(left->dtype, right->dtype))
 			return expr_binary_error(ctx, right, left,
 						 "datatype mismatch, expected %s, "
 						 "expression has type %s",
