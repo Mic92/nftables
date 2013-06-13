@@ -1,6 +1,8 @@
 #ifndef _LINUX_NF_TABLES_H
 #define _LINUX_NF_TABLES_H
 
+#define NFT_CHAIN_MAXNAMELEN 32
+
 enum nft_registers {
 	NFT_REG_VERDICT,
 	NFT_REG_1,
@@ -46,6 +48,8 @@ enum nf_tables_msg_types {
 	NFT_MSG_NEWSETELEM,
 	NFT_MSG_GETSETELEM,
 	NFT_MSG_DELSETELEM,
+	NFT_MSG_COMMIT,
+	NFT_MSG_ABORT,
 	NFT_MSG_MAX,
 };
 
@@ -76,6 +80,15 @@ enum nft_hook_attributes {
 #define NFTA_HOOK_MAX		(__NFTA_HOOK_MAX - 1)
 
 /**
+ * enum nft_table_flags - nf_tables table flags
+ *
+ * @NFT_TABLE_F_DORMANT: this table is not active
+ */
+enum nft_table_flags {
+	NFT_TABLE_F_DORMANT	= 0x1,
+};
+
+/**
  * enum nft_table_attributes - nf_tables table netlink attributes
  *
  * @NFTA_TABLE_NAME: name of the table (NLA_STRING)
@@ -83,6 +96,7 @@ enum nft_hook_attributes {
 enum nft_table_attributes {
 	NFTA_TABLE_UNSPEC,
 	NFTA_TABLE_NAME,
+	NFTA_TABLE_FLAGS,
 	__NFTA_TABLE_MAX
 };
 #define NFTA_TABLE_MAX		(__NFTA_TABLE_MAX - 1)
@@ -97,11 +111,21 @@ enum nft_table_attributes {
 enum nft_chain_attributes {
 	NFTA_CHAIN_UNSPEC,
 	NFTA_CHAIN_TABLE,
+	NFTA_CHAIN_HANDLE,
 	NFTA_CHAIN_NAME,
 	NFTA_CHAIN_HOOK,
+	NFTA_CHAIN_POLICY,
+	NFTA_CHAIN_USE,
+	NFTA_CHAIN_TYPE,
+	NFTA_CHAIN_COUNTERS,
 	__NFTA_CHAIN_MAX
 };
 #define NFTA_CHAIN_MAX		(__NFTA_CHAIN_MAX - 1)
+
+enum {
+	NFT_RULE_F_COMMIT	= (1 << 0),
+	NFT_RULE_F_MASK		= NFT_RULE_F_COMMIT,
+};
 
 /**
  * enum nft_rule_attributes - nf_tables rule netlink attributes
@@ -117,9 +141,24 @@ enum nft_rule_attributes {
 	NFTA_RULE_CHAIN,
 	NFTA_RULE_HANDLE,
 	NFTA_RULE_EXPRESSIONS,
+	NFTA_RULE_FLAGS,
+	NFTA_RULE_COMPAT,
 	__NFTA_RULE_MAX
 };
 #define NFTA_RULE_MAX		(__NFTA_RULE_MAX - 1)
+
+enum nft_rule_compat_flags {
+	NFT_RULE_COMPAT_F_INV	= (1 << 1),
+	NFT_RULE_COMPAT_F_MASK	= NFT_RULE_COMPAT_F_INV,
+};
+
+enum nft_rule_compat_attributes {
+	NFTA_RULE_COMPAT_UNSPEC,
+	NFTA_RULE_COMPAT_PROTO,
+	NFTA_RULE_COMPAT_FLAGS,
+	__NFTA_RULE_COMPAT_MAX
+};
+#define NFTA_RULE_COMPAT_MAX	(__NFTA_RULE_COMPAT_MAX - 1)
 
 /**
  * enum nft_set_flags - nf_tables set flags
@@ -595,10 +634,11 @@ enum nft_nat_types {
 enum nft_nat_attributes {
 	NFTA_NAT_UNSPEC,
 	NFTA_NAT_TYPE,
-	NFTA_NAT_ADDR_MIN,
-	NFTA_NAT_ADDR_MAX,
-	NFTA_NAT_PROTO_MIN,
-	NFTA_NAT_PROTO_MAX,
+	NFTA_NAT_FAMILY,
+	NFTA_NAT_REG_ADDR_MIN,
+	NFTA_NAT_REG_ADDR_MAX,
+	NFTA_NAT_REG_PROTO_MIN,
+	NFTA_NAT_REG_PROTO_MAX,
 	__NFTA_NAT_MAX
 };
 #define NFTA_NAT_MAX		(__NFTA_NAT_MAX - 1)
