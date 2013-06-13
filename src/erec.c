@@ -107,7 +107,7 @@ void erec_print(FILE *f, const struct error_record *erec)
 		fprintf(f, "%s\n", erec->msg);
 		for (l = 0; l < (int)erec->num_locations; l++) {
 			loc = &erec->locations[l];
-			netlink_dump_object(loc->nl_obj);
+			netlink_dump_expr(loc->nle);
 		}
 		fprintf(f, "\n");
 	} else {

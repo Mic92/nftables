@@ -21,6 +21,7 @@ nft-obj			+= rbtree.o
 nft-obj			+= gmputil.o
 nft-obj			+= utils.o
 nft-obj			+= erec.o
+nft-obj			+= mnl.o
 
 nft-obj			+= parser.o
 nft-extra-clean-files	+= parser.c parser.h

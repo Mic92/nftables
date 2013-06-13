@@ -49,11 +49,11 @@ then
 fi
 
 # Checks for libraries.
-AC_CHECK_LIB([nl], [nl_socket_alloc], ,
-	     AC_MSG_ERROR([No suitable version of libnl found]))
+AC_CHECK_LIB([mnl], [mnl_socket_open], ,
+	     AC_MSG_ERROR([No suitable version of libmnl found]))
 
-AC_CHECK_LIB([nl-nf], [nfnl_nft_rule_alloc], ,
-	     AC_MSG_ERROR([No suitable version of libnl-nf found]))
+AC_CHECK_LIB([nftables], [nft_rule_alloc], ,
+	     AC_MSG_ERROR([No suitable version of libnftables found]))
 
 AC_CHECK_LIB([gmp], [__gmpz_init], ,
 	     AC_MSG_ERROR([No suitable version of libgmp found]))

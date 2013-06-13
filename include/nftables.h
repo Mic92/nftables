@@ -50,7 +50,7 @@ struct location {
 			unsigned int		last_column;
 		};
 		struct {
-			struct nl_object	*nl_obj;
+			void			*nle;
 		};
 	};
 };
