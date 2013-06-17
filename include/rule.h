@@ -15,7 +15,7 @@
  * @handle:	rule handle (rules only)
  */
 struct handle {
-	int			family;
+	uint32_t		family;
 	const char		*table;
 	const char		*chain;
 	const char		*set;
