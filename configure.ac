@@ -55,9 +55,6 @@ AC_CHECK_LIB([nl], [nl_socket_alloc], ,
 AC_CHECK_LIB([nl-nf], [nfnl_nft_rule_alloc], ,
 	     AC_MSG_ERROR([No suitable version of libnl-nf found]))
 
-AC_CHECK_LIB([nl-route], [rtnl_link_alloc], ,
-	     AC_MSG_ERROR([No suitable version of libnl-route found]))
-
 AC_CHECK_LIB([gmp], [__gmpz_init], ,
 	     AC_MSG_ERROR([No suitable version of libgmp found]))
 

@@ -14,12 +14,12 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <stdint.h>
+#include <string.h>
 #include <net/if.h>
 #include <net/if_arp.h>
 #include <pwd.h>
 #include <grp.h>
-#include <netlink/route/link.h>
-#include <netlink/route/tc.h>
+#include <linux/pkt_sched.h>
 
 #include <nftables.h>
 #include <expression.h>
@@ -65,10 +65,24 @@ static const struct datatype realm_type = {
 
 static void tchandle_type_print(const struct expr *expr)
 {
-	char buf[sizeof("ffff:ffff")];
+	uint32_t handle = mpz_get_uint32(expr->value);
 
-	printf("%s", rtnl_tc_handle2str(mpz_get_uint32(expr->value),
-					buf, sizeof(buf)));
+	switch(handle) {
+	case TC_H_ROOT:
+		printf("root\n");
+	case TC_H_UNSPEC:
+		printf("none\n");
+	default:
+		if (TC_H_MAJ(handle) == 0)
+			printf(":%04x\n", TC_H_MIN(handle));
+		else if (TC_H_MIN(handle) == 0)
+			printf("%04x:\n", TC_H_MAJ(handle) >> 16);
+		else {
+			printf("%04x:%04x\n",
+			       TC_H_MAJ(handle) >> 16, TC_H_MIN(handle));
+		}
+		break;
+	}
 }
 
 static struct error_record *tchandle_type_parse(const struct expr *sym,
@@ -76,14 +90,33 @@ static struct error_record *tchandle_type_parse(const struct expr *sym,
 {
 	uint32_t handle;
 
-	if (rtnl_tc_str2handle(sym->identifier, &handle) < 0)
-		return error(&sym->location, "Could not parse %s",
-			     sym->dtype->desc);
+	if (strcmp(sym->identifier, "root") == 0)
+		handle = TC_H_ROOT;
+	else if (strcmp(sym->identifier, "none") == 0)
+		handle = TC_H_UNSPEC;
+	else if (sym->identifier[0] == ':') {
+		if (sscanf(sym->identifier, ":%04x", &handle) < 0)
+			goto err;
+	} else if (sym->identifier[strlen(sym->identifier)-1] == ':') {
+		if (sscanf(sym->identifier, "%04x:", &handle) < 0)
+			goto err;
 
+		handle <<= 16;
+	} else {
+		uint32_t min, max;
+
+		if (sscanf(sym->identifier, "%04x:%04x", &min, &max) < 0)
+			goto err;
+
+		handle = max << 16 | min;
+	}
 	*res = constant_expr_alloc(&sym->location, sym->dtype,
 				   BYTEORDER_HOST_ENDIAN,
 				   sizeof(handle) * BITS_PER_BYTE, &handle);
 	return NULL;
+err:
+	return error(&sym->location, "Could not parse %s",
+		     sym->dtype->desc);
 }
 
 static const struct datatype tchandle_type = {
