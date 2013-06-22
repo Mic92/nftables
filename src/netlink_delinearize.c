@@ -593,11 +593,73 @@ static void meta_match_postprocess(struct payload_ctx *ctx,
 	}
 }
 
+static int expr_value2cidr(struct expr *expr)
+{
+	int i, j, k = 0;
+	uint32_t data[4], bits;
+	uint32_t len = div_round_up(expr->len, BITS_PER_BYTE) / sizeof(uint32_t);
+
+	assert(expr->ops->type == EXPR_VALUE);
+
+	mpz_export_data(data, expr->value, expr->byteorder, len);
+
+	for (i = len - 1; i >= 0; i--) {
+		j = 32;
+		bits = UINT32_MAX >> 1;
+
+		if (data[i] == UINT32_MAX)
+			goto next;
+
+		while (--j >= 0) {
+			if (data[i] == bits)
+				break;
+
+			bits >>=1;
+		}
+next:
+		k += j;
+	}
+	return k;
+}
+
+static void relational_binop_postprocess(struct expr *expr)
+{
+	struct expr *binop = expr->left, *value = expr->right, *i;
+	unsigned long n;
+
+	if (binop->op == OP_AND && expr->op == OP_NEQ &&
+	    expr->right->dtype->basetype->type == TYPE_BITMASK) {
+		expr_free(expr->right);
+		expr->right = list_expr_alloc(&binop->left->location);
+		n = 0;
+		while ((n = mpz_scan1(binop->right->value, n)) != ULONG_MAX) {
+			i = constant_expr_alloc(&binop->right->location,
+						binop->left->dtype,
+						binop->right->byteorder,
+						binop->right->len, NULL);
+			mpz_set_ui(i->value, 1);
+			mpz_lshift_ui(i->value, n);
+			compound_expr_add(expr->right, i);
+			n++;
+		}
+		expr->left = binop->left;
+		expr->op = OP_FLAGCMP;
+	} else if ((binop->left->dtype->type == TYPE_IPADDR ||
+		    binop->left->dtype->type == TYPE_IP6ADDR) &&
+		    binop->op == OP_AND) {
+		expr->left = expr_clone(binop->left);
+		expr->right = prefix_expr_alloc(&expr->location,
+						expr_clone(value),
+						expr_value2cidr(binop->right));
+		expr_free(value);
+		expr_free(binop);
+	}
+}
+
 static void expr_postprocess(struct rule_pp_ctx *ctx,
 			     struct stmt *stmt, struct expr **exprp)
 {
 	struct expr *expr = *exprp, *i;
-	unsigned long n;
 
 	//pr_debug("%s len %u\n", expr->ops->name, expr->len);
 
@@ -648,26 +710,7 @@ static void expr_postprocess(struct rule_pp_ctx *ctx,
 			meta_match_postprocess(&ctx->pctx, expr);
 			break;
 		case EXPR_BINOP:
-			if (expr->left->op != OP_AND ||
-			    expr->op != OP_NEQ ||
-			    expr->right->dtype->basetype->type != TYPE_BITMASK)
-				break;
-
-			expr_free(expr->right);
-			expr->right = list_expr_alloc(&expr->left->left->location);
-			n = 0;
-			while ((n = mpz_scan1(expr->left->right->value, n)) != ULONG_MAX) {
-				i = constant_expr_alloc(&expr->left->right->location,
-							expr->left->left->dtype,
-							expr->left->right->byteorder,
-							expr->left->right->len, NULL);
-				mpz_set_ui(i->value, 1);
-				mpz_lshift_ui(i->value, n);
-				compound_expr_add(expr->right, i);
-				n++;
-			}
-			expr->left = expr->left->left;
-			expr->op = OP_FLAGCMP;
+			relational_binop_postprocess(expr);
 			break;
 		default:
 			break;

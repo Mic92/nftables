@@ -228,6 +228,28 @@ static void netlink_gen_verdict(const struct expr *expr,
 	}
 }
 
+static void netlink_gen_prefix(const struct expr *expr,
+			       struct nft_data_linearize *data)
+{
+	uint32_t i, cidr, idx;
+	uint32_t mask;
+
+	assert(expr->ops->type == EXPR_PREFIX);
+
+	data->len = div_round_up(expr->prefix->len, BITS_PER_BYTE);
+	cidr = expr->prefix_len;
+
+	for (i = 0; i < data->len; i+= 32) {
+		if (cidr - i >= 32)
+			mask = 0;
+		else
+			mask = (1 << cidr) - 1;
+
+		idx = i / 32;
+		data->value[idx] = mask;
+	}
+}
+
 void netlink_gen_data(const struct expr *expr, struct nft_data_linearize *data)
 {
 	switch (expr->ops->type) {
@@ -237,6 +259,8 @@ void netlink_gen_data(const struct expr *expr, struct nft_data_linearize *data)
 		return netlink_gen_concat_data(expr, data);
 	case EXPR_VERDICT:
 		return netlink_gen_verdict(expr, data);
+	case EXPR_PREFIX:
+		return netlink_gen_prefix(expr, data);
 	default:
 		BUG("invalid data expression type %s\n", expr->ops->name);
 	}

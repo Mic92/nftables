@@ -184,18 +184,36 @@ static void netlink_gen_cmp(struct netlink_linearize_ctx *ctx,
 {
 	struct nft_rule_expr *nle;
 	enum nft_registers sreg;
-	struct nft_data_linearize nld;
+	struct nft_data_linearize nld, zero = {};
+	struct expr *right;
 
 	assert(dreg == NFT_REG_VERDICT);
 
 	sreg = get_register(ctx);
 	netlink_gen_expr(ctx, expr->left, sreg);
 
+	if (expr->right->ops->type == EXPR_PREFIX) {
+		right = expr->right->prefix;
+
+		netlink_gen_data(expr->right, &nld);
+		zero.len = nld.len;
+
+		nle = alloc_nft_expr("bitwise");
+		nft_rule_expr_set_u32(nle, NFT_EXPR_BITWISE_SREG, sreg);
+		nft_rule_expr_set_u32(nle, NFT_EXPR_BITWISE_DREG, sreg);
+		nft_rule_expr_set_u32(nle, NFT_EXPR_BITWISE_LEN, nld.len);
+		nft_rule_expr_set(nle, NFT_EXPR_BITWISE_MASK, &nld.value, nld.len);
+		nft_rule_expr_set(nle, NFT_EXPR_BITWISE_XOR, &zero.value, zero.len);
+		nft_rule_add_expr(ctx->nlr, nle);
+	} else {
+		right = expr->right;
+	}
+
 	nle = alloc_nft_expr("cmp");
 	nft_rule_expr_set_u8(nle, NFT_EXPR_CMP_SREG, sreg);
 	nft_rule_expr_set_u8(nle, NFT_EXPR_CMP_OP,
-			      netlink_gen_cmp_op(expr->op));
-	netlink_gen_data(expr->right, &nld);
+			     netlink_gen_cmp_op(expr->op));
+	netlink_gen_data(right, &nld);
 	nft_rule_expr_set(nle, NFT_EXPR_CMP_DATA, nld.value, nld.len);
 	release_register(ctx);
 
