@@ -329,10 +329,16 @@ static void ipaddr_type_print(const struct expr *expr)
 {
 	struct sockaddr_in sin = { .sin_family = AF_INET, };
 	char buf[NI_MAXHOST];
+	int err;
 
 	sin.sin_addr.s_addr = mpz_get_be32(expr->value);
-	getnameinfo((struct sockaddr *)&sin, sizeof(sin), buf, sizeof(buf),
-		    NULL, 0, numeric_output ? NI_NUMERICHOST : 0);
+	err = getnameinfo((struct sockaddr *)&sin, sizeof(sin), buf,
+			  sizeof(buf), NULL, 0,
+			  numeric_output ? NI_NUMERICHOST : 0);
+	if (err != 0) {
+		getnameinfo((struct sockaddr *)&sin, sizeof(sin), buf,
+			    sizeof(buf), NULL, 0, NI_NUMERICHOST);
+	}
 	printf("%s", buf);
 }
 
@@ -378,12 +384,18 @@ static void ip6addr_type_print(const struct expr *expr)
 {
 	struct sockaddr_in6 sin6 = { .sin6_family = AF_INET6 };
 	char buf[NI_MAXHOST];
+	int err;
 
 	mpz_export_data(&sin6.sin6_addr, expr->value, BYTEORDER_BIG_ENDIAN,
 			sizeof(sin6.sin6_addr));
 
-	getnameinfo((struct sockaddr *)&sin6, sizeof(sin6), buf, sizeof(buf),
-		    NULL, 0, numeric_output ? NI_NUMERICHOST : 0);
+	err = getnameinfo((struct sockaddr *)&sin6, sizeof(sin6), buf,
+			  sizeof(buf), NULL, 0,
+			  numeric_output ? NI_NUMERICHOST : 0);
+	if (err != 0) {
+		getnameinfo((struct sockaddr *)&sin6, sizeof(sin6), buf,
+			    sizeof(buf), NULL, 0, NI_NUMERICHOST);
+	}
 	printf("%s", buf);
 }
 
@@ -468,11 +480,16 @@ static void inet_service_type_print(const struct expr *expr)
 {
 	struct sockaddr_in sin = { .sin_family = AF_INET };
 	char buf[NI_MAXSERV];
+	int err;
 
 	sin.sin_port = mpz_get_be16(expr->value);
-	getnameinfo((struct sockaddr *)&sin, sizeof(sin), NULL, 0,
-		    buf, sizeof(buf),
-		    numeric_output < NUMERIC_ALL ? 0 : NI_NUMERICSERV);
+	err = getnameinfo((struct sockaddr *)&sin, sizeof(sin), NULL, 0,
+			  buf, sizeof(buf),
+			  numeric_output < NUMERIC_ALL ? 0 : NI_NUMERICSERV);
+	if (err != 0) {
+		getnameinfo((struct sockaddr *)&sin, sizeof(sin), NULL,
+			    0, buf, sizeof(buf), NI_NUMERICSERV);
+	}
 	printf("%s", buf);
 }
 
