@@ -41,6 +41,8 @@ void handle_merge(struct handle *dst, const struct handle *src)
 		dst->set = xstrdup(src->set);
 	if (dst->handle == 0)
 		dst->handle = src->handle;
+	if (dst->position == 0)
+		dst->position = src->position;
 }
 
 struct set *set_alloc(const struct location *loc)

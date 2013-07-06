@@ -13,6 +13,7 @@
  * @chain:	chain name (chains and rules only)
  * @set:	set name (sets only)
  * @handle:	rule handle (rules only)
+ * @position:	rule position (rules only)
  */
 struct handle {
 	uint32_t		family;
@@ -20,6 +21,7 @@ struct handle {
 	const char		*chain;
 	const char		*set;
 	uint64_t		handle;
+	uint64_t		position;
 };
 
 extern void handle_merge(struct handle *dst, const struct handle *src);

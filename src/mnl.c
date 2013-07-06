@@ -61,7 +61,7 @@ int mnl_nft_rule_add(struct mnl_socket *nf_sock, struct nft_rule *nlr,
 
 	nlh = nft_table_nlmsg_build_hdr(buf, NFT_MSG_NEWRULE,
 			nft_rule_attr_get_u32(nlr, NFT_RULE_ATTR_FAMILY),
-			NLM_F_APPEND|NLM_F_ACK|NLM_F_CREATE, seq);
+			flags|NLM_F_ACK|NLM_F_CREATE, seq);
 	nft_rule_nlmsg_build_payload(nlh, nlr);
 
 	return mnl_talk(nf_sock, nlh, nlh->nlmsg_len, NULL, NULL);

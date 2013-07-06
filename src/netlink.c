@@ -105,6 +105,8 @@ struct nft_rule *alloc_nft_rule(const struct handle *h)
 		nft_rule_attr_set_str(nlr, NFT_RULE_ATTR_CHAIN, h->chain);
 	if (h->handle)
 		nft_rule_attr_set_u64(nlr, NFT_RULE_ATTR_HANDLE, h->handle);
+	if (h->position)
+		nft_rule_attr_set_u64(nlr, NFT_RULE_ATTR_POSITION, h->position);
 	return nlr;
 }
 

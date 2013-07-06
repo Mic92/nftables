@@ -326,6 +326,8 @@ static void location_update(struct location *loc, struct location *rhs, int n)
 %token SNAT			"snat"
 %token DNAT			"dnat"
 
+%token POSITION			"position"
+
 %type <string>			identifier string
 %destructor { xfree($$); }	identifier string
 
@@ -339,7 +341,7 @@ static void location_update(struct location *loc, struct location *rhs, int n)
 %destructor { handle_free(&$$); } table_spec tables_spec chain_spec chain_identifier ruleid_spec
 %type <handle>			set_spec set_identifier
 %destructor { handle_free(&$$); } set_spec set_identifier
-%type <val>			handle_spec family_spec
+%type <val>			handle_spec family_spec position_spec
 
 %type <table>			table_block_alloc table_block
 %destructor { table_free($$); }	table_block_alloc
@@ -842,10 +844,21 @@ handle_spec		:	/* empty */
 			}
 			;
 
-ruleid_spec		:	chain_spec	handle_spec
+position_spec		:	/* empty */
+			{
+				$$ = 0;
+			}
+			|	POSITION	NUM
+			{
+				$$ = $2;
+			}
+			;
+
+ruleid_spec		:	chain_spec	handle_spec	position_spec
 			{
 				$$		= $1;
 				$$.handle	= $2;
+				$$.position	= $3;
 			}
 			;
 
