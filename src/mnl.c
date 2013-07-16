@@ -93,7 +93,7 @@ static int rule_cb(const struct nlmsghdr *nlh, void *data)
 	if (nft_rule_nlmsg_parse(nlh, r) < 0)
 		goto err_free;
 
-	nft_rule_list_add(r, nlr_list);
+	nft_rule_list_add_tail(r, nlr_list);
 	return MNL_CB_OK;
 
 err_free:
@@ -169,7 +169,7 @@ static int chain_cb(const struct nlmsghdr *nlh, void *data)
 	if (nft_chain_nlmsg_parse(nlh, c) < 0)
 		goto err_free;
 
-	nft_chain_list_add(c, nlc_list);
+	nft_chain_list_add_tail(c, nlc_list);
 	return MNL_CB_OK;
 
 err_free:
@@ -264,7 +264,7 @@ static int table_cb(const struct nlmsghdr *nlh, void *data)
 	if (nft_table_nlmsg_parse(nlh, t) < 0)
 		goto err_free;
 
-	nft_table_list_add(t, nlt_list);
+	nft_table_list_add_tail(t, nlt_list);
 	return MNL_CB_OK;
 
 err_free:
@@ -365,7 +365,7 @@ static int set_cb(const struct nlmsghdr *nlh, void *data)
 	if (nft_set_nlmsg_parse(nlh, s) < 0)
 		goto err_free;
 
-	nft_set_list_add(s, nls_list);
+	nft_set_list_add_tail(s, nls_list);
 	return MNL_CB_OK;
 
 err_free:
