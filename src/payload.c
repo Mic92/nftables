@@ -795,6 +795,63 @@ const struct payload_desc payload_ip = {
 };
 
 /*
+ * ICMPv6
+ */
+
+#include <netinet/icmp6.h>
+
+static const struct symbol_table icmp6_type_tbl = {
+	.symbols	= {
+		SYMBOL("destination-unreachable",	ICMP6_DST_UNREACH),
+		SYMBOL("packet-too-big",		ICMP6_PACKET_TOO_BIG),
+		SYMBOL("time-exceeded",			ICMP6_TIME_EXCEEDED),
+		SYMBOL("param-problem",			ICMP6_PARAM_PROB),
+		SYMBOL("echo-request",			ICMP6_ECHO_REQUEST),
+		SYMBOL("echo-reply",			ICMP6_ECHO_REPLY),
+		SYMBOL("mld-listener-query",		MLD_LISTENER_QUERY),
+		SYMBOL("mld-listener-report",		MLD_LISTENER_REPORT),
+		SYMBOL("mld-listener-reduction",	MLD_LISTENER_REDUCTION),
+		SYMBOL("nd-router-solicit",		ND_ROUTER_SOLICIT),
+		SYMBOL("nd-router-advert",		ND_ROUTER_ADVERT),
+		SYMBOL("nd-neighbor-solicit",		ND_NEIGHBOR_SOLICIT),
+		SYMBOL("nd-neighbor-advert",		ND_NEIGHBOR_ADVERT),
+		SYMBOL("nd-redirect",			ND_REDIRECT),
+		SYMBOL("router-renumbering",		ICMP6_ROUTER_RENUMBERING),
+		SYMBOL_LIST_END
+	},
+};
+
+static const struct datatype icmp6_type_type = {
+	.type		= TYPE_ICMP6_TYPE,
+	.name		= "icmpv6_type",
+	.desc		= "ICMPv6 type",
+	.byteorder	= BYTEORDER_BIG_ENDIAN,
+	.size		= BITS_PER_BYTE,
+	.basetype	= &integer_type,
+	.sym_tbl	= &icmp6_type_tbl,
+};
+
+#define ICMP6HDR_FIELD(__name, __member) \
+	HDR_FIELD(__name, struct icmp6_hdr, __member)
+#define ICMP6HDR_TYPE(__name, __type, __member) \
+	HDR_TYPE(__name, __type, struct icmp6_hdr, __member)
+
+const struct payload_desc payload_icmp6 = {
+	.name		= "icmpv6",
+	.base		= PAYLOAD_BASE_TRANSPORT_HDR,
+	.templates	= {
+		[ICMP6HDR_TYPE]		= ICMP6HDR_TYPE("type", &icmp6_type_type, icmp6_type),
+		[ICMP6HDR_CODE]		= ICMP6HDR_FIELD("code", icmp6_code),
+		[ICMP6HDR_CHECKSUM]	= ICMP6HDR_FIELD("checksum", icmp6_cksum),
+		[ICMP6HDR_PPTR]		= ICMP6HDR_FIELD("parameter-problem", icmp6_pptr),
+		[ICMP6HDR_MTU]		= ICMP6HDR_FIELD("packet-too-big", icmp6_mtu),
+		[ICMP6HDR_ID]		= ICMP6HDR_FIELD("id", icmp6_id),
+		[ICMP6HDR_SEQ]		= ICMP6HDR_FIELD("sequence", icmp6_seq),
+		[ICMP6HDR_MAXDELAY]	= ICMP6HDR_FIELD("max-delay", icmp6_maxdelay),
+	},
+};
+
+/*
  * IPv6
  */
 
@@ -818,6 +875,7 @@ const struct payload_desc payload_ip6 = {
 		PAYLOAD_PROTO(IPPROTO_TCP,	&payload_tcp),
 		PAYLOAD_PROTO(IPPROTO_DCCP,	&payload_dccp),
 		PAYLOAD_PROTO(IPPROTO_SCTP,	&payload_sctp),
+		PAYLOAD_PROTO(IPPROTO_ICMPV6,	&payload_icmp6),
 	},
 	.templates	= {
 		[IP6HDR_VERSION]	= HDR_BITFIELD("version", &integer_type, 0, 4),
@@ -991,4 +1049,5 @@ static void __init payload_init(void)
 	datatype_register(&dccp_pkttype_type);
 	datatype_register(&arpop_type);
 	datatype_register(&ethertype_type);
+	datatype_register(&icmp6_type_type);
 }

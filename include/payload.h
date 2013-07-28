@@ -197,6 +197,18 @@ enum icmp_hdr_fields {
 	ICMPHDR_MTU,
 };
 
+enum icmp6_hdr_fields {
+	ICMP6HDR_INVALID,
+	ICMP6HDR_TYPE,
+	ICMP6HDR_CODE,
+	ICMP6HDR_CHECKSUM,
+	ICMP6HDR_PPTR,
+	ICMP6HDR_MTU,
+	ICMP6HDR_ID,
+	ICMP6HDR_SEQ,
+	ICMP6HDR_MAXDELAY,
+};
+
 enum ip6_hdr_fields {
 	IP6HDR_INVALID,
 	IP6HDR_VERSION,
@@ -207,6 +219,7 @@ enum ip6_hdr_fields {
 	IP6HDR_HOPLIMIT,
 	IP6HDR_SADDR,
 	IP6HDR_DADDR,
+	IP6HDR_PROTOCOL,
 };
 
 enum ah_hdr_fields {
@@ -278,6 +291,7 @@ extern const struct payload_desc payload_udplite;
 extern const struct payload_desc payload_tcp;
 extern const struct payload_desc payload_dccp;
 extern const struct payload_desc payload_sctp;
+extern const struct payload_desc payload_icmp6;
 
 extern const struct payload_desc payload_ip;
 extern const struct payload_desc payload_ip6;

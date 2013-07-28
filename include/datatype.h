@@ -32,6 +32,7 @@
  * @TYPE_CT_STATE:	conntrack state (bitmask subtype)
  * @TYPE_CT_DIR:	conntrack direction
  * @TYPE_CT_STATUS:	conntrack status (bitmask subtype)
+ * @TYPE_ICMP6_TYPE:	ICMPv6 type codes (integer subtype)
  */
 enum datatypes {
 	TYPE_INVALID,
@@ -62,6 +63,7 @@ enum datatypes {
 	TYPE_CT_STATE,
 	TYPE_CT_DIR,
 	TYPE_CT_STATUS,
+	TYPE_ICMP6_TYPE,
 	__TYPE_MAX
 };
 #define TYPE_MAX		(__TYPE_MAX - 1)

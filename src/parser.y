@@ -232,6 +232,10 @@ static void location_update(struct location *loc, struct location *rhs, int n)
 %token NEXTHDR			"nexthdr"
 %token HOPLIMIT			"hoplimit"
 
+%token ICMP6			"icmpv6"
+%token PPTR			"param-problem"
+%token MAXDELAY			"max-delay"
+
 %token AH			"ah"
 %token RESERVED			"reserved"
 %token SPI			"spi"
@@ -420,9 +424,9 @@ static void location_update(struct location *loc, struct location *rhs, int n)
 %type <expr>			ip_hdr_expr	icmp_hdr_expr
 %destructor { expr_free($$); }	ip_hdr_expr	icmp_hdr_expr
 %type <val>			ip_hdr_field	icmp_hdr_field
-%type <expr>			ip6_hdr_expr
-%destructor { expr_free($$); }	ip6_hdr_expr
-%type <val>			ip6_hdr_field
+%type <expr>			ip6_hdr_expr    icmp6_hdr_expr
+%destructor { expr_free($$); }	ip6_hdr_expr	icmp6_hdr_expr
+%type <val>			ip6_hdr_field   icmp6_hdr_field
 %type <expr>			auth_hdr_expr	esp_hdr_expr		comp_hdr_expr
 %destructor { expr_free($$); }	auth_hdr_expr	esp_hdr_expr		comp_hdr_expr
 %type <val>			auth_hdr_field	esp_hdr_field		comp_hdr_field
@@ -1337,6 +1341,7 @@ payload_expr		:	payload_raw_expr
 			|	ip_hdr_expr
 			|	icmp_hdr_expr
 			|	ip6_hdr_expr
+			|	icmp6_hdr_expr
 			|	auth_hdr_expr
 			|	esp_hdr_expr
 			|	comp_hdr_expr
@@ -1453,6 +1458,28 @@ ip6_hdr_field		:	VERSION		{ $$ = IP6HDR_VERSION; }
 			|	HOPLIMIT	{ $$ = IP6HDR_HOPLIMIT; }
 			|	SADDR		{ $$ = IP6HDR_SADDR; }
 			|	DADDR		{ $$ = IP6HDR_DADDR; }
+			;
+icmp6_hdr_expr		:	ICMP6	icmp6_hdr_field
+			{
+				$$ = payload_expr_alloc(&@$, &payload_icmp6, $2);
+			}
+			|	ICMP6
+			{
+				uint8_t data = IPPROTO_ICMPV6;
+				$$ = constant_expr_alloc(&@$, &inet_protocol_type,
+							 BYTEORDER_HOST_ENDIAN,
+							 sizeof(data) * BITS_PER_BYTE, &data);
+			}
+			;
+
+icmp6_hdr_field		:	TYPE		{ $$ = ICMP6HDR_TYPE; }
+			|	CODE		{ $$ = ICMP6HDR_CODE; }
+			|	CHECKSUM	{ $$ = ICMP6HDR_CHECKSUM; }
+			|	PPTR		{ $$ = ICMP6HDR_PPTR; }
+			|	MTU		{ $$ = ICMP6HDR_MTU; }
+			|	ID		{ $$ = ICMP6HDR_ID; }
+			|	SEQUENCE	{ $$ = ICMP6HDR_SEQ; }
+			|	MAXDELAY	{ $$ = ICMP6HDR_MAXDELAY; }
 			;
 
 auth_hdr_expr		:	AH	auth_hdr_field

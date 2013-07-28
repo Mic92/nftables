@@ -323,6 +323,10 @@ addrstring	({macaddr}|{ip4addr}|{ip6addr})
 "nexthdr"		{ return NEXTHDR; }
 "hoplimit"		{ return HOPLIMIT; }
 
+"icmpv6"		{ return ICMP6; }
+"param-problem"		{ return PPTR; }
+"max-delay"		{ return MAXDELAY; }
+
 "ah"			{ return AH; }
 "reserved"		{ return RESERVED; }
 "spi"			{ return SPI; }
