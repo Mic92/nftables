@@ -458,14 +458,28 @@ static struct error_record *inet_protocol_type_parse(const struct expr *sym,
 						     struct expr **res)
 {
 	struct protoent *p;
+	uint8_t proto;
+	uintmax_t i;
+	char *end;
 
-	p = getprotobyname(sym->identifier);
-	if (p == NULL)
-		return error(&sym->location, "Could not resolve protocol name");
+	errno = 0;
+	i = strtoumax(sym->identifier, &end, 0);
+	if (sym->identifier != end && *end == '\0') {
+		if (errno == ERANGE || i > UINT8_MAX)
+			return error(&sym->location, "Protocol out of range");
+
+		proto = i;
+	} else {
+		p = getprotobyname(sym->identifier);
+		if (p == NULL)
+			return error(&sym->location, "Could not resolve protocol name");
+
+		proto = p->p_proto;
+	}
 
 	*res = constant_expr_alloc(&sym->location, &inet_protocol_type,
 				   BYTEORDER_HOST_ENDIAN, BITS_PER_BYTE,
-				   &p->p_proto);
+				   &proto);
 	return NULL;
 }
 
