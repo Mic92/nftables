@@ -11,6 +11,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <inttypes.h>
+#include <errno.h>
 #include <netdb.h>
 #include <arpa/inet.h>
 #include <linux/types.h>
@@ -500,18 +501,30 @@ static struct error_record *inet_service_type_parse(const struct expr *sym,
 {
 	struct addrinfo *ai;
 	uint16_t port;
+	uintmax_t i;
 	int err;
+	char *end;
 
-	err = getaddrinfo(NULL, sym->identifier, NULL, &ai);
-	if (err != 0)
-		return error(&sym->location, "Could not resolve service: %s",
-			     gai_strerror(err));
+	errno = 0;
+	i = strtoumax(sym->identifier, &end, 0);
+	if (sym->identifier != end && *end == '\0') {
+		if (errno == ERANGE || i > UINT16_MAX)
+			return error(&sym->location, "Service out of range");
 
-	port = ((struct sockaddr_in *)ai->ai_addr)->sin_port;
+		port = i;
+	} else {
+		err = getaddrinfo(NULL, sym->identifier, NULL, &ai);
+		if (err != 0)
+			return error(&sym->location, "Could not resolve service: %s",
+				     gai_strerror(err));
+
+		port = ((struct sockaddr_in *)ai->ai_addr)->sin_port;
+		freeaddrinfo(ai);
+	}
+
 	*res = constant_expr_alloc(&sym->location, &inet_service_type,
 				   BYTEORDER_BIG_ENDIAN,
 				   sizeof(port) * BITS_PER_BYTE, &port);
-	freeaddrinfo(ai);
 	return NULL;
 }
 
