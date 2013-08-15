@@ -104,8 +104,9 @@ static void show_help(const char *name)
 "  -i/--interactive		Read input from interactive CLI\n"
 "\n"
 "  -n/--numeric			When specified once, show network addresses numerically.\n"
-"  				When specified twice, also show Internet protocols,\n"
-"				Internet services, user IDs and group IDs numerically.\n"
+"  				When specified twice, also show Internet services,\n"
+"				user IDs and group IDs numerically.\n"
+"				When specified thrice, also show protocols numerically.\n"
 "  -a/--handle			Output rule handle.\n"
 "  -I/--includepath <directory>	Add <directory> to the paths searched for include files.\n"
 #ifdef DEBUG

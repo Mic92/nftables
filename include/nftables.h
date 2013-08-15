@@ -8,6 +8,7 @@
 enum numeric_level {
 	NUMERIC_NONE,
 	NUMERIC_ADDR,
+	NUMERIC_PORT,
 	NUMERIC_ALL,
 };
 

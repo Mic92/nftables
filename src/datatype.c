@@ -502,7 +502,7 @@ static void inet_service_type_print(const struct expr *expr)
 	sin.sin_port = mpz_get_be16(expr->value);
 	err = getnameinfo((struct sockaddr *)&sin, sizeof(sin), NULL, 0,
 			  buf, sizeof(buf),
-			  numeric_output < NUMERIC_ALL ? 0 : NI_NUMERICSERV);
+			  numeric_output < NUMERIC_PORT ? 0 : NI_NUMERICSERV);
 	if (err != 0) {
 		getnameinfo((struct sockaddr *)&sin, sizeof(sin), NULL,
 			    0, buf, sizeof(buf), NI_NUMERICSERV);
