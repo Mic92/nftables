@@ -30,9 +30,9 @@ extern struct stmt *meta_stmt_alloc(const struct location *loc,
 
 struct log_stmt {
 	const char		*prefix;
-	unsigned int		group;
 	unsigned int		snaplen;
-	unsigned int		qthreshold;
+	uint16_t		group;
+	uint16_t		qthreshold;
 };
 
 extern struct stmt *log_stmt_alloc(const struct location *loc);

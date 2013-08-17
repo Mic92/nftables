@@ -370,10 +370,10 @@ static void netlink_parse_log(struct netlink_parse_ctx *ctx,
 	prefix = nft_rule_expr_get_str(nle, NFT_EXPR_LOG_PREFIX);
 	if (prefix != NULL)
 		stmt->log.prefix = xstrdup(prefix);
-	stmt->log.group = nft_rule_expr_get_u32(nle, NFT_EXPR_LOG_GROUP);
+	stmt->log.group = nft_rule_expr_get_u16(nle, NFT_EXPR_LOG_GROUP);
 	stmt->log.snaplen = nft_rule_expr_get_u32(nle, NFT_EXPR_LOG_SNAPLEN);
 	stmt->log.qthreshold =
-		nft_rule_expr_get_u32(nle, NFT_EXPR_LOG_QTHRESHOLD);
+		nft_rule_expr_get_u16(nle, NFT_EXPR_LOG_QTHRESHOLD);
 	list_add_tail(&stmt->list, &ctx->rule->stmts);
 }
 
