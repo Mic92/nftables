@@ -100,6 +100,7 @@ enum chain_flags {
  * @flags:	chain flags
  * @hooknum:	hook number (base chains)
  * @priority:	hook priority (base chains)
+ * @type:	chain type
  * @rules:	rules contained in the chain
  */
 struct chain {
@@ -109,6 +110,7 @@ struct chain {
 	uint32_t		flags;
 	unsigned int		hooknum;
 	unsigned int		priority;
+	const char		*type;
 	struct scope		scope;
 	struct list_head	rules;
 };

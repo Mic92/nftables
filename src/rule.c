@@ -250,9 +250,8 @@ static void chain_print(const struct chain *chain)
 
 	printf("\tchain %s {\n", chain->handle.chain);
 	if (chain->hooknum) {
-		printf("\t\t hook %s %u;\n",
-		hooknum2str(chain->hooknum),
-		chain->priority);
+		printf("\t\t type %s hook %s %u;\n", chain->type,
+		       hooknum2str(chain->hooknum), chain->priority);
 	}
 	list_for_each_entry(rule, &chain->rules, list) {
 		printf("\t\t");

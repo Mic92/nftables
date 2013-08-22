@@ -766,16 +766,18 @@ map_block		:	/* empty */	{ $$ = $<set>-1; }
 			}
 			;
 
-hook_spec		:	HOOK		HOOKNUM		NUM
+hook_spec		:	TYPE		STRING		HOOK		HOOKNUM		NUM
 			{
-				$<chain>0->hooknum	= $2;
-				$<chain>0->priority	= $3;
+				$<chain>0->type		= $2;
+				$<chain>0->hooknum	= $4;
+				$<chain>0->priority	= $5;
 				$<chain>0->flags	|= CHAIN_F_BASECHAIN;
 			}
-			|	HOOK		HOOKNUM		DASH	NUM
+			|	TYPE		STRING		HOOK		HOOKNUM		DASH	NUM
 			{
-				$<chain>0->hooknum	= $2;
-				$<chain>0->priority	= -$4;
+				$<chain>0->type		= $2;
+				$<chain>0->hooknum	= $4;
+				$<chain>0->priority	= -$6;
 				$<chain>0->flags	|= CHAIN_F_BASECHAIN;
 			}
 			;

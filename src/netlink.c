@@ -461,6 +461,8 @@ int netlink_add_chain(struct netlink_ctx *ctx, const struct handle *h,
 				       chain->hooknum);
 		nft_chain_attr_set_u32(nlc, NFT_CHAIN_ATTR_PRIO,
 				       chain->priority);
+		nft_chain_attr_set_str(nlc, NFT_CHAIN_ATTR_TYPE,
+				       chain->type);
 	}
 	netlink_dump_chain(nlc);
 	err = mnl_nft_chain_add(nf_sock, nlc, NLM_F_EXCL);
@@ -524,10 +526,17 @@ static int list_chain_cb(struct nft_chain *nlc, void *arg)
 		xstrdup(nft_chain_attr_get_str(nlc, NFT_CHAIN_ATTR_NAME));
 	chain->handle.handle =
 		nft_chain_attr_get_u64(nlc, NFT_CHAIN_ATTR_HANDLE);
-	chain->hooknum       =
-		nft_chain_attr_get_u32(nlc, NFT_CHAIN_ATTR_HOOKNUM);
-	chain->priority      =
-		nft_chain_attr_get_u32(nlc, NFT_CHAIN_ATTR_PRIO);
+
+	if (nft_chain_attr_is_set(nlc, NFT_CHAIN_ATTR_HOOKNUM) &&
+	    nft_chain_attr_is_set(nlc, NFT_CHAIN_ATTR_PRIO) &&
+	    nft_chain_attr_is_set(nlc, NFT_CHAIN_ATTR_TYPE)) {
+		chain->hooknum       =
+			nft_chain_attr_get_u32(nlc, NFT_CHAIN_ATTR_HOOKNUM);
+		chain->priority      =
+			nft_chain_attr_get_u32(nlc, NFT_CHAIN_ATTR_PRIO);
+		chain->type          =
+			xstrdup(nft_chain_attr_get_str(nlc, NFT_CHAIN_ATTR_TYPE));
+	}
 	list_add_tail(&chain->list, &ctx->list);
 
 	return 0;
@@ -579,8 +588,13 @@ int netlink_get_chain(struct netlink_ctx *ctx, const struct handle *h,
 	chain->handle.family = nft_chain_attr_get_u32(nlc, NFT_CHAIN_ATTR_FAMILY);
 	chain->handle.table  = xstrdup(nft_chain_attr_get_str(nlc, NFT_CHAIN_ATTR_TABLE));
 	chain->handle.handle = nft_chain_attr_get_u64(nlc, NFT_CHAIN_ATTR_HANDLE);
-	chain->hooknum       = nft_chain_attr_get_u32(nlc, NFT_CHAIN_ATTR_HOOKNUM);
-	chain->priority      = nft_chain_attr_get_u32(nlc, NFT_CHAIN_ATTR_PRIO);
+	if (nft_chain_attr_is_set(nlc, NFT_CHAIN_ATTR_TYPE) &&
+	    nft_chain_attr_is_set(nlc, NFT_CHAIN_ATTR_HOOKNUM) &&
+	    nft_chain_attr_is_set(nlc, NFT_CHAIN_ATTR_PRIO)) {
+		chain->hooknum       = nft_chain_attr_get_u32(nlc, NFT_CHAIN_ATTR_HOOKNUM);
+		chain->priority      = nft_chain_attr_get_u32(nlc, NFT_CHAIN_ATTR_PRIO);
+		chain->type          = xstrdup(nft_chain_attr_get_str(nlc, NFT_CHAIN_ATTR_TYPE));
+	}
 	list_add_tail(&chain->list, &ctx->list);
 
 	nft_chain_free(nlc);
