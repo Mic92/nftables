@@ -525,7 +525,7 @@ static struct error_record *inet_service_type_parse(const struct expr *sym,
 		if (errno == ERANGE || i > UINT16_MAX)
 			return error(&sym->location, "Service out of range");
 
-		port = i;
+		port = htons(i);
 	} else {
 		err = getaddrinfo(NULL, sym->identifier, NULL, &ai);
 		if (err != 0)
