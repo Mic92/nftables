@@ -536,6 +536,7 @@ static int list_chain_cb(struct nft_chain *nlc, void *arg)
 			nft_chain_attr_get_u32(nlc, NFT_CHAIN_ATTR_PRIO);
 		chain->type          =
 			xstrdup(nft_chain_attr_get_str(nlc, NFT_CHAIN_ATTR_TYPE));
+		chain->flags        |= CHAIN_F_BASECHAIN;
 	}
 	list_add_tail(&chain->list, &ctx->list);
 
