@@ -6,7 +6,9 @@ Installation instructions for nftables
 
   - standard glibc headers, gcc etc.
 
-  - libnl including support for nftables: git://git.netfilter.org/libnl-nft.git
+  - libmnl: git://git.netfilter.org/libmnl.git
+
+  - libnftables: git://git.netfilter.org/libnftables.git
 
   - flex
 
@@ -52,7 +54,7 @@ Installation instructions for nftables
 
  The nftables kernel tree can be found at:
 
- git://git.kernel.org/pub/scm/linux/kernel/git/kaber/nft-2.6.git
+ git://git.kernel.org/pub/scm/linux/kernel/git/pablo/nftables.git
 
  The latest version of this code can be found at:
 
