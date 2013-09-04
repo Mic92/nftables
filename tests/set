@@ -1,7 +1,7 @@
 #! nft -f
 
 add table filter
-add chain filter output { hook NF_INET_LOCAL_OUT 0 ; }
+add chain filter output { type filter hook output priority 0 ; }
 
 # set: IP addresses
 add rule filter output ip daddr { \

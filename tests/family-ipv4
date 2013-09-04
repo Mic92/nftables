@@ -5,7 +5,7 @@ delete chain ip filter output
 delete table filter
 
 add table ip filter
-add chain ip filter output { hook NF_INET_LOCAL_IN 0; }
+add chain ip filter output { type filter hook input priority 0; }
 
 # IP address
 add rule ip filter output ip daddr 192.168.0.1 counter

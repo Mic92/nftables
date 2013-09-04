@@ -1,7 +1,7 @@
 #! nft -f
 
 add table ip6 filter
-add chain ip6 filter output { hook NF_INET_LOCAL_OUT 0 ; }
+add chain ip6 filter output { type filter hook output priority 0 ; }
 
 # IP address
 add rule ip6 filter output ip6 daddr 2001:6f8:974::1 counter

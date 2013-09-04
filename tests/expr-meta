@@ -1,7 +1,7 @@
 #! nft -f
 
 add table ip filter
-add chain ip filter output { hook NF_INET_LOCAL_OUT 0 ; }
+add chain ip filter output { type filter hook output priority 0 ; }
 
 # meta: skb len
 add rule ip filter output meta length 1000 counter

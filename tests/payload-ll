@@ -1,7 +1,7 @@
 #! nft -f
 
 add table ip filter
-add chain ip filter input NF_INET_LOCAL_IN 0
+add chain ip filter input { type filter hook input priority 0; }
 
 # mac source
 add rule ip filter input @ll,48,48 00:15:e9:f0:10:f8 counter

@@ -2,7 +2,7 @@
 #
 
 add table ip filter
-add chain ip filter input { hook NF_INET_LOCAL_IN 0; }
+add chain ip filter input { type filter hook input priority 0; }
 
 add chain ip filter chain1
 add filter chain1 counter

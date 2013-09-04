@@ -1,7 +1,7 @@
 #! nft -f
 
 add table bridge filter
-add chain bridge filter output { hook NF_INET_LOCAL_OUT 0 ; }
+add chain bridge filter output { type filter hook output priority 0 ; }
 
 # LL protocol
 add rule bridge filter output eth type 0x0800 counter

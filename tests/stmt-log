@@ -1,6 +1,6 @@
 #! nft -f
 
 add table ip filter
-add chain ip filter output NF_INET_LOCAL_OUT 0
+add chain ip filter output { type filter hook output priority 0; }
 
 add rule ip filter output log saddr "prefix" group 0 counter
