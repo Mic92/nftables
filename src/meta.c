@@ -283,7 +283,7 @@ static const struct datatype gid_type = {
 };
 
 static const struct meta_template meta_templates[] = {
-	[NFT_META_LEN]		= META_TEMPLATE("len",       &integer_type,
+	[NFT_META_LEN]		= META_TEMPLATE("length",    &integer_type,
 						4 * 8, BYTEORDER_HOST_ENDIAN),
 	[NFT_META_PROTOCOL]	= META_TEMPLATE("protocol",  &ethertype_type,
 						2 * 8, BYTEORDER_BIG_ENDIAN),
