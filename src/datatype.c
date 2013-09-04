@@ -632,6 +632,17 @@ static struct error_record *mark_type_parse(const struct expr *sym,
 					    struct expr **res)
 {
 	struct error_record *erec;
+	const struct symbolic_constant *s;
+
+	for (s = mark_tbl->symbols; s->identifier != NULL; s++) {
+		if (!strcmp(sym->identifier, s->identifier)) {
+			*res = constant_expr_alloc(&sym->location, sym->dtype,
+						   sym->dtype->byteorder,
+						   sym->dtype->size,
+						   &s->value);
+			return NULL;
+		}
+	}
 
 	erec = sym->dtype->basetype->parse(sym, res);
 	if (erec != NULL)
