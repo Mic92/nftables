@@ -767,7 +767,7 @@ map_block		:	/* empty */	{ $$ = $<set>-1; }
 			}
 			;
 
-hook_spec		:	TYPE		STRING		HOOK		STRING		NUM
+hook_spec		:	TYPE		STRING		HOOK		STRING		PRIORITY	NUM
 			{
 				$<chain>0->type		= $2;
 				$<chain>0->hookstr	= chain_hookname_lookup($4);
@@ -776,10 +776,10 @@ hook_spec		:	TYPE		STRING		HOOK		STRING		NUM
 						   state->msgs);
 					YYERROR;
 				}
-				$<chain>0->priority	= $5;
+				$<chain>0->priority	= $6;
 				$<chain>0->flags	|= CHAIN_F_BASECHAIN;
 			}
-			|	TYPE		STRING		HOOK		STRING		DASH	NUM
+			|	TYPE		STRING		HOOK		STRING		PRIORITY	DASH	NUM
 			{
 				$<chain>0->type		= $2;
 				$<chain>0->hookstr	= chain_hookname_lookup($4);
@@ -788,7 +788,7 @@ hook_spec		:	TYPE		STRING		HOOK		STRING		NUM
 						   state->msgs);
 					YYERROR;
 				}
-				$<chain>0->priority	= -$6;
+				$<chain>0->priority	= -$7;
 				$<chain>0->flags	|= CHAIN_F_BASECHAIN;
 			}
 			;
