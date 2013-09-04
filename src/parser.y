@@ -769,10 +769,15 @@ map_block		:	/* empty */	{ $$ = $<set>-1; }
 
 hook_spec		:	TYPE		STRING		HOOK		STRING		PRIORITY	NUM
 			{
-				$<chain>0->type		= $2;
+				$<chain>0->type		= chain_type_name_lookup($2);
+				if ($<chain>0->type == NULL) {
+					erec_queue(error(&@2, "unknown chain type %s", $2),
+						   state->msgs);
+					YYERROR;
+				}
 				$<chain>0->hookstr	= chain_hookname_lookup($4);
 				if ($<chain>0->hookstr == NULL) {
-					erec_queue(error(&@4, "unknown hook name %s", $4),
+					erec_queue(error(&@4, "unknown chain type %s", $4),
 						   state->msgs);
 					YYERROR;
 				}
@@ -781,7 +786,12 @@ hook_spec		:	TYPE		STRING		HOOK		STRING		PRIORITY	NUM
 			}
 			|	TYPE		STRING		HOOK		STRING		PRIORITY	DASH	NUM
 			{
-				$<chain>0->type		= $2;
+				$<chain>0->type		= chain_type_name_lookup($2);
+				if ($<chain>0->type == NULL) {
+					erec_queue(error(&@2, "unknown type name %s", $2),
+						   state->msgs);
+					YYERROR;
+				}
 				$<chain>0->hookstr	= chain_hookname_lookup($4);
 				if ($<chain>0->hookstr == NULL) {
 					erec_queue(error(&@4, "unknown hook name %s", $4),

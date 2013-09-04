@@ -117,6 +117,7 @@ struct chain {
 	struct list_head	rules;
 };
 
+extern const char *chain_type_name_lookup(const char *name);
 extern const char *chain_hookname_lookup(const char *name);
 extern struct chain *chain_alloc(const char *name);
 extern void chain_free(struct chain *chain);
