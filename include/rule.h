@@ -98,6 +98,7 @@ enum chain_flags {
  * @handle:	chain handle
  * @location:	location the chain was defined at
  * @flags:	chain flags
+ * @hookstr:	unified and human readable hook name (base chains)
  * @hooknum:	hook number (base chains)
  * @priority:	hook priority (base chains)
  * @type:	chain type
@@ -108,6 +109,7 @@ struct chain {
 	struct handle		handle;
 	struct location		location;
 	uint32_t		flags;
+	const char		*hookstr;
 	unsigned int		hooknum;
 	unsigned int		priority;
 	const char		*type;
@@ -115,6 +117,7 @@ struct chain {
 	struct list_head	rules;
 };
 
+extern const char *chain_hookname_lookup(const char *name);
 extern struct chain *chain_alloc(const char *name);
 extern void chain_free(struct chain *chain);
 extern void chain_add_hash(struct chain *chain, struct table *table);

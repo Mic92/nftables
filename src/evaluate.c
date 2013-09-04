@@ -14,6 +14,8 @@
 #include <stdint.h>
 #include <string.h>
 #include <arpa/inet.h>
+#include <linux/netfilter.h>
+#include <linux/netfilter_arp.h>
 #include <linux/netfilter/nf_tables.h>
 
 #include <expression.h>
@@ -54,6 +56,8 @@ static int __fmtstring(4, 5) __stmt_binary_error(struct eval_ctx *ctx,
 	__stmt_binary_error(ctx, &(s1)->location, NULL, fmt, ## args)
 #define stmt_binary_error(ctx, s1, s2, fmt, args...) \
 	__stmt_binary_error(ctx, &(s1)->location, &(s2)->location, fmt, ## args)
+#define chain_error(ctx, s1, fmt, args...) \
+	__stmt_binary_error(ctx, &(s1)->location, NULL, fmt, ## args)
 
 static int __fmtstring(3, 4) set_error(struct eval_ctx *ctx,
 				       const struct set *set,
@@ -1247,9 +1251,48 @@ static int rule_evaluate(struct eval_ctx *ctx, struct rule *rule)
 	return 0;
 }
 
+static uint32_t str2hooknum(uint32_t family, const char *hook)
+{
+	switch (family) {
+	case NFPROTO_IPV4:
+	case NFPROTO_BRIDGE:
+	case NFPROTO_IPV6:
+		/* These families have overlapping values for each hook */
+		if (!strcmp(hook, "prerouting"))
+			return NF_INET_PRE_ROUTING;
+		else if (!strcmp(hook, "input"))
+			return NF_INET_LOCAL_IN;
+		else if (!strcmp(hook, "forward"))
+			return NF_INET_FORWARD;
+		else if (!strcmp(hook, "postrouting"))
+			return NF_INET_POST_ROUTING;
+		else if (!strcmp(hook, "output"))
+			return NF_INET_LOCAL_OUT;
+	case NFPROTO_ARP:
+		if (!strcmp(hook, "input"))
+			return NF_ARP_IN;
+		else if (!strcmp(hook, "forward"))
+			return NF_ARP_FORWARD;
+		else if (!strcmp(hook, "output"))
+			return NF_ARP_OUT;
+	default:
+		break;
+	}
+
+	return NF_INET_NUMHOOKS;
+}
+
 static int chain_evaluate(struct eval_ctx *ctx, struct chain *chain)
 {
 	struct rule *rule;
+
+	if (chain->flags & CHAIN_F_BASECHAIN) {
+		chain->hooknum = str2hooknum(chain->handle.family,
+					     chain->hookstr);
+		if (chain->hooknum == NF_INET_NUMHOOKS)
+			return chain_error(ctx, chain, "invalid hook %s",
+					   chain->hookstr);
+	}
 
 	list_for_each_entry(rule, &chain->rules, list) {
 		handle_merge(&rule->handle, &chain->handle);

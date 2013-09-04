@@ -212,12 +212,6 @@ addrstring	({macaddr}|{ip4addr}|{ip6addr})
 "=>"			{ return ARROW; }
 "vmap"			{ return VMAP; }
 
-"NF_INET_PRE_ROUTING"	{ yylval->val = NF_INET_PRE_ROUTING;	return HOOKNUM; }
-"NF_INET_LOCAL_IN"	{ yylval->val = NF_INET_LOCAL_IN;	return HOOKNUM; }
-"NF_INET_FORWARD"	{ yylval->val = NF_INET_FORWARD;	return HOOKNUM; }
-"NF_INET_LOCAL_OUT"	{ yylval->val = NF_INET_LOCAL_OUT;	return HOOKNUM; }
-"NF_INET_POST_ROUTING"	{ yylval->val = NF_INET_POST_ROUTING;	return HOOKNUM; }
-
 "include"		{ return INCLUDE; }
 "define"		{ return DEFINE; }
 

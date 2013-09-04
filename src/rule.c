@@ -21,6 +21,7 @@
 
 #include <netinet/ip.h>
 #include <linux/netfilter.h>
+#include <linux/netfilter_arp.h>
 
 void handle_free(struct handle *h)
 {
@@ -189,6 +190,27 @@ struct symbol *symbol_lookup(const struct scope *scope, const char *identifier)
 	return NULL;
 }
 
+static const char *chain_hookname_str_array[] = {
+	"prerouting",
+	"input",
+	"forward",
+	"postrouting",
+	"output",
+	NULL,
+};
+
+const char *chain_hookname_lookup(const char *name)
+{
+	int i;
+
+	for (i = 0; chain_hookname_str_array[i]; i++) {
+		if (!strcmp(name, chain_hookname_str_array[i]))
+			return chain_hookname_str_array[i];
+	}
+
+	return NULL;
+}
+
 struct chain *chain_alloc(const char *name)
 {
 	struct chain *chain;
@@ -228,20 +250,43 @@ struct chain *chain_lookup(const struct table *table, const struct handle *h)
 	return NULL;
 }
 
-static const char *hooknum2str_array[NF_INET_NUMHOOKS] = {
-	[NF_INET_PRE_ROUTING]	= "NF_INET_PRE_ROUTING",
-	[NF_INET_LOCAL_IN]	= "NF_INET_LOCAL_IN",
-	[NF_INET_FORWARD]	= "NF_INET_FORWARD",
-	[NF_INET_LOCAL_OUT]	= "NF_INET_LOCAL_OUT",
-	[NF_INET_POST_ROUTING]	= "NF_INET_POST_ROUTING",
-};
-
-static const char *hooknum2str(unsigned int hooknum)
+static const char *hooknum2str(unsigned int family, unsigned int hooknum)
 {
-	if (hooknum >= NF_INET_NUMHOOKS)
-		return "UNKNOWN";
+	switch (family) {
+	case NFPROTO_IPV4:
+	case NFPROTO_BRIDGE:
+	case NFPROTO_IPV6:
+		switch (hooknum) {
+		case NF_INET_PRE_ROUTING:
+			return "prerouting";
+		case NF_INET_LOCAL_IN:
+			return "input";
+		case NF_INET_FORWARD:
+			return "forward";
+		case NF_INET_POST_ROUTING:
+			return "postrouting";
+		case NF_INET_LOCAL_OUT:
+			return "output";
+		default:
+			break;
+		};
+		break;
+	case NFPROTO_ARP:
+		switch (hooknum) {
+		case NF_ARP_IN:
+			return "input";
+		case NF_ARP_FORWARD:
+			return "forward";
+		case NF_ARP_OUT:
+			return "output";
+		default:
+			break;
+		}
+	default:
+		break;
+	};
 
-	return hooknum2str_array[hooknum];
+	return "unknown";
 }
 
 static void chain_print(const struct chain *chain)
@@ -251,7 +296,8 @@ static void chain_print(const struct chain *chain)
 	printf("\tchain %s {\n", chain->handle.chain);
 	if (chain->flags & CHAIN_F_BASECHAIN) {
 		printf("\t\t type %s hook %s %u;\n", chain->type,
-		       hooknum2str(chain->hooknum), chain->priority);
+		       hooknum2str(chain->handle.family, chain->hooknum),
+		       chain->priority);
 	}
 	list_for_each_entry(rule, &chain->rules, list) {
 		printf("\t\t");

@@ -155,7 +155,6 @@ static void location_update(struct location *loc, struct location *rhs, int n)
 %token DEFINE			"define"
 
 %token HOOK			"hook"
-%token <val> HOOKNUM		"hooknum"
 %token TABLE			"table"
 %token TABLES			"tables"
 %token CHAIN			"chain"
@@ -550,6 +549,7 @@ add_cmd			:	TABLE		table_spec
 			|	CHAIN		chain_spec	chain_block_alloc
 						'{'	chain_block	'}'
 			{
+				$5->location = @5;
 				handle_merge(&$3->handle, &$2);
 				close_scope(state);
 				$$ = cmd_alloc(CMD_ADD, CMD_OBJ_CHAIN, &$2, &@$, $5);
@@ -667,6 +667,7 @@ table_block		:	/* empty */	{ $$ = $<table>-1; }
 					chain_block_alloc	'{' 	chain_block	'}'
 					stmt_seperator
 			{
+				$4->location = @3;
 				handle_merge(&$4->handle, &$3);
 				handle_free(&$3);
 				close_scope(state);
@@ -766,17 +767,27 @@ map_block		:	/* empty */	{ $$ = $<set>-1; }
 			}
 			;
 
-hook_spec		:	TYPE		STRING		HOOK		HOOKNUM		NUM
+hook_spec		:	TYPE		STRING		HOOK		STRING		NUM
 			{
 				$<chain>0->type		= $2;
-				$<chain>0->hooknum	= $4;
+				$<chain>0->hookstr	= chain_hookname_lookup($4);
+				if ($<chain>0->hookstr == NULL) {
+					erec_queue(error(&@4, "unknown hook name %s", $4),
+						   state->msgs);
+					YYERROR;
+				}
 				$<chain>0->priority	= $5;
 				$<chain>0->flags	|= CHAIN_F_BASECHAIN;
 			}
-			|	TYPE		STRING		HOOK		HOOKNUM		DASH	NUM
+			|	TYPE		STRING		HOOK		STRING		DASH	NUM
 			{
 				$<chain>0->type		= $2;
-				$<chain>0->hooknum	= $4;
+				$<chain>0->hookstr	= chain_hookname_lookup($4);
+				if ($<chain>0->hookstr == NULL) {
+					erec_queue(error(&@4, "unknown hook name %s", $4),
+						   state->msgs);
+					YYERROR;
+				}
 				$<chain>0->priority	= -$6;
 				$<chain>0->flags	|= CHAIN_F_BASECHAIN;
 			}
