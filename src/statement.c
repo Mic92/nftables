@@ -122,7 +122,7 @@ static void log_stmt_print(const struct stmt *stmt)
 	if (stmt->log.snaplen)
 		printf(" snaplen %u", stmt->log.snaplen);
 	if (stmt->log.qthreshold)
-		printf(" threshold %u", stmt->log.qthreshold);
+		printf(" queue-threshold %u", stmt->log.qthreshold);
 }
 
 static void log_stmt_destroy(struct stmt *stmt)
