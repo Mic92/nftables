@@ -1,7 +1,7 @@
 #! nft -f
 
 table ip6 filter {
-	chain input		{ hook NF_INET_LOCAL_IN		0; }
-	chain forward		{ hook NF_INET_FORWARD		0; }
-	chain output		{ hook NF_INET_LOCAL_OUT	0; }
+	chain input		{ type filter hook input priority 0; }
+	chain forward		{ type filter hook forward priority 0; }
+	chain output		{ type filter hook output priority 0; }
 }

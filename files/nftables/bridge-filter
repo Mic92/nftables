@@ -1,7 +1,7 @@
 #! nft -f
 
 table bridge filter {
-	chain input		{ hook NF_INET_LOCAL_IN		-200; }
-	chain forward		{ hook NF_INET_FORWARD		-200; }
-	chain output		{ hook NF_INET_LOCAL_OUT	200; }
+	chain input		{ type filter hook input priority -200; }
+	chain forward		{ type filter hook forward priority -200; }
+	chain output		{ type filter hook output priority 200; }
 }
