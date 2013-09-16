@@ -1,6 +1,0 @@
-#! nft -f
-
-table ip6 raw {
-	chain prerouting	{ hook NF_INET_PRE_ROUTING	-2147483647; }
-	chain output		{ hook NF_INET_LOCAL_OUT	-2147483647; }
-}
