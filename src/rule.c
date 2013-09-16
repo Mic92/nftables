@@ -269,6 +269,23 @@ struct chain *chain_lookup(const struct table *table, const struct handle *h)
 	return NULL;
 }
 
+static const char *family2str(unsigned int family)
+{
+	switch (family) {
+		case NFPROTO_IPV4:
+			return "ip";
+		case NFPROTO_IPV6:
+			return "ip6";
+		case NFPROTO_ARP:
+			return "arp";
+		case NFPROTO_BRIDGE:
+			return "bridge";
+		default:
+			break;
+	}
+	return "unknown";
+}
+
 static const char *hooknum2str(unsigned int family, unsigned int hooknum)
 {
 	switch (family) {
@@ -371,8 +388,9 @@ static void table_print(const struct table *table)
 	struct chain *chain;
 	struct set *set;
 	const char *delim = "";
+	const char *family = family2str(table->handle.family);
 
-	printf("table %s {\n", table->handle.table);
+	printf("table %s %s {\n", family, table->handle.table);
 	list_for_each_entry(set, &table->sets, list) {
 		if (set->flags & SET_F_ANONYMOUS)
 			continue;
