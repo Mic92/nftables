@@ -572,9 +572,13 @@ static void netlink_gen_nat_stmt(struct netlink_linearize_ctx *ctx,
 	enum nft_registers amin_reg, amax_reg;
 	enum nft_registers pmin_reg, pmax_reg;
 	int registers = 0;
+	int family;
 
 	nle = alloc_nft_expr("nat");
 	nft_rule_expr_set_u32(nle, NFT_EXPR_NAT_TYPE, stmt->nat.type);
+
+	family = nft_rule_attr_get_u32(ctx->nlr, NFT_RULE_ATTR_FAMILY);
+	nft_rule_expr_set_u32(nle, NFT_EXPR_NAT_FAMILY, family);
 
 	if (stmt->nat.addr) {
 		amin_reg = get_register(ctx);
