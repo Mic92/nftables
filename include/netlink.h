@@ -34,14 +34,14 @@ extern struct nft_rule_expr *alloc_nft_expr(const char *name);
 extern struct nft_set *alloc_nft_set(const struct handle *h);
 
 struct nft_data_linearize {
-	size_t		len;
+	uint32_t	len;
 	uint32_t	value[4];
 	char		chain[NFT_CHAIN_MAXNAMELEN];
 	int		verdict;
 };
 
 struct nft_data_delinearize {
-	size_t		len;
+	uint32_t	len;
 	const uint32_t	*value;
 	const char	*chain;
 	int		verdict;
