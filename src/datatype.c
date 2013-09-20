@@ -258,7 +258,7 @@ static void string_type_print(const struct expr *expr)
 	unsigned int len = div_round_up(expr->len, BITS_PER_BYTE);
 	char data[len];
 
-	mpz_export_data(data, expr->value, BYTEORDER_BIG_ENDIAN, len);
+	mpz_export_data(data, expr->value, BYTEORDER_HOST_ENDIAN, len);
 	printf("\"%s\"", data);
 }
 
@@ -266,7 +266,7 @@ static struct error_record *string_type_parse(const struct expr *sym,
 	      				      struct expr **res)
 {
 	*res = constant_expr_alloc(&sym->location, &string_type,
-				   BYTEORDER_INVALID,
+				   BYTEORDER_HOST_ENDIAN,
 				   (strlen(sym->identifier) + 1) * BITS_PER_BYTE,
 				   sym->identifier);
 	return NULL;

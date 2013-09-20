@@ -110,7 +110,7 @@ static const struct ct_template ct_templates[] = {
 					      BYTEORDER_HOST_ENDIAN,
 					      4 * BITS_PER_BYTE),
 	[NFT_CT_HELPER]		= CT_TEMPLATE("helper",	    &string_type,
-					      BYTEORDER_INVALID, 0),
+					      BYTEORDER_HOST_ENDIAN, 0),
 	[NFT_CT_L3PROTOCOL]	= CT_TEMPLATE("l3proto",    &invalid_type,
 					      BYTEORDER_INVALID,
 					      BITS_PER_BYTE),
