@@ -37,6 +37,7 @@ static void __init netlink_open_sock(void)
 		memory_allocation_error();
 
 	fcntl(mnl_socket_get_fd(nf_sock), F_SETFL, O_NONBLOCK);
+	mnl_batch_init();
 }
 
 static void __exit netlink_close_sock(void)
@@ -44,8 +45,8 @@ static void __exit netlink_close_sock(void)
 	mnl_socket_close(nf_sock);
 }
 
-static int netlink_io_error(struct netlink_ctx *ctx, const struct location *loc,
-			    const char *fmt, ...)
+int netlink_io_error(struct netlink_ctx *ctx, const struct location *loc,
+		     const char *fmt, ...)
 {
 	struct error_record *erec;
 	va_list ap;
@@ -305,8 +306,9 @@ struct expr *netlink_alloc_data(const struct location *loc,
 	}
 }
 
-int netlink_add_rule(struct netlink_ctx *ctx, const struct handle *h,
-		     const struct rule *rule, uint32_t flags)
+int netlink_add_rule_batch(struct netlink_ctx *ctx,
+			   const struct handle *h,
+		           const struct rule *rule, uint32_t flags)
 {
 	struct nft_rule *nlr;
 	int err;
@@ -314,29 +316,44 @@ int netlink_add_rule(struct netlink_ctx *ctx, const struct handle *h,
 	nlr = alloc_nft_rule(&rule->handle);
 	err = netlink_linearize_rule(ctx, nlr, rule);
 	if (err == 0) {
-		err = mnl_nft_rule_add(nf_sock, nlr, flags | NLM_F_EXCL);
+		err = mnl_nft_rule_batch_add(nlr, flags | NLM_F_EXCL,
+					     ctx->seqnum);
 		if (err < 0)
 			netlink_io_error(ctx, &rule->location,
-					 "Could not add rule: %s",
+					 "Could not add rule to batch: %s",
 					 strerror(errno));
 	}
 	nft_rule_free(nlr);
 	return err;
 }
 
-int netlink_delete_rule(struct netlink_ctx *ctx, const struct handle *h,
-			const struct location *loc)
+int netlink_add_rule_list(struct netlink_ctx *ctx, const struct handle *h,
+			  struct list_head *rule_list)
+{
+	struct rule *rule;
+
+	list_for_each_entry(rule, rule_list, list) {
+		if (netlink_add_rule_batch(ctx, &rule->handle, rule,
+					   NLM_F_APPEND) < 0)
+			return -1;
+	}
+	return 0;
+}
+
+int netlink_del_rule_batch(struct netlink_ctx *ctx, const struct handle *h,
+			   const struct location *loc)
 {
 	struct nft_rule *nlr;
 	int err;
 
 	nlr = alloc_nft_rule(h);
-	err = mnl_nft_rule_delete(nf_sock, nlr, 0);
+	err = mnl_nft_rule_batch_del(nlr, 0, ctx->seqnum);
 	nft_rule_free(nlr);
 
 	if (err < 0)
-		netlink_io_error(ctx, loc, "Could not delete rule: %s",
+		netlink_io_error(ctx, loc, "Could not delete rule to batch: %s",
 				 strerror(errno));
+
 	return err;
 }
 
@@ -408,7 +425,7 @@ static int flush_rule_cb(struct nft_rule *nlr, void *arg)
 	int err;
 
 	netlink_dump_rule(nlr);
-	err = mnl_nft_rule_delete(nf_sock, nlr, 0);
+	err = mnl_nft_rule_batch_del(nlr, 0, ctx->seqnum);
 	if (err < 0) {
 		netlink_io_error(ctx, NULL, "Could not delete rule: %s",
 				 strerror(errno));
@@ -429,10 +446,12 @@ static int netlink_flush_rules(struct netlink_ctx *ctx, const struct handle *h,
 					"Could not receive rules from kernel: %s",
 					strerror(errno));
 
+	mnl_batch_begin();
 	nlr = alloc_nft_rule(h);
 	nft_rule_list_foreach(rule_cache, flush_rule_cb, ctx);
 	nft_rule_free(nlr);
 	nft_rule_list_free(rule_cache);
+	mnl_batch_end();
 	return 0;
 }
 
@@ -1034,4 +1053,9 @@ out:
 		netlink_io_error(ctx, loc, "Could not receive set elements: %s",
 				 strerror(errno));
 	return err;
+}
+
+int netlink_batch_send(struct list_head *err_list)
+{
+	return mnl_batch_talk(nf_sock, err_list);
 }

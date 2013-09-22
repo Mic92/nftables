@@ -19,12 +19,14 @@
  * @list:	list of parsed rules/chains/tables
  * @set:	current set
  * @data:	pointer to pass data to callback
+ * @seqnum:	sequence number
  */
 struct netlink_ctx {
 	struct list_head	*msgs;
 	struct list_head	list;
 	struct set		*set;
 	const void		*data;
+	uint32_t		seqnum;
 };
 
 extern struct nft_table *alloc_nft_table(const struct handle *h);
@@ -69,6 +71,14 @@ extern int netlink_add_rule(struct netlink_ctx *ctx, const struct handle *h,
 			    const struct rule *rule, uint32_t flags);
 extern int netlink_delete_rule(struct netlink_ctx *ctx, const struct handle *h,
 			       const struct location *loc);
+extern int netlink_add_rule_list(struct netlink_ctx *ctx, const struct handle *h,
+				 struct list_head *rule_list);
+extern int netlink_add_rule_batch(struct netlink_ctx *ctx,
+				  const struct handle *h,
+				  const struct rule *rule, uint32_t flags);
+extern int netlink_del_rule_batch(struct netlink_ctx *ctx,
+				  const struct handle *h,
+				  const struct location *loc);
 
 extern int netlink_add_chain(struct netlink_ctx *ctx, const struct handle *h,
 			     const struct location *loc,
@@ -121,5 +131,9 @@ extern void netlink_dump_chain(struct nft_chain *nlc);
 extern void netlink_dump_rule(struct nft_rule *nlr);
 extern void netlink_dump_expr(struct nft_rule_expr *nle);
 extern void netlink_dump_set(struct nft_set *nls);
+
+extern int netlink_batch_send(struct list_head *err_list);
+extern int netlink_io_error(struct netlink_ctx *ctx,
+			    const struct location *loc, const char *fmt, ...);
 
 #endif /* NFTABLES_NETLINK_H */

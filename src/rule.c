@@ -454,16 +454,11 @@ void cmd_free(struct cmd *cmd)
 static int do_add_chain(struct netlink_ctx *ctx, const struct handle *h,
 			const struct location *loc, struct chain *chain)
 {
-	struct rule *rule;
-
 	if (netlink_add_chain(ctx, h, loc, chain) < 0)
 		return -1;
 	if (chain != NULL) {
-		list_for_each_entry(rule, &chain->rules, list) {
-			if (netlink_add_rule(ctx, &rule->handle, rule,
-					     NLM_F_APPEND) < 0)
-				return -1;
-		}
+		if (netlink_add_rule_list(ctx, h, &chain->rules) < 0)
+			return -1;
 	}
 	return 0;
 }
@@ -523,8 +518,8 @@ static int do_command_add(struct netlink_ctx *ctx, struct cmd *cmd)
 		return do_add_chain(ctx, &cmd->handle, &cmd->location,
 				    cmd->chain);
 	case CMD_OBJ_RULE:
-		return netlink_add_rule(ctx, &cmd->handle, cmd->rule,
-					NLM_F_APPEND);
+		return netlink_add_rule_batch(ctx, &cmd->handle,
+					      cmd->rule, NLM_F_APPEND);
 	case CMD_OBJ_SET:
 		return do_add_set(ctx, &cmd->handle, cmd->set);
 	case CMD_OBJ_SETELEM:
@@ -539,7 +534,8 @@ static int do_command_insert(struct netlink_ctx *ctx, struct cmd *cmd)
 {
 	switch (cmd->obj) {
 	case CMD_OBJ_RULE:
-		return netlink_add_rule(ctx, &cmd->handle, cmd->rule, 0);
+		return netlink_add_rule_batch(ctx, &cmd->handle,
+					      cmd->rule, 0);
 	default:
 		BUG("invalid command object type %u\n", cmd->obj);
 	}
@@ -554,7 +550,8 @@ static int do_command_delete(struct netlink_ctx *ctx, struct cmd *cmd)
 	case CMD_OBJ_CHAIN:
 		return netlink_delete_chain(ctx, &cmd->handle, &cmd->location);
 	case CMD_OBJ_RULE:
-		return netlink_delete_rule(ctx, &cmd->handle, &cmd->location);
+		return netlink_del_rule_batch(ctx, &cmd->handle,
+					      &cmd->location);
 	case CMD_OBJ_SET:
 		return netlink_delete_set(ctx, &cmd->handle, &cmd->location);
 	case CMD_OBJ_SETELEM:

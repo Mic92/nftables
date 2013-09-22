@@ -244,6 +244,7 @@ enum cmd_obj {
  * @op:		operation
  * @obj:	object type to perform operation on
  * @handle:	handle for operations working without full objects
+ * @seqnum:	sequence number to match netlink errors
  * @union:	object
  * @arg:	argument data
  */
@@ -253,6 +254,7 @@ struct cmd {
 	enum cmd_ops		op;
 	enum cmd_obj		obj;
 	struct handle		handle;
+	uint32_t		seqnum;
 	union {
 		void		*data;
 		struct expr	*expr;

@@ -24,6 +24,7 @@
 #include <rule.h>
 #include <netlink.h>
 #include <erec.h>
+#include <mnl.h>
 
 unsigned int numeric_output;
 unsigned int handle_output;
@@ -149,10 +150,57 @@ static const struct input_descriptor indesc_cmdline = {
 	.name	= "<cmdline>",
 };
 
+static int nft_netlink(struct parser_state *state, struct list_head *msgs)
+{
+	struct netlink_ctx ctx;
+	struct cmd *cmd, *next;
+	struct mnl_err *err, *tmp;
+	LIST_HEAD(err_list);
+	int ret = 0;
+
+	mnl_batch_begin();
+	list_for_each_entry(cmd, &state->cmds, list) {
+		memset(&ctx, 0, sizeof(ctx));
+		ctx.msgs = msgs;
+		ctx.seqnum = cmd->seqnum = mnl_seqnum_alloc();
+		init_list_head(&ctx.list);
+		ret = do_command(&ctx, cmd);
+		if (ret < 0)
+			return ret;
+	}
+	mnl_batch_end();
+
+	if (mnl_batch_ready())
+		ret = netlink_batch_send(&err_list);
+	else {
+		mnl_batch_reset();
+		goto out;
+	}
+
+	list_for_each_entry_safe(err, tmp, &err_list, head) {
+		list_for_each_entry(cmd, &state->cmds, list) {
+			if (err->seqnum == cmd->seqnum) {
+				netlink_io_error(&ctx, &cmd->location,
+					"Could not process rule in batch: %s",
+					strerror(err->err));
+				mnl_err_list_free(err);
+				break;
+			}
+		}
+	}
+out:
+	list_for_each_entry_safe(cmd, next, &state->cmds, list) {
+		list_del(&cmd->list);
+		cmd_free(cmd);
+	}
+
+	return ret;
+}
+
 int nft_run(void *scanner, struct parser_state *state, struct list_head *msgs)
 {
 	struct eval_ctx ctx;
-	int ret;
+	int ret = 0;
 
 	ret = nft_parse(scanner, state);
 	if (ret != 0)
@@ -163,23 +211,7 @@ int nft_run(void *scanner, struct parser_state *state, struct list_head *msgs)
 	if (evaluate(&ctx, &state->cmds) < 0)
 		return -1;
 
-	{
-		struct netlink_ctx ctx;
-		struct cmd *cmd, *next;
-
-		list_for_each_entry_safe(cmd, next, &state->cmds, list) {
-			memset(&ctx, 0, sizeof(ctx));
-			ctx.msgs = msgs;
-			init_list_head(&ctx.list);
-			ret = do_command(&ctx, cmd);
-			list_del(&cmd->list);
-			cmd_free(cmd);
-			if (ret < 0)
-				return ret;
-		}
-	}
-
-	return 0;
+	return nft_netlink(state, msgs);
 }
 
 int main(int argc, char * const *argv)

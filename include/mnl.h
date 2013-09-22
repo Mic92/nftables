@@ -1,6 +1,31 @@
 #ifndef _NFTABLES_MNL_H_
 #define _NFTABLES_MNL_H_
 
+#include <list.h>
+
+struct mnl_socket;
+
+uint32_t mnl_seqnum_alloc(void);
+
+struct mnl_err {
+	struct list_head	head;
+	int			err;
+	uint32_t		seqnum;
+};
+
+void mnl_err_list_free(struct mnl_err *err);
+
+void mnl_batch_init(void);
+bool mnl_batch_ready(void);
+void mnl_batch_reset(void);
+void mnl_batch_begin(void);
+void mnl_batch_end(void);
+int mnl_batch_talk(struct mnl_socket *nl, struct list_head *err_list);
+int mnl_nft_rule_batch_add(struct nft_rule *nlr, unsigned int flags,
+			   uint32_t seqnum);
+int mnl_nft_rule_batch_del(struct nft_rule *nlr, unsigned int flags,
+			   uint32_t seqnum);
+
 int mnl_nft_rule_add(struct mnl_socket *nf_sock, struct nft_rule *r,
 		     unsigned int flags);
 int mnl_nft_rule_delete(struct mnl_socket *nf_sock, struct nft_rule *r,
