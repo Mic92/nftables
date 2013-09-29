@@ -1121,8 +1121,12 @@ static int stmt_evaluate_nat(struct eval_ctx *ctx, struct stmt *stmt)
 	int err;
 
 	if (stmt->nat.addr != NULL) {
-		expr_set_context(&ctx->ectx, &ipaddr_type,
-				 4 * BITS_PER_BYTE);
+		if (pctx && (pctx->family == AF_INET))
+			expr_set_context(&ctx->ectx, &ipaddr_type,
+					4 * BITS_PER_BYTE);
+		else
+			expr_set_context(&ctx->ectx, &ip6addr_type,
+					 16 * BITS_PER_BYTE);
 		err = expr_evaluate(ctx, &stmt->nat.addr);
 		if (err < 0)
 			return err;
