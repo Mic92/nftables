@@ -234,7 +234,8 @@ static void netlink_gen_verdict(const struct expr *expr,
 static void netlink_gen_prefix(const struct expr *expr,
 			       struct nft_data_linearize *data)
 {
-	uint32_t i, cidr, idx;
+	uint32_t idx;
+	int32_t i, cidr;
 	uint32_t mask;
 
 	assert(expr->ops->type == EXPR_PREFIX);
@@ -242,11 +243,13 @@ static void netlink_gen_prefix(const struct expr *expr,
 	data->len = div_round_up(expr->prefix->len, BITS_PER_BYTE);
 	cidr = expr->prefix_len;
 
-	for (i = 0; i < data->len; i+= 32) {
+	for (i = 0; (uint32_t)i / BITS_PER_BYTE < data->len; i += 32) {
 		if (cidr - i >= 32)
-			mask = 0;
+			mask = 0xffffffff;
+		else if (cidr - i > 0)
+			mask = (1 << (cidr - i)) - 1;
 		else
-			mask = (1 << cidr) - 1;
+			mask = 0;
 
 		idx = i / 32;
 		data->value[idx] = mask;
