@@ -249,7 +249,7 @@ int mnl_batch_talk(struct mnl_socket *nl, struct list_head *err_list)
 			goto err;
 
 		ret = mnl_cb_run(rcv_buf, ret, 0, portid, NULL, NULL);
-		/* Continue on error, make sure we get all acknoledgments */
+		/* Continue on error, make sure we get all acknowledgments */
 		if (ret == -1)
 			mnl_err_list_node_add(err_list, errno, nlh->nlmsg_seq);
 
