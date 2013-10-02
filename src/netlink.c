@@ -456,10 +456,8 @@ static int netlink_flush_rules(struct netlink_ctx *ctx, const struct handle *h,
 					strerror(errno));
 
 	ctx->data = h;
-	mnl_batch_begin();
 	nft_rule_list_foreach(rule_cache, flush_rule_cb, ctx);
 	nft_rule_list_free(rule_cache);
-	mnl_batch_end();
 	return 0;
 }
 
