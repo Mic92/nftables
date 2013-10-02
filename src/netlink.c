@@ -441,7 +441,6 @@ static int netlink_flush_rules(struct netlink_ctx *ctx, const struct handle *h,
 			       const struct location *loc)
 {
 	struct nft_rule_list *rule_cache;
-	struct nft_rule *nlr;
 
 	rule_cache = mnl_nft_rule_dump(nf_sock, h->family);
 	if (rule_cache == NULL)
@@ -450,9 +449,7 @@ static int netlink_flush_rules(struct netlink_ctx *ctx, const struct handle *h,
 					strerror(errno));
 
 	mnl_batch_begin();
-	nlr = alloc_nft_rule(h);
 	nft_rule_list_foreach(rule_cache, flush_rule_cb, ctx);
-	nft_rule_free(nlr);
 	nft_rule_list_free(rule_cache);
 	mnl_batch_end();
 	return 0;
