@@ -425,7 +425,14 @@ static int netlink_list_rules(struct netlink_ctx *ctx, const struct handle *h,
 static int flush_rule_cb(struct nft_rule *nlr, void *arg)
 {
 	struct netlink_ctx *ctx = arg;
+	const struct handle *h = ctx->data;
 	int err;
+
+	if ((h->table &&
+	    strcmp(nft_rule_attr_get_str(nlr, NFT_RULE_ATTR_TABLE), h->table) != 0) ||
+	    (h->chain &&
+	     strcmp(nft_rule_attr_get_str(nlr, NFT_RULE_ATTR_CHAIN), h->chain) != 0))
+		return 0;
 
 	netlink_dump_rule(nlr);
 	err = mnl_nft_rule_batch_del(nlr, 0, ctx->seqnum);
@@ -448,6 +455,7 @@ static int netlink_flush_rules(struct netlink_ctx *ctx, const struct handle *h,
 					"Could not receive rules from kernel: %s",
 					strerror(errno));
 
+	ctx->data = h;
 	mnl_batch_begin();
 	nft_rule_list_foreach(rule_cache, flush_rule_cb, ctx);
 	nft_rule_list_free(rule_cache);
