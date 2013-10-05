@@ -1003,14 +1003,11 @@ limit_stmt		:	LIMIT	RATE	NUM	SLASH	time_unit
 			}
 			;
 
-time_unit		:	NANOSECOND	{ $$ = 1ULL; }
-			|	MICROSECOND	{ $$ = 1ULL * 1000; }
-			|	MILLISECOND	{ $$ = 1ULL * 1000 * 1000; }
-			|	SECOND		{ $$ = 1ULL * 1000 * 1000 * 1000; }
-			|	MINUTE		{ $$ = 1ULL * 1000 * 1000 * 1000 * 60; }
-			|	HOUR		{ $$ = 1ULL * 1000 * 1000 * 1000 * 60 * 60; }
-			|	DAY		{ $$ = 1ULL * 1000 * 1000 * 1000 * 60 * 60 * 24; }
-			|	WEEK		{ $$ = 1ULL * 1000 * 1000 * 1000 * 60 * 60 * 24 * 7; }
+time_unit		:	SECOND		{ $$ = 1ULL; }
+			|	MINUTE		{ $$ = 1ULL * 60; }
+			|	HOUR		{ $$ = 1ULL * 60 * 60; }
+			|	DAY		{ $$ = 1ULL * 60 * 60 * 24; }
+			|	WEEK		{ $$ = 1ULL * 60 * 60 * 24 * 7; }
 			;
 
 reject_stmt		:	_REJECT

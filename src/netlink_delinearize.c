@@ -385,8 +385,8 @@ static void netlink_parse_limit(struct netlink_parse_ctx *ctx,
 	struct stmt *stmt;
 
 	stmt = limit_stmt_alloc(loc);
-	stmt->limit.rate  = nft_rule_expr_get_u32(nle, NFT_EXPR_LIMIT_RATE);
-	stmt->limit.depth  = nft_rule_expr_get_u32(nle, NFT_EXPR_LIMIT_DEPTH);
+	stmt->limit.rate  = nft_rule_expr_get_u64(nle, NFT_EXPR_LIMIT_RATE);
+	stmt->limit.unit  = nft_rule_expr_get_u64(nle, NFT_EXPR_LIMIT_UNIT);
 	list_add_tail(&stmt->list, &ctx->rule->stmts);
 }
 

@@ -144,8 +144,16 @@ struct stmt *log_stmt_alloc(const struct location *loc)
 
 static void limit_stmt_print(const struct stmt *stmt)
 {
-	printf("limit rate %" PRIu64 " depth %" PRIu64,
-	       stmt->limit.rate, stmt->limit.depth);
+	static const char *units[] = {
+		[1]			= "second",
+		[1 * 60]		= "minute",
+		[1 * 60 * 60]		= "hour",
+		[1 * 60 * 60 * 24]	= "day",
+		[1 * 60 * 60 * 24 * 7]	= "week",
+	};
+
+	printf("limit rate %" PRIu64 "/%s",
+	       stmt->limit.rate, units[stmt->limit.unit]);
 }
 
 static const struct stmt_ops limit_stmt_ops = {
