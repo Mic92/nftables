@@ -222,7 +222,7 @@ int main(int argc, char * const *argv)
 	char *buf = NULL, *filename = NULL;
 	unsigned int len;
 	bool interactive = false;
-	int i, val;
+	int i, val, rc = NFT_EXIT_SUCCESS;
 
 	while (1) {
 		val = getopt_long(argc, argv, OPTSTRING, options, NULL);
@@ -318,11 +318,12 @@ int main(int argc, char * const *argv)
 		exit(NFT_EXIT_FAILURE);
 	}
 
-	nft_run(scanner, &state, &msgs);
+	if (nft_run(scanner, &state, &msgs) != 0)
+		rc = NFT_EXIT_FAILURE;
 out:
 	scanner_destroy(scanner);
 	erec_print_list(stdout, &msgs);
 
 	xfree(buf);
-	return 0;
+	return rc;
 }
