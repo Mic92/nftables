@@ -142,18 +142,23 @@ struct stmt *log_stmt_alloc(const struct location *loc)
 	return stmt_alloc(loc, &log_stmt_ops);
 }
 
+static const char *get_unit(uint64_t u)
+{
+	switch (u) {
+	case 1: return "second";
+	case 60: return "minute";
+	case 60 * 60: return "hour";
+	case 60 * 60 * 24: return "day";
+	case 60 * 60 * 24 * 7: return "week";
+	}
+
+	return "error";
+}
+
 static void limit_stmt_print(const struct stmt *stmt)
 {
-	static const char *units[] = {
-		[1]			= "second",
-		[1 * 60]		= "minute",
-		[1 * 60 * 60]		= "hour",
-		[1 * 60 * 60 * 24]	= "day",
-		[1 * 60 * 60 * 24 * 7]	= "week",
-	};
-
 	printf("limit rate %" PRIu64 "/%s",
-	       stmt->limit.rate, units[stmt->limit.unit]);
+	       stmt->limit.rate, get_unit(stmt->limit.unit));
 }
 
 static const struct stmt_ops limit_stmt_ops = {
