@@ -20,8 +20,10 @@
 #include <linux/netfilter/nf_conntrack_common.h>
 #include <linux/netfilter/nf_conntrack_tuple_common.h>
 
+#include <erec.h>
 #include <expression.h>
 #include <datatype.h>
+#include <gmputil.h>
 #include <ct.h>
 #include <gmputil.h>
 #include <utils.h>
@@ -91,6 +93,73 @@ static const struct datatype ct_status_type = {
 	.sym_tbl	= &ct_status_tbl,
 };
 
+static struct symbol_table *ct_label_tbl;
+
+#define CT_LABEL_BIT_SIZE 128
+
+static void ct_label_type_print(const struct expr *expr)
+{
+	unsigned long bit = mpz_scan1(expr->value, 0);
+	const struct symbolic_constant *s;
+
+	for (s = ct_label_tbl->symbols; s->identifier != NULL; s++) {
+		if (bit != s->value)
+			continue;
+		printf("%s", s->identifier);
+		return;
+	}
+	/* can happen when connlabel.conf is altered after rules were added */
+	gmp_printf("0x%Zx", expr->value);
+}
+
+static struct error_record *ct_label_type_parse(const struct expr *sym,
+						struct expr **res)
+{
+	const struct symbolic_constant *s;
+	const struct datatype *dtype;
+	uint8_t data[CT_LABEL_BIT_SIZE];
+	mpz_t value;
+
+	for (s = ct_label_tbl->symbols; s->identifier != NULL; s++) {
+		if (!strcmp(sym->identifier, s->identifier))
+			break;
+	}
+
+	dtype = sym->dtype;
+	if (s->identifier == NULL)
+		return error(&sym->location, "Could not parse %s", dtype->desc);
+
+	if (s->value >= CT_LABEL_BIT_SIZE)
+		return error(&sym->location, "%s: out of range (%u max)",
+			     s->identifier, s->value, CT_LABEL_BIT_SIZE);
+
+	mpz_init2(value, dtype->size);
+	mpz_setbit(value, s->value);
+	mpz_export_data(data, value, BYTEORDER_HOST_ENDIAN, sizeof(data));
+
+	*res = constant_expr_alloc(&sym->location, dtype,
+				   dtype->byteorder, sizeof(data),
+				   data);
+	mpz_clear(value);
+	return NULL;
+}
+
+static const struct datatype ct_label_type = {
+	.type		= TYPE_CT_LABEL,
+	.name		= "ct_label",
+	.desc		= "conntrack label",
+	.byteorder	= BYTEORDER_HOST_ENDIAN,
+	.size		= CT_LABEL_BIT_SIZE,
+	.basetype	= &bitmask_type,
+	.print		= ct_label_type_print,
+	.parse		= ct_label_type_parse,
+};
+
+static void __init ct_label_table_init(void)
+{
+	ct_label_tbl = rt_symbol_table_init("/etc/xtables/connlabel.conf");
+}
+
 static const struct ct_template ct_templates[] = {
 	[NFT_CT_STATE]		= CT_TEMPLATE("state",	    &ct_state_type,
 					      BYTEORDER_HOST_ENDIAN,
@@ -125,6 +194,9 @@ static const struct ct_template ct_templates[] = {
 	[NFT_CT_PROTO_DST]	= CT_TEMPLATE("proto-dst",  &invalid_type,
 					      BYTEORDER_BIG_ENDIAN,
 					      2 * BITS_PER_BYTE),
+	[NFT_CT_LABEL]		= CT_TEMPLATE("label", &ct_label_type,
+					      BYTEORDER_HOST_ENDIAN,
+					      CT_LABEL_BIT_SIZE),
 };
 
 static void ct_expr_print(const struct expr *expr)

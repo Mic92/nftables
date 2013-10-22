@@ -411,6 +411,7 @@ addrstring	({macaddr}|{ip4addr}|{ip6addr})
 "l3proto"		{ return L3PROTOCOL; }
 "proto-src"		{ return PROTO_SRC; }
 "proto-dst"		{ return PROTO_DST; }
+"label"			{ return LABEL; }
 
 "xml"			{ return XML; }
 "json"			{ return JSON; }

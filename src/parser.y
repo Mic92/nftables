@@ -314,6 +314,7 @@ static void location_update(struct location *loc, struct location *rhs, int n)
 %token L3PROTOCOL		"l3proto"
 %token PROTO_SRC		"proto-src"
 %token PROTO_DST		"proto-dst"
+%token LABEL			"label"
 
 %token COUNTER			"counter"
 %token PACKETS			"packets"
@@ -1551,6 +1552,7 @@ ct_key			:	STATE		{ $$ = NFT_CT_STATE; }
 			|	PROTOCOL	{ $$ = NFT_CT_PROTOCOL; }
 			|	PROTO_SRC	{ $$ = NFT_CT_PROTO_SRC; }
 			|	PROTO_DST	{ $$ = NFT_CT_PROTO_DST; }
+			|	LABEL		{ $$ = NFT_CT_LABEL; }
 			;
 
 payload_expr		:	payload_raw_expr
