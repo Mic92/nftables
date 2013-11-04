@@ -90,7 +90,7 @@ static void location_update(struct location *loc, struct location *rhs, int n)
 
 /* Declaration section */
 
-%name-prefix="nft_"
+%name-prefix "nft_"
 %debug
 %pure-parser
 %parse-param		{ void *scanner }
