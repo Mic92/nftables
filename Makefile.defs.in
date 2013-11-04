@@ -28,7 +28,7 @@ CFLAGS		+= -include config.h
 CFLAGS		+= -Iinclude
 CFLAGS		+= -fno-strict-aliasing
 
-CFLAGS		+= -Wall -Werror
+CFLAGS		+= -Wall
 CFLAGS		+= -Wstrict-prototypes -Wmissing-prototypes -Wmissing-declarations
 CFLAGS		+= -Wdeclaration-after-statement -Wsign-compare -Winit-self
 CFLAGS		+= -Wformat-nonliteral -Wformat-security -Wmissing-format-attribute
