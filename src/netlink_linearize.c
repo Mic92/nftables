@@ -440,7 +440,8 @@ static void netlink_gen_immediate(struct netlink_linearize_ctx *ctx,
 		nft_rule_expr_set(nle, NFT_EXPR_IMM_DATA, nld.value, nld.len);
 		break;
 	case EXPR_VERDICT:
-		if (nft_rule_expr_is_set(nle, NFT_EXPR_IMM_CHAIN)) {
+		if ((expr->chain != NULL) &&
+		    !nft_rule_expr_is_set(nle, NFT_EXPR_IMM_CHAIN)) {
 			nft_rule_expr_set_str(nle, NFT_EXPR_IMM_CHAIN,
 					      nld.chain);
 		}
