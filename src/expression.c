@@ -156,7 +156,7 @@ static void verdict_expr_clone(struct expr *new, const struct expr *expr)
 
 static void verdict_expr_destroy(struct expr *expr)
 {
-        xfree(expr->chain);
+	xfree(expr->chain);
 }
 
 static const struct expr_ops verdict_expr_ops = {
