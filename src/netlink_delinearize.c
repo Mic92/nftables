@@ -81,9 +81,13 @@ static void netlink_parse_immediate(struct netlink_parse_ctx *ctx,
 	struct stmt *stmt;
 	struct expr *expr;
 
-	if (nft_rule_expr_is_set(nle, NFT_EXPR_IMM_VERDICT))
+	if (nft_rule_expr_is_set(nle, NFT_EXPR_IMM_VERDICT)) {
 		nld.verdict = nft_rule_expr_get_u32(nle, NFT_EXPR_IMM_VERDICT); 
-	else if (nft_rule_expr_is_set(nle, NFT_EXPR_IMM_DATA)) {
+		if  (nft_rule_expr_is_set(nle, NFT_EXPR_IMM_CHAIN)) {
+			nld.chain = nft_rule_expr_get(nle, NFT_EXPR_IMM_CHAIN,
+						      &nld.len);
+		}
+	} else if (nft_rule_expr_is_set(nle, NFT_EXPR_IMM_DATA)) {
 		nld.value = nft_rule_expr_get(nle, NFT_EXPR_IMM_DATA, &nld.len);
 	}
 
