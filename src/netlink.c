@@ -544,6 +544,10 @@ static int list_chain_cb(struct nft_chain *nlc, void *arg)
 	    strcmp(nft_chain_attr_get_str(nlc, NFT_CHAIN_ATTR_TABLE), h->table) != 0)
 		return 0;
 
+	if (h->chain &&
+	    strcmp(nft_chain_attr_get_str(nlc, NFT_CHAIN_ATTR_NAME), h->chain) != 0)
+		return 0;
+
 	chain = chain_alloc(nft_chain_attr_get_str(nlc, NFT_CHAIN_ATTR_NAME));
 	chain->handle.family =
 		nft_chain_attr_get_u32(nlc, NFT_CHAIN_ATTR_FAMILY);
