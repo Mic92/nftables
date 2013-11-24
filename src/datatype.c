@@ -256,9 +256,10 @@ const struct datatype integer_type = {
 static void string_type_print(const struct expr *expr)
 {
 	unsigned int len = div_round_up(expr->len, BITS_PER_BYTE);
-	char data[len];
+	char data[len+1];
 
 	mpz_export_data(data, expr->value, BYTEORDER_HOST_ENDIAN, len);
+	data[len] = '\0';
 	printf("\"%s\"", data);
 }
 
