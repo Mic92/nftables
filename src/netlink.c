@@ -645,7 +645,7 @@ int netlink_list_chain(struct netlink_ctx *ctx, const struct handle *h,
 int netlink_flush_chain(struct netlink_ctx *ctx, const struct handle *h,
 			const struct location *loc)
 {
-	return netlink_flush_rules(ctx, h, loc);
+	return netlink_del_rule_batch(ctx, h, loc);
 }
 
 int netlink_add_table(struct netlink_ctx *ctx, const struct handle *h,
