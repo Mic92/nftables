@@ -32,6 +32,7 @@ void parser_init(struct parser_state *state, struct list_head *msgs)
 {
 	memset(state, 0, sizeof(*state));
 	init_list_head(&state->cmds);
+	init_list_head(&state->top_scope.symbols);
 	state->msgs = msgs;
 	state->scopes[0] = scope_init(&state->top_scope, NULL);
 }
