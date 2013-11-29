@@ -37,7 +37,7 @@ table filter {
 	chain input_1 { counter; }
 	chain input_2 { counter; }
 	chain input {
-		hook NF_INET_LOCAL_IN 0
+		type filter hook input priority 0
 
 		# symbolic anonymous sets
 		meta iif $local_ifs tcp dport $tcp_ports counter
