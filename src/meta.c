@@ -197,11 +197,14 @@ static void uid_type_print(const struct expr *expr)
 	struct passwd *pw;
 
 	if (numeric_output < NUMERIC_ALL) {
-		pw = getpwuid(mpz_get_uint32(expr->value));
-		if (pw != NULL) {
+		uint32_t uid = mpz_get_uint32(expr->value);
+
+		pw = getpwuid(uid);
+		if (pw != NULL)
 			printf("%s", pw->pw_name);
-			return;
-		}
+		else
+			printf("%d", uid);
+		return;
 	}
 	expr_basetype(expr)->print(expr);
 }
@@ -210,19 +213,23 @@ static struct error_record *uid_type_parse(const struct expr *sym,
 					   struct expr **res)
 {
 	struct passwd *pw;
+	uint64_t uid;
+	char *endptr = NULL;
 
 	pw = getpwnam(sym->identifier);
-	if (pw == NULL) {
-		/* Try harder, lookup based on UID */
-		pw = getpwuid(atol(sym->identifier));
-		if (pw == NULL)
+	if (pw != NULL)
+		uid = pw->pw_uid;
+	else {
+		uid = strtoull(sym->identifier, &endptr, 10);
+		if (uid > UINT32_MAX)
+			return error(&sym->location, "Value too large");
+		else if (*endptr)
 			return error(&sym->location, "User does not exist");
 	}
 
 	*res = constant_expr_alloc(&sym->location, sym->dtype,
 				   BYTEORDER_HOST_ENDIAN,
-				   sizeof(pw->pw_uid) * BITS_PER_BYTE,
-				   &pw->pw_uid);
+				   sizeof(pw->pw_uid) * BITS_PER_BYTE, &uid);
 	return NULL;
 }
 
@@ -242,11 +249,14 @@ static void gid_type_print(const struct expr *expr)
 	struct group *gr;
 
 	if (numeric_output < NUMERIC_ALL) {
-		gr = getgrgid(mpz_get_uint32(expr->value));
-		if (gr != NULL) {
+		uint32_t gid = mpz_get_uint32(expr->value);
+
+		gr = getgrgid(gid);
+		if (gr != NULL)
 			printf("%s", gr->gr_name);
-			return;
-		}
+		else
+			printf("%u", gid);
+		return;
 	}
 	expr_basetype(expr)->print(expr);
 }
@@ -255,19 +265,23 @@ static struct error_record *gid_type_parse(const struct expr *sym,
 					   struct expr **res)
 {
 	struct group *gr;
+	uint64_t gid;
+	char *endptr = NULL;
 
 	gr = getgrnam(sym->identifier);
-	if (gr == NULL) {
-		/* Try harder, lookup based on GID */
-		gr = getgrgid(atol(sym->identifier));
-		if (gr == NULL)
+	if (gr != NULL)
+		gid = gr->gr_gid;
+	else {
+		gid = strtoull(sym->identifier, &endptr, 0);
+		if (gid > UINT32_MAX)
+			return error(&sym->location, "Value too large");
+		else if (*endptr)
 			return error(&sym->location, "Group does not exist");
 	}
 
 	*res = constant_expr_alloc(&sym->location, sym->dtype,
 				   BYTEORDER_HOST_ENDIAN,
-				   sizeof(gr->gr_gid) * BITS_PER_BYTE,
-				   &gr->gr_gid);
+				   sizeof(gr->gr_gid) * BITS_PER_BYTE, &gid);
 	return NULL;
 }
 
