@@ -665,6 +665,11 @@ static int do_command_list(struct netlink_ctx *ctx, struct cmd *cmd)
 		chain_free(chain);
 	}
 
+	list_for_each_entry_safe(set, nset, &table->sets, list) {
+		list_del(&set->list);
+		set_free(set);
+	}
+
 	return 0;
 }
 
