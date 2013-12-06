@@ -422,43 +422,10 @@ static int netlink_list_rules(struct netlink_ctx *ctx, const struct handle *h,
 	return 0;
 }
 
-static int flush_rule_cb(struct nft_rule *nlr, void *arg)
-{
-	struct netlink_ctx *ctx = arg;
-	const struct handle *h = ctx->data;
-	int err;
-
-	if ((h->table &&
-	    strcmp(nft_rule_attr_get_str(nlr, NFT_RULE_ATTR_TABLE), h->table) != 0) ||
-	    (h->chain &&
-	     strcmp(nft_rule_attr_get_str(nlr, NFT_RULE_ATTR_CHAIN), h->chain) != 0))
-		return 0;
-
-	netlink_dump_rule(nlr);
-	err = mnl_nft_rule_batch_del(nlr, 0, ctx->seqnum);
-	if (err < 0) {
-		netlink_io_error(ctx, NULL, "Could not delete rule: %s",
-				 strerror(errno));
-		return err;
-	}
-	return 0;
-}
-
 static int netlink_flush_rules(struct netlink_ctx *ctx, const struct handle *h,
 			       const struct location *loc)
 {
-	struct nft_rule_list *rule_cache;
-
-	rule_cache = mnl_nft_rule_dump(nf_sock, h->family);
-	if (rule_cache == NULL)
-		return netlink_io_error(ctx, loc,
-					"Could not receive rules from kernel: %s",
-					strerror(errno));
-
-	ctx->data = h;
-	nft_rule_list_foreach(rule_cache, flush_rule_cb, ctx);
-	nft_rule_list_free(rule_cache);
-	return 0;
+	return netlink_del_rule_batch(ctx, h, loc);
 }
 
 void netlink_dump_chain(struct nft_chain *nlc)
