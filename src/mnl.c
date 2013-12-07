@@ -273,7 +273,7 @@ int mnl_nft_rule_batch_add(struct nft_rule *nlr, unsigned int flags,
 	nlh = nft_rule_nlmsg_build_hdr(mnl_nlmsg_batch_current(batch),
 			NFT_MSG_NEWRULE,
 			nft_rule_attr_get_u32(nlr, NFT_RULE_ATTR_FAMILY),
-			flags|NLM_F_ACK|NLM_F_CREATE, seqnum);
+			flags|NLM_F_CREATE, seqnum);
 
 	nft_rule_nlmsg_build_payload(nlh, nlr);
 	if (!mnl_nlmsg_batch_next(batch))
@@ -290,7 +290,7 @@ int mnl_nft_rule_batch_del(struct nft_rule *nlr, unsigned int flags,
 	nlh = nft_rule_nlmsg_build_hdr(mnl_nlmsg_batch_current(batch),
 			NFT_MSG_DELRULE,
 			nft_rule_attr_get_u32(nlr, NFT_RULE_ATTR_FAMILY),
-			NLM_F_ACK, seqnum);
+			0, seqnum);
 
 	nft_rule_nlmsg_build_payload(nlh, nlr);
 
