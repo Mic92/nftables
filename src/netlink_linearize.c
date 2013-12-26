@@ -518,6 +518,8 @@ static void netlink_gen_meta_stmt(struct netlink_linearize_ctx *ctx,
 	release_register(ctx);
 
 	nle = alloc_nft_expr("meta");
+	nft_rule_expr_set_u32(nle, NFT_EXPR_META_SREG, sreg);
+	nft_rule_expr_set_u32(nle, NFT_EXPR_META_KEY, stmt->meta.key);
 	nft_rule_add_expr(ctx->nlr, nle);
 }
 

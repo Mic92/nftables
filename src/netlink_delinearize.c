@@ -325,9 +325,9 @@ static void netlink_parse_exthdr(struct netlink_parse_ctx *ctx,
 			     expr);
 }
 
-static void netlink_parse_meta(struct netlink_parse_ctx *ctx,
-			       const struct location *loc,
-			       const struct nft_rule_expr *nle)
+static void netlink_parse_meta_dreg(struct netlink_parse_ctx *ctx,
+				    const struct location *loc,
+				    const struct nft_rule_expr *nle)
 {
 	struct expr *expr;
 
@@ -336,6 +336,33 @@ static void netlink_parse_meta(struct netlink_parse_ctx *ctx,
 	netlink_set_register(ctx,
 			     nft_rule_expr_get_u8(nle, NFT_EXPR_META_DREG),
 			     expr);
+}
+
+static void netlink_parse_meta_sreg(struct netlink_parse_ctx *ctx,
+				    const struct location *loc,
+				    const struct nft_rule_expr *nle)
+{
+	struct stmt *stmt;
+	struct expr *expr;
+
+	expr = netlink_get_register(ctx, loc,
+			nft_rule_expr_get_u8(nle, NFT_EXPR_META_SREG));
+	stmt = meta_stmt_alloc(loc,
+			       nft_rule_expr_get_u8(nle, NFT_EXPR_META_KEY),
+			       expr);
+	expr_set_type(expr, stmt->meta.tmpl->dtype, stmt->meta.tmpl->byteorder);
+
+	list_add_tail(&stmt->list, &ctx->rule->stmts);
+}
+
+static void netlink_parse_meta(struct netlink_parse_ctx *ctx,
+			       const struct location *loc,
+			       const struct nft_rule_expr *nle)
+{
+	if (nft_rule_expr_is_set(nle, NFT_EXPR_META_DREG))
+		netlink_parse_meta_dreg(ctx, loc, nle);
+	else
+		netlink_parse_meta_sreg(ctx, loc, nle);
 }
 
 static void netlink_parse_ct(struct netlink_parse_ctx *ctx,
@@ -785,6 +812,10 @@ static void rule_parse_postprocess(struct netlink_parse_ctx *ctx, struct rule *r
 		switch (stmt->ops->type) {
 		case STMT_EXPRESSION:
 			expr_postprocess(&rctx, stmt, &stmt->expr);
+			break;
+		case STMT_META:
+			if (stmt->meta.expr != NULL)
+				expr_postprocess(&rctx, stmt, &stmt->meta.expr);
 			break;
 		case STMT_NAT:
 			if (stmt->nat.addr != NULL)
