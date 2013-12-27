@@ -38,6 +38,11 @@ mnl_talk(struct mnl_socket *nf_sock, const void *data, unsigned int len,
 	uint32_t portid = mnl_socket_get_portid(nf_sock);
 	int ret;
 
+#ifdef DEBUG
+	if (debug_level & DEBUG_NETLINK)
+		mnl_nlmsg_fprintf(stdout, data, len, sizeof(struct nfgenmsg));
+#endif
+
 	if (mnl_socket_sendto(nf_sock, data, len) < 0)
 		return -1;
 
