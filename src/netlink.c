@@ -157,13 +157,22 @@ static struct nft_set_elem *alloc_nft_setelem(const struct expr *expr)
 		nft_set_elem_attr_set(nlse, NFT_SET_ELEM_ATTR_KEY,
 				      &nld.value, nld.len);
 		netlink_gen_data(expr->right, &nld);
-		if (expr->right->ops->type == EXPR_VERDICT) {
+		switch (expr->right->ops->type) {
+		case EXPR_VERDICT:
 			nft_set_elem_attr_set_u32(nlse, NFT_SET_ELEM_ATTR_VERDICT,
 						  expr->right->verdict);
 			if (expr->chain != NULL) {
 				nft_set_elem_attr_set(nlse, NFT_SET_ELEM_ATTR_CHAIN,
 						nld.chain, strlen(nld.chain));
 			}
+			break;
+		case EXPR_VALUE:
+			nft_set_elem_attr_set(nlse, NFT_SET_ELEM_ATTR_DATA,
+					      nld.value, nld.len);
+			break;
+		default:
+			BUG("unexpected set element expression\n");
+			break;
 		}
 	}
 
@@ -994,6 +1003,9 @@ static int list_setelem_cb(struct nft_set_elem *nlse, void *arg)
 					  set->datatype->type == TYPE_VERDICT ?
 					  NFT_REG_VERDICT : NFT_REG_1);
 		data->dtype = set->datatype;
+		data->byteorder = set->datatype->byteorder;
+		if (data->byteorder == BYTEORDER_HOST_ENDIAN)
+			mpz_switch_byteorder(data->value, data->len / BITS_PER_BYTE);
 
 		expr = mapping_expr_alloc(&internal_location, expr, data);
 	}
