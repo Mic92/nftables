@@ -587,6 +587,26 @@ enum nft_log_attributes {
 #define NFTA_LOG_MAX		(__NFTA_LOG_MAX - 1)
 
 /**
+ * enum nft_queue_attributes - nf_tables queue expression netlink attributes
+ *
+ * @NFTA_QUEUE_NUM: netlink group to send messages to (NLA_U32)
+ * @NFTA_QUEUE_TOTAL: prefix to prepend to log messages (NLA_STRING)
+ * @NFTA_QUEUE_FLAGS: length of payload to include in netlink message (NLA_U32)
+ */
+enum nft_queue_attributes {
+	NFTA_QUEUE_UNSPEC,
+	NFTA_QUEUE_NUM,
+	NFTA_QUEUE_TOTAL,
+	NFTA_QUEUE_FLAGS,
+	__NFTA_QUEUE_MAX
+};
+#define NFTA_QUEUE_MAX		(__NFTA_QUEUE_MAX - 1)
+
+#define NFT_QUEUE_FLAG_BYPASS		0x01 /* for compatibility with v2 */
+#define NFT_QUEUE_FLAG_CPU_FANOUT	0x02 /* use current CPU (no hashing) */
+#define NFT_QUEUE_FLAG_MASK		0x03
+
+/**
  * enum nft_reject_types - nf_tables reject expression reject types
  *
  * @NFT_REJECT_ICMP_UNREACH: reject using ICMP unreachable

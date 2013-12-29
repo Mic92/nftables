@@ -180,7 +180,6 @@ static void location_update(struct location *loc, struct location *rhs, int n)
 %token JUMP			"jump"
 %token GOTO			"goto"
 %token RETURN			"return"
-%token QUEUE			"queue"
 
 %token <val> NUM		"number"
 %token <string> STRING		"string"
@@ -330,6 +329,13 @@ static void location_update(struct location *loc, struct location *rhs, int n)
 %token SNAT			"snat"
 %token DNAT			"dnat"
 
+%token QUEUE			"queue"
+%token QUEUENUM			"num"
+%token QUEUETOTAL		"total"
+%token QUEUEBYPASS		"bypass"
+%token QUEUECPUFANOUT		"fanout"
+%token OPTIONS			"options"
+
 %token POSITION			"position"
 
 %type <string>			identifier string
@@ -377,6 +383,9 @@ static void location_update(struct location *loc, struct location *rhs, int n)
 %destructor { stmt_free($$); }	reject_stmt
 %type <stmt>			nat_stmt nat_stmt_alloc
 %destructor { stmt_free($$); }	nat_stmt nat_stmt_alloc
+%type <stmt>			queue_stmt queue_stmt_alloc
+%destructor { stmt_free($$); }	queue_stmt queue_stmt_alloc
+%type <val>			queue_flags queue_flag
 
 %type <expr>			symbol_expr verdict_expr integer_expr
 %destructor { expr_free($$); }	symbol_expr verdict_expr integer_expr
@@ -927,6 +936,7 @@ stmt			:	verdict_stmt
 			|	limit_stmt
 			|	reject_stmt
 			|	nat_stmt
+			|	queue_stmt
 			;
 
 verdict_stmt		:	verdict_expr
@@ -1048,6 +1058,57 @@ nat_stmt_args		:	expr
 			|	COLON	expr
 			{
 				$<stmt>0->nat.proto = $2;
+			}
+			;
+
+queue_stmt		:	queue_stmt_alloc
+			|	queue_stmt_alloc		queue_args
+			;
+
+queue_stmt_alloc		:	QUEUE
+			{
+				$$ = queue_stmt_alloc(&@$);
+			}
+			;
+
+queue_args		:	queue_arg
+			{
+				$<stmt>$	= $<stmt>0;
+			}
+			|	queue_args	queue_arg
+			;
+
+queue_arg		:	QUEUENUM		NUM
+			{
+				$<stmt>0->queue.queuenum	 = $2;
+			}
+			|	QUEUETOTAL		NUM
+			{
+				$<stmt>0->queue.queues_total	 = $2;
+			}
+			|	OPTIONS		queue_flags
+			{
+				$<stmt>0->queue.flags		 = $2;
+			}
+			;
+
+queue_flags		:	queue_flag
+			{
+				$$ = $1;
+			}
+			|	queue_flags	COMMA	queue_flag
+			{
+				$$ |= $1 | $3;
+			}
+			;
+
+queue_flag		:	QUEUEBYPASS
+			{
+				$$ = NFT_QUEUE_FLAG_BYPASS;
+			}
+			|	QUEUECPUFANOUT
+			{
+				$$ = NFT_QUEUE_FLAG_CPU_FANOUT;
 			}
 			;
 
@@ -1286,10 +1347,6 @@ verdict_expr		:	ACCEPT
 			|	DROP
 			{
 				$$ = verdict_expr_alloc(&@$, NF_DROP, NULL);
-			}
-			|	QUEUE
-			{
-				$$ = verdict_expr_alloc(&@$, NF_QUEUE, NULL);
 			}
 			|	CONTINUE
 			{

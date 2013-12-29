@@ -636,6 +636,26 @@ static void netlink_gen_nat_stmt(struct netlink_linearize_ctx *ctx,
 	nft_rule_add_expr(ctx->nlr, nle);
 }
 
+static void netlink_gen_queue_stmt(struct netlink_linearize_ctx *ctx,
+				 const struct stmt *stmt)
+{
+	struct nft_rule_expr *nle;
+
+	nle = alloc_nft_expr("queue");
+
+	nft_rule_expr_set_u16(nle, NFT_EXPR_QUEUE_NUM,
+			      stmt->queue.queuenum);
+	if (stmt->queue.queues_total) {
+		nft_rule_expr_set_u16(nle, NFT_EXPR_QUEUE_TOTAL,
+				      stmt->queue.queues_total);
+	}
+	if (stmt->queue.flags) {
+		nft_rule_expr_set_u16(nle, NFT_EXPR_QUEUE_FLAGS,
+				      stmt->queue.flags);
+	}
+	nft_rule_add_expr(ctx->nlr, nle);
+}
+
 static void netlink_gen_stmt(struct netlink_linearize_ctx *ctx,
 			     const struct stmt *stmt)
 {
@@ -656,6 +676,8 @@ static void netlink_gen_stmt(struct netlink_linearize_ctx *ctx,
 		return netlink_gen_reject_stmt(ctx, stmt);
 	case STMT_NAT:
 		return netlink_gen_nat_stmt(ctx, stmt);
+	case STMT_QUEUE:
+		return netlink_gen_queue_stmt(ctx, stmt);
 	default:
 		BUG("unknown statement type %s\n", stmt->ops->name);
 	}

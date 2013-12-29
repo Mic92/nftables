@@ -1174,6 +1174,8 @@ static int stmt_evaluate(struct eval_ctx *ctx, struct stmt *stmt)
 		return stmt_evaluate_reject(ctx, stmt);
 	case STMT_NAT:
 		return stmt_evaluate_nat(ctx, stmt);
+	case STMT_QUEUE:
+		return 0;
 	default:
 		BUG("unknown statement type %s\n", stmt->ops->name);
 	}

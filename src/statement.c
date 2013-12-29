@@ -172,6 +172,37 @@ struct stmt *limit_stmt_alloc(const struct location *loc)
 	return stmt_alloc(loc, &limit_stmt_ops);
 }
 
+static void queue_stmt_print(const struct stmt *stmt)
+{
+	int one = 0;
+
+	printf("queue num %u total %u",
+		stmt->queue.queuenum, stmt->queue.queues_total);
+	if (stmt->queue.flags)
+		printf(" options ");
+	if (stmt->queue.flags & NFT_QUEUE_FLAG_BYPASS) {
+		printf("bypass");
+		one = 1;
+	}
+	if (stmt->queue.flags & NFT_QUEUE_FLAG_CPU_FANOUT) {
+		if (one)
+			printf (",");
+		printf("fanout");
+	}
+
+}
+
+static const struct stmt_ops queue_stmt_ops = {
+	.type		= STMT_QUEUE,
+	.name		= "queue",
+	.print		= queue_stmt_print,
+};
+
+struct stmt *queue_stmt_alloc(const struct location *loc)
+{
+	return stmt_alloc(loc, &queue_stmt_ops);
+}
+
 static void reject_stmt_print(const struct stmt *stmt)
 {
 	printf("reject");

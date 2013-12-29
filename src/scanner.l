@@ -234,7 +234,6 @@ addrstring	({macaddr}|{ip4addr}|{ip6addr})
 "jump"			{ return JUMP; }
 "goto"			{ return GOTO; }
 "return"		{ return RETURN; }
-"queue"			{ return QUEUE; }
 
 "add"			{ return ADD; }
 "insert"		{ return INSERT; }
@@ -254,6 +253,13 @@ addrstring	({macaddr}|{ip4addr}|{ip6addr})
 "group"			{ return GROUP; }
 "snaplen"		{ return SNAPLEN; }
 "queue-threshold"	{ return QUEUE_THRESHOLD; }
+
+"queue"			{ return QUEUE;}
+"num"			{ return QUEUENUM;}
+"total"			{ return QUEUETOTAL;}
+"bypass"		{ return QUEUEBYPASS;}
+"fanout"		{ return QUEUECPUFANOUT;}
+"options"		{ return OPTIONS;}
 
 "limit"			{ return LIMIT; }
 "rate"			{ return RATE; }
