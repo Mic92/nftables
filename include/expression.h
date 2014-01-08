@@ -118,7 +118,9 @@ static inline void expr_set_context(struct expr_ctx *ctx,
  * @destroy:	destructor, must release inner expressions
  * @set_type:	function to promote type and byteorder of inner types
  * @print:	function to print the expression
+ * @pctx_update:update protocol context
  */
+struct proto_ctx;
 struct expr_ops {
 	enum expr_types		type;
 	const char		*name;
@@ -128,6 +130,8 @@ struct expr_ops {
 					    const struct datatype *dtype,
 					    enum byteorder byteorder);
 	void			(*print)(const struct expr *expr);
+	void			(*pctx_update)(struct proto_ctx *ctx,
+					       const struct expr *expr);
 };
 
 /**

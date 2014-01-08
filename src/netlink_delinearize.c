@@ -612,7 +612,7 @@ static void payload_match_postprocess(struct rule_pp_ctx *ctx,
 
 			nexpr = relational_expr_alloc(&expr->location, expr->op,
 						      left, tmp);
-			payload_expr_pctx_update(&ctx->pctx, nexpr);
+			left->ops->pctx_update(&ctx->pctx, nexpr);
 
 			nstmt = expr_stmt_alloc(&stmt->location, nexpr);
 			list_add_tail(&nstmt->list, &stmt->list);
@@ -644,7 +644,7 @@ static void meta_match_postprocess(struct proto_ctx *ctx,
 {
 	switch (expr->op) {
 	case OP_EQ:
-		meta_expr_pctx_update(ctx, expr);
+		expr->left->ops->pctx_update(ctx, expr);
 		break;
 	default:
 		break;

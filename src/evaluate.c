@@ -919,18 +919,14 @@ static int expr_evaluate_relational(struct eval_ctx *ctx, struct expr **expr)
 		 * Update protocol context for payload and meta iiftype
 		 * equality expressions.
 		 */
-		switch (left->ops->type) {
-		case EXPR_PAYLOAD:
-			payload_expr_pctx_update(&ctx->pctx, rel);
-			break;
-		case EXPR_META:
-			meta_expr_pctx_update(&ctx->pctx, rel);
-			break;
-		case EXPR_CONCAT:
+		if (left->flags & EXPR_F_PROTOCOL &&
+		    left->ops->pctx_update)
+			left->ops->pctx_update(&ctx->pctx, rel);
+
+		if (left->ops->type == EXPR_CONCAT)
 			return 0;
-		default:
-			break;
-		}
+
+		/* fall through */
 	case OP_NEQ:
 	case OP_FLAGCMP:
 		if (!datatype_equal(left->dtype, right->dtype))

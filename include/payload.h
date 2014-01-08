@@ -10,9 +10,6 @@ extern struct expr *payload_expr_alloc(const struct location *loc,
 extern void payload_init_raw(struct expr *expr, enum proto_bases base,
 			     unsigned int offset, unsigned int len);
 
-extern void payload_expr_pctx_update(struct proto_ctx *ctx,
-				     const struct expr *expr);
-
 struct eval_ctx;
 extern int payload_gen_dependency(struct eval_ctx *ctx, const struct expr *expr,
 				  struct expr **res);

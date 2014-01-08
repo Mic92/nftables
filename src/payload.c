@@ -48,11 +48,37 @@ static void payload_expr_clone(struct expr *new, const struct expr *expr)
 	new->payload.offset = expr->payload.offset;
 }
 
+/**
+ * payload_expr_pctx_update - update protocol context based on payload match
+ *
+ * @ctx:	protocol context
+ * @expr:	relational payload expression
+ *
+ * Update protocol context for relational payload expressions.
+ */
+static void payload_expr_pctx_update(struct proto_ctx *ctx,
+				     const struct expr *expr)
+{
+	const struct expr *left = expr->left, *right = expr->right;
+	const struct proto_desc *base, *desc;
+
+	if (!(left->flags & EXPR_F_PROTOCOL))
+		return;
+
+	assert(expr->op == OP_EQ);
+	base = ctx->protocol[left->payload.base].desc;
+	desc = proto_find_upper(base, mpz_get_uint32(right->value));
+
+	ctx->protocol[left->payload.base + 1].location = expr->location;
+	ctx->protocol[left->payload.base + 1].desc = desc;
+}
+
 static const struct expr_ops payload_expr_ops = {
 	.type		= EXPR_PAYLOAD,
 	.name		= "payload",
 	.print		= payload_expr_print,
 	.clone		= payload_expr_clone,
+	.pctx_update	= payload_expr_pctx_update,
 };
 
 struct expr *payload_expr_alloc(const struct location *loc,
@@ -92,30 +118,6 @@ void payload_init_raw(struct expr *expr, enum proto_bases base,
 	expr->payload.base	= base;
 	expr->payload.offset	= offset;
 	expr->len		= len;
-}
-
-/**
- * payload_expr_pctx_update - update protocol context based on payload match
- *
- * @ctx:	protocol context
- * @expr:	relational payload expression
- *
- * Update protocol context for relational payload expressions.
- */
-void payload_expr_pctx_update(struct proto_ctx *ctx, const struct expr *expr)
-{
-	const struct expr *left = expr->left, *right = expr->right;
-	const struct proto_desc *base, *desc;
-
-	if (!(left->flags & EXPR_F_PROTOCOL))
-		return;
-
-	assert(expr->op == OP_EQ);
-	base = ctx->protocol[left->payload.base].desc;
-	desc = proto_find_upper(base, mpz_get_uint32(right->value));
-
-	ctx->protocol[left->payload.base + 1].location = expr->location;
-	ctx->protocol[left->payload.base + 1].desc = desc;
 }
 
 /**

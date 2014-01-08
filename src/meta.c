@@ -349,7 +349,8 @@ static void meta_expr_clone(struct expr *new, const struct expr *expr)
  *
  * Update LL protocol context based on IIFTYPE meta match in non-LL hooks.
  */
-void meta_expr_pctx_update(struct proto_ctx *ctx, const struct expr *expr)
+static void meta_expr_pctx_update(struct proto_ctx *ctx,
+				  const struct expr *expr)
 {
 	const struct hook_proto_desc *h = &hook_proto_desc[ctx->family];
 	const struct expr *left = expr->left, *right = expr->right;
@@ -375,6 +376,7 @@ static const struct expr_ops meta_expr_ops = {
 	.name		= "meta",
 	.print		= meta_expr_print,
 	.clone		= meta_expr_clone,
+	.pctx_update	= meta_expr_pctx_update,
 };
 
 struct expr *meta_expr_alloc(const struct location *loc, enum nft_meta_keys key)
@@ -385,6 +387,15 @@ struct expr *meta_expr_alloc(const struct location *loc, enum nft_meta_keys key)
 	expr = expr_alloc(loc, &meta_expr_ops, tmpl->dtype,
 			  tmpl->byteorder, tmpl->len);
 	expr->meta.key = key;
+
+	switch (key) {
+	case NFT_META_IIFTYPE:
+		expr->flags |= EXPR_F_PROTOCOL;
+		break;
+	default:
+		break;
+	}
+
 	return expr;
 }
 
