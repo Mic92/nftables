@@ -23,6 +23,7 @@
 #include <expression.h>
 #include <datatype.h>
 #include <ct.h>
+#include <gmputil.h>
 #include <utils.h>
 
 static const struct symbol_table ct_state_tbl = {
@@ -139,11 +140,32 @@ static void ct_expr_clone(struct expr *new, const struct expr *expr)
 	new->ct.key = expr->ct.key;
 }
 
+static void ct_expr_pctx_update(struct proto_ctx *ctx, const struct expr *expr)
+{
+	const struct expr *left = expr->left, *right = expr->right;
+	const struct proto_desc *base, *desc;
+
+	assert(expr->op == OP_EQ);
+
+	switch (left->ct.key) {
+	case NFT_CT_PROTOCOL:
+		base = ctx->protocol[PROTO_BASE_NETWORK_HDR].desc;
+		desc = proto_find_upper(base, mpz_get_uint32(right->value));
+
+		proto_ctx_update(ctx, PROTO_BASE_TRANSPORT_HDR,
+				 &expr->location, desc);
+		break;
+	default:
+		break;
+	}
+}
+
 static const struct expr_ops ct_expr_ops = {
 	.type		= EXPR_CT,
 	.name		= "ct",
 	.print		= ct_expr_print,
 	.clone		= ct_expr_clone,
+	.pctx_update	= ct_expr_pctx_update,
 };
 
 struct expr *ct_expr_alloc(const struct location *loc, enum nft_ct_keys key)
@@ -154,7 +176,43 @@ struct expr *ct_expr_alloc(const struct location *loc, enum nft_ct_keys key)
 	expr = expr_alloc(loc, &ct_expr_ops, tmpl->dtype,
 			  tmpl->byteorder, tmpl->len);
 	expr->ct.key = key;
+
+	switch (key) {
+	case NFT_CT_PROTOCOL:
+		expr->flags = EXPR_F_PROTOCOL;
+		break;
+	default:
+		break;
+	}
+
 	return expr;
+}
+
+void ct_expr_update_type(struct proto_ctx *ctx, struct expr *expr)
+{
+	const struct proto_desc *desc;
+
+	switch (expr->ct.key) {
+	case NFT_CT_SRC:
+	case NFT_CT_DST:
+		desc = ctx->protocol[PROTO_BASE_NETWORK_HDR].desc;
+		if (desc == &proto_ip)
+			expr->dtype = &ipaddr_type;
+		else if (desc == &proto_ip6)
+			expr->dtype = &ip6addr_type;
+
+		expr->len = expr->dtype->size;
+		break;
+	case NFT_CT_PROTO_SRC:
+	case NFT_CT_PROTO_DST:
+		desc = ctx->protocol[PROTO_BASE_TRANSPORT_HDR].desc;
+		if (desc == NULL)
+			break;
+		expr->dtype = &inet_service_type;
+		break;
+	default:
+		break;
+	}
 }
 
 static void __init ct_init(void)

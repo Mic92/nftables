@@ -290,6 +290,19 @@ static int expr_evaluate_payload(struct eval_ctx *ctx, struct expr **expr)
 }
 
 /*
+ * CT expression: update the protocol dependant types bases on the protocol
+ * context.
+ */
+static int expr_evaluate_ct(struct eval_ctx *ctx, struct expr **expr)
+{
+	struct expr *ct = *expr;
+
+	ct_expr_update_type(&ctx->pctx, ct);
+
+	return expr_evaluate_primary(ctx, expr);
+}
+
+/*
  * Prefix expression: the argument must be a constant value of integer base
  * type; the prefix length must be less than or equal to the type width.
  */
@@ -1042,10 +1055,11 @@ static int expr_evaluate(struct eval_ctx *ctx, struct expr **expr)
 	case EXPR_VERDICT:
 	case EXPR_EXTHDR:
 	case EXPR_META:
-	case EXPR_CT:
 		return expr_evaluate_primary(ctx, expr);
 	case EXPR_PAYLOAD:
 		return expr_evaluate_payload(ctx, expr);
+	case EXPR_CT:
+		return expr_evaluate_ct(ctx, expr);
 	case EXPR_PREFIX:
 		return expr_evaluate_prefix(ctx, expr);
 	case EXPR_RANGE:
