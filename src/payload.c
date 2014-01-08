@@ -197,7 +197,7 @@ int payload_gen_dependency(struct eval_ctx *ctx, const struct expr *expr,
 				    tmpl->len, &protocol);
 
 	dep = relational_expr_alloc(&expr->location, OP_EQ, left, right);
-	payload_expr_pctx_update(&ctx->pctx, dep);
+	left->ops->pctx_update(&ctx->pctx, dep);
 	*res = dep;
 	return 0;
 }

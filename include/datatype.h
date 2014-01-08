@@ -6,6 +6,7 @@
  *
  * @TYPE_INVALID:	uninitialized
  * @TYPE_VERDICT:	nftables verdict
+ * @TYPE_NFPROTO:	netfilter protocol (integer subtype)
  * @TYPE_BITMASK:	bitmask
  * @TYPE_INTEGER:	integer
  * @TYPE_STRING:	string
@@ -37,6 +38,7 @@
 enum datatypes {
 	TYPE_INVALID,
 	TYPE_VERDICT,
+	TYPE_NFPROTO,
 	TYPE_BITMASK,
 	TYPE_INTEGER,
 	TYPE_STRING,
@@ -168,6 +170,7 @@ extern void rt_symbol_table_free(struct symbol_table *tbl);
 
 extern const struct datatype invalid_type;
 extern const struct datatype verdict_type;
+extern const struct datatype nfproto_type;
 extern const struct datatype bitmask_type;
 extern const struct datatype integer_type;
 extern const struct datatype string_type;

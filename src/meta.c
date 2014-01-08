@@ -301,6 +301,8 @@ static const struct meta_template meta_templates[] = {
 						4 * 8, BYTEORDER_HOST_ENDIAN),
 	[NFT_META_PROTOCOL]	= META_TEMPLATE("protocol",  &ethertype_type,
 						2 * 8, BYTEORDER_BIG_ENDIAN),
+	[NFT_META_NFPROTO]	= META_TEMPLATE("nfproto",   &nfproto_type,
+						1 * 8, BYTEORDER_HOST_ENDIAN),
 	[NFT_META_PRIORITY]	= META_TEMPLATE("priority",  &tchandle_type,
 						4 * 8, BYTEORDER_HOST_ENDIAN),
 	[NFT_META_MARK]		= META_TEMPLATE("mark",      &mark_type,
@@ -356,18 +358,29 @@ static void meta_expr_pctx_update(struct proto_ctx *ctx,
 	const struct expr *left = expr->left, *right = expr->right;
 	const struct proto_desc *desc;
 
-	if (left->meta.key != NFT_META_IIFTYPE)
-		return;
-
 	assert(expr->op == OP_EQ);
-	if (h->base < PROTO_BASE_NETWORK_HDR)
-		return;
 
-	desc = proto_dev_desc(mpz_get_uint16(right->value));
-	if (desc == NULL)
-		desc = &proto_unknown;
+	switch (left->meta.key) {
+	case NFT_META_IIFTYPE:
+		if (h->base < PROTO_BASE_NETWORK_HDR)
+			return;
 
-	proto_ctx_update(ctx, PROTO_BASE_LL_HDR, &expr->location, desc);
+		desc = proto_dev_desc(mpz_get_uint16(right->value));
+		if (desc == NULL)
+			desc = &proto_unknown;
+
+		proto_ctx_update(ctx, PROTO_BASE_LL_HDR, &expr->location, desc);
+		break;
+	case NFT_META_NFPROTO:
+		desc = proto_find_upper(h->desc, mpz_get_uint8(right->value));
+		if (desc == NULL)
+			desc = &proto_unknown;
+
+		proto_ctx_update(ctx, PROTO_BASE_NETWORK_HDR, &expr->location, desc);
+		break;
+	default:
+		break;
+	}
 }
 
 static const struct expr_ops meta_expr_ops = {
@@ -390,6 +403,10 @@ struct expr *meta_expr_alloc(const struct location *loc, enum nft_meta_keys key)
 	switch (key) {
 	case NFT_META_IIFTYPE:
 		expr->flags |= EXPR_F_PROTOCOL;
+		break;
+	case NFT_META_NFPROTO:
+		expr->flags |= EXPR_F_PROTOCOL;
+		expr->meta.base = PROTO_BASE_LL_HDR;
 		break;
 	default:
 		break;

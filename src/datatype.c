@@ -26,6 +26,7 @@
 static const struct datatype *datatypes[TYPE_MAX + 1] = {
 	[TYPE_INVALID]		= &invalid_type,
 	[TYPE_VERDICT]		= &verdict_type,
+	[TYPE_NFPROTO]		= &nfproto_type,
 	[TYPE_BITMASK]		= &bitmask_type,
 	[TYPE_INTEGER]		= &integer_type,
 	[TYPE_STRING]		= &string_type,
@@ -202,6 +203,23 @@ const struct datatype verdict_type = {
 	.name		= "verdict",
 	.desc		= "netfilter verdict",
 	.print		= verdict_type_print,
+};
+
+static const struct symbol_table nfproto_tbl = {
+	.symbols	= {
+		SYMBOL("ipv4",		NFPROTO_IPV4),
+		SYMBOL("ipv6",		NFPROTO_IPV6),
+		SYMBOL_LIST_END
+	},
+};
+
+const struct datatype nfproto_type = {
+	.type		= TYPE_NFPROTO,
+	.name		= "nfproto",
+	.desc		= "netfilter protocol",
+	.size		= 1 * BITS_PER_BYTE,
+	.basetype	= &integer_type,
+	.sym_tbl	= &nfproto_tbl,
 };
 
 const struct datatype bitmask_type = {

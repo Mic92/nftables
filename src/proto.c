@@ -123,6 +123,7 @@ const struct proto_desc *proto_dev_desc(uint16_t type)
 
 const struct hook_proto_desc hook_proto_desc[] = {
 	[NFPROTO_BRIDGE]	= HOOK_PROTO_DESC(PROTO_BASE_LL_HDR,	  &proto_eth),
+	[NFPROTO_INET]		= HOOK_PROTO_DESC(PROTO_BASE_LL_HDR,	  &proto_inet),
 	[NFPROTO_IPV4]		= HOOK_PROTO_DESC(PROTO_BASE_NETWORK_HDR, &proto_ip),
 	[NFPROTO_IPV6]		= HOOK_PROTO_DESC(PROTO_BASE_NETWORK_HDR, &proto_ip6),
 	[NFPROTO_ARP]		= HOOK_PROTO_DESC(PROTO_BASE_NETWORK_HDR, &proto_arp),
@@ -604,6 +605,23 @@ const struct proto_desc proto_ip6 = {
 		[IP6HDR_HOPLIMIT]	= IP6HDR_FIELD("hoplimit",	hop_limit),
 		[IP6HDR_SADDR]		= IP6HDR_ADDR("saddr",		saddr),
 		[IP6HDR_DADDR]		= IP6HDR_ADDR("daddr",		daddr),
+	},
+};
+
+/*
+ * Dummy protocol for mixed IPv4/IPv6 tables. The protocol is set at the link
+ * layer header, the upper layer protocols are IPv4 and IPv6.
+ */
+
+const struct proto_desc proto_inet = {
+	.name		= "inet",
+	.base		= PROTO_BASE_LL_HDR,
+	.protocols	= {
+		PROTO_LINK(NFPROTO_IPV4,	&proto_ip),
+		PROTO_LINK(NFPROTO_IPV6,	&proto_ip6),
+	},
+	.templates	= {
+		[0]	= PROTO_META_TEMPLATE("nfproto", &nfproto_type, NFT_META_NFPROTO, 8),
 	},
 };
 

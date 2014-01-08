@@ -290,6 +290,8 @@ extern const struct proto_desc proto_icmp6;
 extern const struct proto_desc proto_ip;
 extern const struct proto_desc proto_ip6;
 
+extern const struct proto_desc proto_inet;
+
 extern const struct proto_desc proto_arp;
 
 extern const struct proto_desc proto_vlan;
