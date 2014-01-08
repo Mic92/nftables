@@ -341,6 +341,35 @@ static void meta_expr_clone(struct expr *new, const struct expr *expr)
 	new->meta.key = expr->meta.key;
 }
 
+/**
+ * meta_expr_pctx_update - update protocol context based on meta match
+ *
+ * @ctx:	protocol context
+ * @expr:	relational meta expression
+ *
+ * Update LL protocol context based on IIFTYPE meta match in non-LL hooks.
+ */
+void meta_expr_pctx_update(struct proto_ctx *ctx, const struct expr *expr)
+{
+	const struct hook_proto_desc *h = &hook_proto_desc[ctx->family];
+	const struct expr *left = expr->left, *right = expr->right;
+	const struct proto_desc *desc;
+
+	if (left->meta.key != NFT_META_IIFTYPE)
+		return;
+
+	assert(expr->op == OP_EQ);
+	if (h->base < PROTO_BASE_NETWORK_HDR)
+		return;
+
+	desc = proto_dev_desc(mpz_get_uint16(right->value));
+	if (desc == NULL)
+		desc = &proto_unknown;
+
+	ctx->protocol[PROTO_BASE_LL_HDR].location = expr->location;
+	ctx->protocol[PROTO_BASE_LL_HDR].desc	  = desc;
+}
+
 static const struct expr_ops meta_expr_ops = {
 	.type		= EXPR_META,
 	.name		= "meta",

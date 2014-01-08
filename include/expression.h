@@ -225,15 +225,15 @@ struct expr {
 
 		struct {
 			/* EXPR_PAYLOAD */
-			const struct payload_desc	*desc;
-			const struct payload_template	*tmpl;
-			enum payload_bases		base;
+			const struct proto_desc		*desc;
+			const struct proto_hdr_template	*tmpl;
+			enum proto_bases		base;
 			unsigned int			offset;
 		} payload;
 		struct {
 			/* EXPR_EXTHDR */
 			const struct exthdr_desc	*desc;
-			const struct payload_template	*tmpl;
+			const struct proto_hdr_template	*tmpl;
 		} exthdr;
 		struct {
 			/* EXPR_META */

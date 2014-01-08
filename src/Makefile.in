@@ -9,6 +9,7 @@ nft-obj			+= statement.o
 nft-obj			+= datatype.o
 nft-obj			+= expression.o
 nft-obj			+= evaluate.o
+nft-obj			+= proto.o
 nft-obj			+= payload.o
 nft-obj			+= exthdr.o
 nft-obj			+= meta.o

@@ -269,7 +269,7 @@ static int expr_evaluate_primary(struct eval_ctx *ctx, struct expr **expr)
 static int expr_evaluate_payload(struct eval_ctx *ctx, struct expr **expr)
 {
 	struct expr *payload = *expr;
-	enum payload_bases base = payload->payload.base;
+	enum proto_bases base = payload->payload.base;
 	struct stmt *nstmt;
 	struct expr *nexpr;
 
@@ -916,15 +916,15 @@ static int expr_evaluate_relational(struct eval_ctx *ctx, struct expr **expr)
 						 left->dtype->desc,
 						 right->dtype->desc);
 		/*
-		 * Update payload context for payload and meta iiftype equality
-		 * expressions.
+		 * Update protocol context for payload and meta iiftype
+		 * equality expressions.
 		 */
 		switch (left->ops->type) {
 		case EXPR_PAYLOAD:
-			payload_ctx_update(&ctx->pctx, rel);
+			payload_expr_pctx_update(&ctx->pctx, rel);
 			break;
 		case EXPR_META:
-			payload_ctx_update_meta(&ctx->pctx, rel);
+			meta_expr_pctx_update(&ctx->pctx, rel);
 			break;
 		case EXPR_CONCAT:
 			return 0;
@@ -1117,7 +1117,7 @@ static int stmt_evaluate_reject(struct eval_ctx *ctx, struct stmt *stmt)
 
 static int stmt_evaluate_nat(struct eval_ctx *ctx, struct stmt *stmt)
 {
-	struct payload_ctx *pctx = &ctx->pctx;
+	struct proto_ctx *pctx = &ctx->pctx;
 	int err;
 
 	if (stmt->nat.addr != NULL) {
@@ -1133,7 +1133,7 @@ static int stmt_evaluate_nat(struct eval_ctx *ctx, struct stmt *stmt)
 	}
 
 	if (stmt->nat.proto != NULL) {
-		if (pctx->protocol[PAYLOAD_BASE_TRANSPORT_HDR].desc == NULL)
+		if (pctx->protocol[PROTO_BASE_TRANSPORT_HDR].desc == NULL)
 			return stmt_binary_error(ctx, stmt->nat.proto, stmt,
 						 "transport protocol mapping is only "
 						 "valid after transport protocol match");
@@ -1232,7 +1232,7 @@ static int rule_evaluate(struct eval_ctx *ctx, struct rule *rule)
 	struct stmt *stmt, *tstmt = NULL;
 	struct error_record *erec;
 
-	payload_ctx_init(&ctx->pctx, rule->handle.family);
+	proto_ctx_init(&ctx->pctx, rule->handle.family);
 	memset(&ctx->ectx, 0, sizeof(ctx->ectx));
 
 	list_for_each_entry(stmt, &rule->stmts, list) {

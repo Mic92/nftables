@@ -1,17 +1,19 @@
 #ifndef NFTABLES_EXTHDR_H
 #define NFTABLES_EXTHDR_H
 
+#include <proto.h>
+
 /**
  * struct exthdr_desc - extension header description
  *
  * @name:	extension header name
  * @type:	extension header protocol value
- * @templates:	header templates
+ * @templates:	header field templates
  */
 struct exthdr_desc {
 	const char			*name;
 	uint8_t				type;
-	struct payload_template		templates[10];
+	struct proto_hdr_template	templates[10];
 };
 
 extern struct expr *exthdr_expr_alloc(const struct location *loc,

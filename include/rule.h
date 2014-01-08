@@ -292,7 +292,7 @@ struct eval_ctx {
 	struct set		*set;
 	struct stmt		*stmt;
 	struct expr_ctx		ectx;
-	struct payload_ctx	pctx;
+	struct proto_ctx	pctx;
 };
 
 extern int evaluate(struct eval_ctx *ctx, struct list_head *commands);

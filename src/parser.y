@@ -1444,14 +1444,14 @@ payload_raw_expr	:	AT	payload_base_spec	COMMA	NUM	COMMA	NUM
 			}
 			;
 
-payload_base_spec	:	LL_HDR		{ $$ = PAYLOAD_BASE_LL_HDR; }
-			|	NETWORK_HDR	{ $$ = PAYLOAD_BASE_NETWORK_HDR; }
-			|	TRANSPORT_HDR	{ $$ = PAYLOAD_BASE_TRANSPORT_HDR; }
+payload_base_spec	:	LL_HDR		{ $$ = PROTO_BASE_LL_HDR; }
+			|	NETWORK_HDR	{ $$ = PROTO_BASE_NETWORK_HDR; }
+			|	TRANSPORT_HDR	{ $$ = PROTO_BASE_TRANSPORT_HDR; }
 			;
 
 eth_hdr_expr		:	ETH	eth_hdr_field
 			{
-				$$ = payload_expr_alloc(&@$, &payload_eth, $2);
+				$$ = payload_expr_alloc(&@$, &proto_eth, $2);
 			}
 			;
 
@@ -1462,7 +1462,7 @@ eth_hdr_field		:	SADDR		{ $$ = ETHHDR_SADDR; }
 
 vlan_hdr_expr		:	VLAN	vlan_hdr_field
 			{
-				$$ = payload_expr_alloc(&@$, &payload_vlan, $2);
+				$$ = payload_expr_alloc(&@$, &proto_vlan, $2);
 			}
 			;
 
@@ -1474,7 +1474,7 @@ vlan_hdr_field		:	ID		{ $$ = VLANHDR_VID; }
 
 arp_hdr_expr		:	ARP	arp_hdr_field
 			{
-				$$ = payload_expr_alloc(&@$, &payload_arp, $2);
+				$$ = payload_expr_alloc(&@$, &proto_arp, $2);
 			}
 			;
 
@@ -1487,7 +1487,7 @@ arp_hdr_field		:	HTYPE		{ $$ = ARPHDR_HRD; }
 
 ip_hdr_expr		:	IP	ip_hdr_field
 			{
-				$$ = payload_expr_alloc(&@$, &payload_ip, $2);
+				$$ = payload_expr_alloc(&@$, &proto_ip, $2);
 			}
 			;
 
@@ -1506,7 +1506,7 @@ ip_hdr_field		:	VERSION		{ $$ = IPHDR_VERSION; }
 
 icmp_hdr_expr		:	ICMP	icmp_hdr_field
 			{
-				$$ = payload_expr_alloc(&@$, &payload_icmp, $2);
+				$$ = payload_expr_alloc(&@$, &proto_icmp, $2);
 			}
 			|	ICMP
 			{
@@ -1528,7 +1528,7 @@ icmp_hdr_field		:	TYPE		{ $$ = ICMPHDR_TYPE; }
 
 ip6_hdr_expr		:	IP6	ip6_hdr_field
 			{
-				$$ = payload_expr_alloc(&@$, &payload_ip6, $2);
+				$$ = payload_expr_alloc(&@$, &proto_ip6, $2);
 			}
 			;
 
@@ -1543,7 +1543,7 @@ ip6_hdr_field		:	VERSION		{ $$ = IP6HDR_VERSION; }
 			;
 icmp6_hdr_expr		:	ICMP6	icmp6_hdr_field
 			{
-				$$ = payload_expr_alloc(&@$, &payload_icmp6, $2);
+				$$ = payload_expr_alloc(&@$, &proto_icmp6, $2);
 			}
 			|	ICMP6
 			{
@@ -1566,7 +1566,7 @@ icmp6_hdr_field		:	TYPE		{ $$ = ICMP6HDR_TYPE; }
 
 auth_hdr_expr		:	AH	auth_hdr_field
 			{
-				$$ = payload_expr_alloc(&@$, &payload_ah, $2);
+				$$ = payload_expr_alloc(&@$, &proto_ah, $2);
 			}
 			|	AH
 			{
@@ -1586,7 +1586,7 @@ auth_hdr_field		:	NEXTHDR		{ $$ = AHHDR_NEXTHDR; }
 
 esp_hdr_expr		:	ESP	esp_hdr_field
 			{
-				$$ = payload_expr_alloc(&@$, &payload_esp, $2);
+				$$ = payload_expr_alloc(&@$, &proto_esp, $2);
 			}
 			|	ESP
 			{
@@ -1603,7 +1603,7 @@ esp_hdr_field		:	SPI		{ $$ = ESPHDR_SPI; }
 
 comp_hdr_expr		:	COMP	comp_hdr_field
 			{
-				$$ = payload_expr_alloc(&@$, &payload_comp, $2);
+				$$ = payload_expr_alloc(&@$, &proto_comp, $2);
 			}
 			|	COMP
 			{
@@ -1621,7 +1621,7 @@ comp_hdr_field		:	NEXTHDR		{ $$ = COMPHDR_NEXTHDR; }
 
 udp_hdr_expr		:	UDP	udp_hdr_field
 			{
-				$$ = payload_expr_alloc(&@$, &payload_udp, $2);
+				$$ = payload_expr_alloc(&@$, &proto_udp, $2);
 			}
 			|	UDP
 			{
@@ -1640,7 +1640,7 @@ udp_hdr_field		:	SPORT		{ $$ = UDPHDR_SPORT; }
 
 udplite_hdr_expr	:	UDPLITE	udplite_hdr_field
 			{
-				$$ = payload_expr_alloc(&@$, &payload_udplite, $2);
+				$$ = payload_expr_alloc(&@$, &proto_udplite, $2);
 			}
 			|	UDPLITE
 			{
@@ -1659,7 +1659,7 @@ udplite_hdr_field	:	SPORT		{ $$ = UDPHDR_SPORT; }
 
 tcp_hdr_expr		:	TCP	tcp_hdr_field
 			{
-				$$ = payload_expr_alloc(&@$, &payload_tcp, $2);
+				$$ = payload_expr_alloc(&@$, &proto_tcp, $2);
 			}
 			|	TCP
 			{
@@ -1684,7 +1684,7 @@ tcp_hdr_field		:	SPORT		{ $$ = TCPHDR_SPORT; }
 
 dccp_hdr_expr		:	DCCP	dccp_hdr_field
 			{
-				$$ = payload_expr_alloc(&@$, &payload_dccp, $2);
+				$$ = payload_expr_alloc(&@$, &proto_dccp, $2);
 			}
 			|	DCCP
 			{
@@ -1702,7 +1702,7 @@ dccp_hdr_field		:	SPORT		{ $$ = DCCPHDR_SPORT; }
 
 sctp_hdr_expr		:	SCTP	sctp_hdr_field
 			{
-				$$ = payload_expr_alloc(&@$, &payload_sctp, $2);
+				$$ = payload_expr_alloc(&@$, &proto_sctp, $2);
 			}
 			|	SCTP
 			{

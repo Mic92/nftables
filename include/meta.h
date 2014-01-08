@@ -25,5 +25,7 @@ struct meta_template {
 
 extern struct expr *meta_expr_alloc(const struct location *loc,
 				    enum nft_meta_keys key);
+extern void meta_expr_pctx_update(struct proto_ctx *ctx,
+				  const struct expr *expr);
 
 #endif /* NFTABLES_META_H */

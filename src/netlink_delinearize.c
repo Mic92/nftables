@@ -573,8 +573,8 @@ static int netlink_parse_expr(struct nft_rule_expr *nle, void *arg)
 }
 
 struct rule_pp_ctx {
-	struct payload_ctx	pctx;
-	enum payload_bases	pbase;
+	struct proto_ctx	pctx;
+	enum proto_bases	pbase;
 	struct stmt		*pdep;
 };
 
@@ -583,7 +583,7 @@ struct rule_pp_ctx {
  */
 static void payload_dependency_kill(struct rule_pp_ctx *ctx, struct expr *expr)
 {
-	if (ctx->pbase != PAYLOAD_BASE_INVALID &&
+	if (ctx->pbase != PROTO_BASE_INVALID &&
 	    ctx->pbase == expr->payload.base - 1 &&
 	    ctx->pdep != NULL) {
 		list_del(&ctx->pdep->list);
@@ -612,7 +612,7 @@ static void payload_match_postprocess(struct rule_pp_ctx *ctx,
 
 			nexpr = relational_expr_alloc(&expr->location, expr->op,
 						      left, tmp);
-			payload_ctx_update(&ctx->pctx, nexpr);
+			payload_expr_pctx_update(&ctx->pctx, nexpr);
 
 			nstmt = expr_stmt_alloc(&stmt->location, nexpr);
 			list_add_tail(&nstmt->list, &stmt->list);
@@ -621,7 +621,7 @@ static void payload_match_postprocess(struct rule_pp_ctx *ctx,
 			 * kill it later on if made redundant by a higher layer
 			 * payload expression.
 			 */
-			if (ctx->pbase == PAYLOAD_BASE_INVALID &&
+			if (ctx->pbase == PROTO_BASE_INVALID &&
 			    left->flags & EXPR_F_PROTOCOL) {
 				ctx->pbase = left->payload.base;
 				ctx->pdep  = nstmt;
@@ -639,12 +639,12 @@ static void payload_match_postprocess(struct rule_pp_ctx *ctx,
 	}
 }
 
-static void meta_match_postprocess(struct payload_ctx *ctx,
+static void meta_match_postprocess(struct proto_ctx *ctx,
 				   const struct expr *expr)
 {
 	switch (expr->op) {
 	case OP_EQ:
-		payload_ctx_update_meta(ctx, expr);
+		meta_expr_pctx_update(ctx, expr);
 		break;
 	default:
 		break;
@@ -821,7 +821,7 @@ static void rule_parse_postprocess(struct netlink_parse_ctx *ctx, struct rule *r
 	struct stmt *stmt, *next;
 
 	memset(&rctx, 0, sizeof(rctx));
-	payload_ctx_init(&rctx.pctx, rule->handle.family);
+	proto_ctx_init(&rctx.pctx, rule->handle.family);
 
 	list_for_each_entry_safe(stmt, next, &rule->stmts, list) {
 		switch (stmt->ops->type) {
