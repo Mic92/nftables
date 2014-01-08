@@ -143,6 +143,22 @@ void proto_ctx_init(struct proto_ctx *ctx, unsigned int family)
 	ctx->protocol[h->base].desc = h->desc;
 }
 
+/**
+ * proto_ctx_update: update protocol context for given protocol base
+ *
+ * @ctx:	protocol context
+ * @base:	protocol base
+ * @loc:	location of the relational expression definiting the context
+ * @desc:	protocol description for the given layer
+ */
+void proto_ctx_update(struct proto_ctx *ctx, enum proto_bases base,
+		      const struct location *loc,
+		      const struct proto_desc *desc)
+{
+	ctx->protocol[base].location	= *loc;
+	ctx->protocol[base].desc	= desc;
+}
+
 #define HDR_TEMPLATE(__name, __dtype, __type, __member)			\
 	PROTO_HDR_TEMPLATE(__name, __dtype,				\
 			   offsetof(__type, __member) * 8,		\

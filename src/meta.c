@@ -367,8 +367,7 @@ static void meta_expr_pctx_update(struct proto_ctx *ctx,
 	if (desc == NULL)
 		desc = &proto_unknown;
 
-	ctx->protocol[PROTO_BASE_LL_HDR].location = expr->location;
-	ctx->protocol[PROTO_BASE_LL_HDR].desc	  = desc;
+	proto_ctx_update(ctx, PROTO_BASE_LL_HDR, &expr->location, desc);
 }
 
 static const struct expr_ops meta_expr_ops = {

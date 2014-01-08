@@ -122,6 +122,9 @@ struct proto_ctx {
 };
 
 extern void proto_ctx_init(struct proto_ctx *ctx, unsigned int family);
+extern void proto_ctx_update(struct proto_ctx *ctx, enum proto_bases base,
+			     const struct location *loc,
+			     const struct proto_desc *desc);
 extern const struct proto_desc *proto_find_upper(const struct proto_desc *base,
 						 unsigned int num);
 extern int proto_find_num(const struct proto_desc *base,
