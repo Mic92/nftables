@@ -242,6 +242,7 @@ struct expr {
 		struct {
 			/* EXPR_META */
 			enum nft_meta_keys	key;
+			enum proto_bases	base;
 		} meta;
 		struct {
 			/* EXPR_CT */
