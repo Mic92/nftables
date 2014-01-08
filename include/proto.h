@@ -2,6 +2,7 @@
 #define NFTABLES_PROTO_H
 
 #include <nftables.h>
+#include <linux/netfilter/nf_tables.h>
 
 /**
  * enum proto_bases - protocol bases
@@ -30,12 +31,14 @@ extern const char *proto_base_tokens[];
  * @dtype:	data type of the header field
  * @offset:	offset of the header field from base
  * @len:	length of header field
+ * @meta_key:	special case: meta expression key
  */
 struct proto_hdr_template {
 	const char			*token;
 	const struct datatype		*dtype;
 	uint16_t			offset;
 	uint16_t			len;
+	enum nft_meta_keys		meta_key;
 };
 
 #define PROTO_HDR_TEMPLATE(__token, __dtype,  __offset, __len)		\
@@ -43,6 +46,14 @@ struct proto_hdr_template {
 		.token		= (__token),				\
 		.dtype		= (__dtype),				\
 		.offset		= (__offset),				\
+		.len		= (__len),				\
+	}
+
+#define PROTO_META_TEMPLATE(__token, __dtype, __key, __len)		\
+	{								\
+		.token		= (__token),				\
+		.dtype		= (__dtype),				\
+		.meta_key	= (__key),				\
 		.len		= (__len),				\
 	}
 

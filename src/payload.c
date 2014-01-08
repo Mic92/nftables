@@ -187,7 +187,11 @@ int payload_gen_dependency(struct eval_ctx *ctx, const struct expr *expr,
 				  desc->name, expr->payload.desc->name);
 
 	tmpl = &desc->templates[desc->protocol_key];
-	left = payload_expr_alloc(&expr->location, desc, desc->protocol_key);
+	if (tmpl->meta_key)
+		left = meta_expr_alloc(&expr->location, tmpl->meta_key);
+	else
+		left = payload_expr_alloc(&expr->location, desc, desc->protocol_key);
+
 	right = constant_expr_alloc(&expr->location, tmpl->dtype,
 				    BYTEORDER_HOST_ENDIAN,
 				    tmpl->len, &protocol);
