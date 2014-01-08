@@ -21,15 +21,6 @@ enum payload_bases {
 #define PAYLOAD_BASE_MAX	(__PAYLOAD_BASE_MAX - 1)
 
 /**
- * enum payload_expr_flags
- *
- * @PAYLOAD_PROTOCOL_EXPR:	payload expression contains upper layer protocol
- */
-enum payload_expr_flags {
-	PAYLOAD_PROTOCOL_EXPR		= 0x1,
-};
-
-/**
  * struct payload_template - template for a payload header expression
  *
  * @token:	parser token describing the header field

@@ -135,12 +135,14 @@ struct expr_ops {
  *
  * @EXPR_F_CONSTANT:		constant expression
  * @EXPR_F_SINGLETON:		singleton (implies primary and constant)
+ * @EXPR_F_PROTOCOL:		expressions describes upper layer protocol
  * @EXPR_F_INTERVAL_END:	set member ends an open interval
  */
 enum expr_flags {
 	EXPR_F_CONSTANT		= 0x1,
 	EXPR_F_SINGLETON	= 0x2,
-	EXPR_F_INTERVAL_END	= 0x4,
+	EXPR_F_PROTOCOL		= 0x4,
+	EXPR_F_INTERVAL_END	= 0x8,
 };
 
 #include <payload.h>
@@ -227,7 +229,6 @@ struct expr {
 			const struct payload_template	*tmpl;
 			enum payload_bases		base;
 			unsigned int			offset;
-			unsigned int			flags;
 		} payload;
 		struct {
 			/* EXPR_EXTHDR */

@@ -69,7 +69,6 @@ static void payload_expr_clone(struct expr *new, const struct expr *expr)
 	new->payload.tmpl   = expr->payload.tmpl;
 	new->payload.base   = expr->payload.base;
 	new->payload.offset = expr->payload.offset;
-	new->payload.flags  = expr->payload.flags;
 }
 
 static const struct expr_ops payload_expr_ops = {
@@ -92,7 +91,7 @@ struct expr *payload_expr_alloc(const struct location *loc,
 		tmpl = &desc->templates[type];
 		base = desc->base;
 		if (type == desc->protocol_key)
-			flags = PAYLOAD_PROTOCOL_EXPR;
+			flags = EXPR_F_PROTOCOL;
 	} else {
 		tmpl = &payload_unknown_template;
 		base = PAYLOAD_BASE_INVALID;
@@ -100,11 +99,13 @@ struct expr *payload_expr_alloc(const struct location *loc,
 
 	expr = expr_alloc(loc, &payload_expr_ops, tmpl->dtype,
 			  tmpl->dtype->byteorder, tmpl->len);
+	expr->flags |= flags;
+
 	expr->payload.desc   = desc;
 	expr->payload.tmpl   = tmpl;
 	expr->payload.base   = base;
 	expr->payload.offset = tmpl->offset;
-	expr->payload.flags  = flags;
+
 	return expr;
 }
 
@@ -256,7 +257,7 @@ void payload_ctx_update(struct payload_ctx *ctx, const struct expr *expr)
 	const struct expr *left = expr->left, *right = expr->right;
 	const struct payload_desc *base, *desc;
 
-	if (!(left->payload.flags & PAYLOAD_PROTOCOL_EXPR))
+	if (!(left->flags & EXPR_F_PROTOCOL))
 		return;
 
 	assert(expr->op == OP_EQ);

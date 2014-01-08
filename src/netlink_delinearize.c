@@ -622,7 +622,7 @@ static void payload_match_postprocess(struct rule_pp_ctx *ctx,
 			 * payload expression.
 			 */
 			if (ctx->pbase == PAYLOAD_BASE_INVALID &&
-			    left->payload.flags & PAYLOAD_PROTOCOL_EXPR) {
+			    left->flags & EXPR_F_PROTOCOL) {
 				ctx->pbase = left->payload.base;
 				ctx->pdep  = nstmt;
 			} else
