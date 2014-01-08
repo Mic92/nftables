@@ -1273,6 +1273,7 @@ static uint32_t str2hooknum(uint32_t family, const char *hook)
 	case NFPROTO_IPV4:
 	case NFPROTO_BRIDGE:
 	case NFPROTO_IPV6:
+	case NFPROTO_INET:
 		/* These families have overlapping values for each hook */
 		if (!strcmp(hook, "prerouting"))
 			return NF_INET_PRE_ROUTING;

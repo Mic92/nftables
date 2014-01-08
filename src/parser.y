@@ -166,6 +166,8 @@ static void location_update(struct location *loc, struct location *rhs, int n)
 %token MAP			"map"
 %token HANDLE			"handle"
 
+%token INET			"inet"
+
 %token ADD			"add"
 %token INSERT			"insert"
 %token DELETE			"delete"
@@ -827,6 +829,7 @@ string			:	STRING
 family_spec		:	/* empty */	{ $$ = NFPROTO_IPV4; }
 			|	IP		{ $$ = NFPROTO_IPV4; }
 			|	IP6		{ $$ = NFPROTO_IPV6; }
+			|	INET		{ $$ = NFPROTO_INET; }
 			|	ARP		{ $$ = NFPROTO_ARP; }
 			|	BRIDGE		{ $$ = NFPROTO_BRIDGE; }
 			;

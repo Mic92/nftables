@@ -235,6 +235,8 @@ addrstring	({macaddr}|{ip4addr}|{ip6addr})
 "goto"			{ return GOTO; }
 "return"		{ return RETURN; }
 
+"inet"			{ return INET; }
+
 "add"			{ return ADD; }
 "insert"		{ return INSERT; }
 "delete"		{ return DELETE; }

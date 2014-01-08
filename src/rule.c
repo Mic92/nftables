@@ -276,6 +276,8 @@ static const char *family2str(unsigned int family)
 			return "ip";
 		case NFPROTO_IPV6:
 			return "ip6";
+		case NFPROTO_INET:
+			return "inet";
 		case NFPROTO_ARP:
 			return "arp";
 		case NFPROTO_BRIDGE:
@@ -292,6 +294,7 @@ static const char *hooknum2str(unsigned int family, unsigned int hooknum)
 	case NFPROTO_IPV4:
 	case NFPROTO_BRIDGE:
 	case NFPROTO_IPV6:
+	case NFPROTO_INET:
 		switch (hooknum) {
 		case NF_INET_PRE_ROUTING:
 			return "prerouting";
