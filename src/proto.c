@@ -128,6 +128,26 @@ const struct hook_proto_desc hook_proto_desc[] = {
 	[NFPROTO_ARP]		= HOOK_PROTO_DESC(PROTO_BASE_NETWORK_HDR, &proto_arp),
 };
 
+static void proto_ctx_debug(const struct proto_ctx *ctx, enum proto_bases base)
+{
+#ifdef DEBUG
+	unsigned int i;
+
+	if (!(debug_level & DEBUG_PROTO_CTX))
+		return;
+
+	pr_debug("update %s protocol context:\n", proto_base_names[base]);
+	for (i = PROTO_BASE_LL_HDR; i <= PROTO_BASE_MAX; i++) {
+		pr_debug(" %-20s: %s%s\n",
+			 proto_base_names[i],
+			 ctx->protocol[i].desc ? ctx->protocol[i].desc->name :
+						 "none",
+			 i == base ? " <-" : "");
+	}
+	pr_debug("\n");
+#endif
+}
+
 /**
  * proto_ctx_init - initialize protocol context for a given hook family
  *
@@ -141,6 +161,8 @@ void proto_ctx_init(struct proto_ctx *ctx, unsigned int family)
 	memset(ctx, 0, sizeof(*ctx));
 	ctx->family = family;
 	ctx->protocol[h->base].desc = h->desc;
+
+	proto_ctx_debug(ctx, h->base);
 }
 
 /**
@@ -157,6 +179,8 @@ void proto_ctx_update(struct proto_ctx *ctx, enum proto_bases base,
 {
 	ctx->protocol[base].location	= *loc;
 	ctx->protocol[base].desc	= desc;
+
+	proto_ctx_debug(ctx, base);
 }
 
 #define HDR_TEMPLATE(__name, __dtype, __type, __member)			\

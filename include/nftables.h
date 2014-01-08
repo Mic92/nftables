@@ -17,6 +17,7 @@ enum debug_level {
 	DEBUG_PARSER		= 0x2,
 	DEBUG_EVALUATION	= 0x4,
 	DEBUG_NETLINK		= 0x8,
+	DEBUG_PROTO_CTX		= 0x10,
 };
 
 #define INCLUDE_PATHS_MAX	16
