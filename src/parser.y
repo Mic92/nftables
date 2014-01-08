@@ -282,6 +282,7 @@ static void location_update(struct location *loc, struct location *rhs, int n)
 
 %token META			"meta"
 %token NFPROTO			"nfproto"
+%token L4PROTO			"l4proto"
 %token MARK			"mark"
 %token IIF			"iif"
 %token IIFNAME			"iifname"
@@ -1378,6 +1379,7 @@ meta_expr		:	META	meta_key
 
 meta_key		:	LENGTH		{ $$ = NFT_META_LEN; }
 			|	NFPROTO		{ $$ = NFT_META_NFPROTO; }
+			|	L4PROTO		{ $$ = NFT_META_L4PROTO; }
 			|	PROTOCOL	{ $$ = NFT_META_PROTOCOL; }
 			|	PRIORITY	{ $$ = NFT_META_PRIORITY; }
 			|	MARK		{ $$ = NFT_META_MARK; }

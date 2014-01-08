@@ -291,6 +291,7 @@ extern const struct proto_desc proto_ip;
 extern const struct proto_desc proto_ip6;
 
 extern const struct proto_desc proto_inet;
+extern const struct proto_desc proto_inet_service;
 
 extern const struct proto_desc proto_arp;
 

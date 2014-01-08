@@ -174,6 +174,12 @@ int payload_gen_dependency(struct eval_ctx *ctx, const struct expr *expr,
 	}
 
 	desc = ctx->pctx.protocol[expr->payload.base - 1].desc;
+	/* Special case for mixed IPv4/IPv6 tables: use meta L4 proto */
+	if (desc == NULL &&
+	    ctx->pctx.family == NFPROTO_INET &&
+	    expr->payload.base == PROTO_BASE_TRANSPORT_HDR)
+		desc = &proto_inet_service;
+
 	if (desc == NULL)
 		return expr_error(ctx, expr,
 				  "ambiguous payload specification: "

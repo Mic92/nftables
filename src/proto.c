@@ -626,6 +626,31 @@ const struct proto_desc proto_inet = {
 };
 
 /*
+ * Dummy protocol for cases where the network layer protocol isn't known
+ * (IPv4 or IPv6), The higher layer protocols are the protocols common to
+ * both.
+ */
+
+const struct proto_desc proto_inet_service = {
+	.name		= "inet-service",
+	.base		= PROTO_BASE_TRANSPORT_HDR,
+	.protocol_key	= 0,
+	.protocols	= {
+		PROTO_LINK(IPPROTO_ESP,		&proto_esp),
+		PROTO_LINK(IPPROTO_AH,		&proto_ah),
+		PROTO_LINK(IPPROTO_COMP,	&proto_comp),
+		PROTO_LINK(IPPROTO_UDP,		&proto_udp),
+		PROTO_LINK(IPPROTO_UDPLITE,	&proto_udplite),
+		PROTO_LINK(IPPROTO_TCP,		&proto_tcp),
+		PROTO_LINK(IPPROTO_DCCP,	&proto_dccp),
+		PROTO_LINK(IPPROTO_SCTP,	&proto_sctp),
+	},
+	.templates	= {
+		[0]	= PROTO_META_TEMPLATE("l4proto", &inet_protocol_type, NFT_META_L4PROTO, 8),
+	},
+};
+
+/*
  * ARP
  */
 
