@@ -18,7 +18,7 @@ void mnl_err_list_free(struct mnl_err *err);
 void mnl_batch_init(void);
 bool mnl_batch_ready(void);
 void mnl_batch_reset(void);
-void mnl_batch_begin(void);
+uint32_t mnl_batch_begin(void);
 void mnl_batch_end(void);
 int mnl_batch_talk(struct mnl_socket *nl, struct list_head *err_list);
 int mnl_nft_rule_batch_add(struct nft_rule *nlr, unsigned int flags,

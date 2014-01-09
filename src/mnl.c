@@ -106,7 +106,7 @@ static void mnl_batch_page_add(void)
 	batch = mnl_batch_alloc();
 }
 
-static void mnl_batch_put(int type)
+static uint32_t mnl_batch_put(int type)
 {
 	struct nlmsghdr *nlh;
 	struct nfgenmsg *nfg;
@@ -123,11 +123,13 @@ static void mnl_batch_put(int type)
 
 	if (!mnl_nlmsg_batch_next(batch))
 		mnl_batch_page_add();
+
+	return nlh->nlmsg_seq;
 }
 
-void mnl_batch_begin(void)
+uint32_t mnl_batch_begin(void)
 {
-	mnl_batch_put(NFNL_MSG_BATCH_BEGIN);
+	return mnl_batch_put(NFNL_MSG_BATCH_BEGIN);
 }
 
 void mnl_batch_end(void)
