@@ -160,9 +160,10 @@ static int nft_netlink(struct parser_state *state, struct list_head *msgs)
 	struct cmd *cmd, *next;
 	struct mnl_err *err, *tmp;
 	LIST_HEAD(err_list);
+	uint32_t batch_seqnum;
 	int ret = 0;
 
-	mnl_batch_begin();
+	batch_seqnum = mnl_batch_begin();
 	list_for_each_entry(cmd, &state->cmds, list) {
 		memset(&ctx, 0, sizeof(ctx));
 		ctx.msgs = msgs;
@@ -183,12 +184,15 @@ static int nft_netlink(struct parser_state *state, struct list_head *msgs)
 
 	list_for_each_entry_safe(err, tmp, &err_list, head) {
 		list_for_each_entry(cmd, &state->cmds, list) {
-			if (err->seqnum == cmd->seqnum) {
+			if (err->seqnum == cmd->seqnum ||
+			    err->seqnum == batch_seqnum) {
 				netlink_io_error(&ctx, &cmd->location,
 					"Could not process rule in batch: %s",
 					strerror(err->err));
-				mnl_err_list_free(err);
-				break;
+				if (err->seqnum == cmd->seqnum) {
+					mnl_err_list_free(err);
+					break;
+				}
 			}
 		}
 	}
