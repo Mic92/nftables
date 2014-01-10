@@ -103,7 +103,7 @@ static void netlink_parse_immediate(struct netlink_parse_ctx *ctx,
 
 static enum ops netlink_parse_cmp_op(const struct nft_rule_expr *nle)
 {
-	switch (nft_rule_expr_get_u8(nle, NFT_EXPR_CMP_OP)) {
+	switch (nft_rule_expr_get_u32(nle, NFT_EXPR_CMP_OP)) {
 	case NFT_CMP_EQ:
 		return OP_EQ;
 	case NFT_CMP_NEQ:
@@ -132,7 +132,7 @@ static void netlink_parse_cmp(struct netlink_parse_ctx *ctx,
 
 	nld.value = nft_rule_expr_get(nle, NFT_EXPR_CMP_DATA, &nld.len);
 	left = netlink_get_register(ctx, loc,
-			nft_rule_expr_get_u8(nle, NFT_EXPR_CMP_SREG));
+			nft_rule_expr_get_u32(nle, NFT_EXPR_CMP_SREG));
 	if (left == NULL)
 		return netlink_error(ctx, loc,
 				     "Relational expression has no left "
@@ -332,9 +332,9 @@ static void netlink_parse_meta(struct netlink_parse_ctx *ctx,
 	struct expr *expr;
 
 	expr = meta_expr_alloc(loc,
-			       nft_rule_expr_get_u8(nle, NFT_EXPR_META_KEY));
+			       nft_rule_expr_get_u32(nle, NFT_EXPR_META_KEY));
 	netlink_set_register(ctx,
-			     nft_rule_expr_get_u8(nle, NFT_EXPR_META_DREG),
+			     nft_rule_expr_get_u32(nle, NFT_EXPR_META_DREG),
 			     expr);
 }
 
