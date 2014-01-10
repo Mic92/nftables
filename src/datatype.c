@@ -643,6 +643,7 @@ static struct error_record *mark_type_parse(const struct expr *sym,
 		}
 	}
 
+	*res = NULL;
 	erec = sym->dtype->basetype->parse(sym, res);
 	if (erec != NULL)
 		return erec;
