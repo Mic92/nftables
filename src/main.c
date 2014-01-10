@@ -183,8 +183,8 @@ static int nft_netlink(struct parser_state *state, struct list_head *msgs)
 			if (err->seqnum == cmd->seqnum ||
 			    err->seqnum == batch_seqnum) {
 				netlink_io_error(&ctx, &cmd->location,
-					"Could not process rule in batch: %s",
-					strerror(err->err));
+						 "Could not process rule: %s",
+						 strerror(err->err));
 				if (err->seqnum == cmd->seqnum) {
 					mnl_err_list_free(err);
 					break;
