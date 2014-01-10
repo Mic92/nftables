@@ -230,10 +230,8 @@ static struct error_record *integer_type_parse(const struct expr *sym,
 	if (gmp_sscanf(sym->identifier, "%Zu%n", v, &len) != 1 ||
 	    (int)strlen(sym->identifier) != len) {
 		mpz_clear(v);
-		if (sym->dtype != &integer_type) {
-			return error(&sym->location, "This is not a valid %s",
-				     sym->dtype->desc);
-		}
+		if (sym->dtype != &integer_type)
+			return NULL;
 		return error(&sym->location, "Could not parse %s",
 			     sym->dtype->desc);
 	}
