@@ -138,7 +138,8 @@ void erec_print(FILE *f, const struct error_record *erec)
 		end = 0;
 		for (l = erec->num_locations - 1; l >= 0; l--) {
 			loc = &erec->locations[l];
-			for (i = loc->first_column - 1; i < loc->last_column; i++)
+			for (i = loc->first_column ? loc->first_column - 1 : 0;
+			     i < loc->last_column; i++)
 				buf[i] = l ? '~' : '^';
 			end = max(end, loc->last_column);
 		}
