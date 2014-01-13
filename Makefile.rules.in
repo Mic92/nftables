@@ -61,7 +61,7 @@ clean_targets		+= $(1)-clean
 $(1)-install:
 			@echo -e "  INSTALL\t$1"
 			$(MKDIR_P) $$(DESTDIR)/$$($(1)-destdir)
-			$(INSTALL) -m 755 -o root -g root \
+			$(INSTALL) -m 755 -p \
 				$(SUBDIR)$(1) \
 				$$(DESTDIR)/$$($(1)-destdir)/$(1)
 install_targets		+= $(1)-install
