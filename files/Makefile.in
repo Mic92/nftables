@@ -2,3 +2,4 @@ install:
 	@echo -e "  INSTALL\tfiles"
 	$(MKDIR_P) $(DESTDIR)/$(confdir)
 	$(INSTALL) -m 755 -p $(SUBDIR)nftables/* $(DESTDIR)/$(confdir)/
+	$(SED) -i "s~#\! nft~#\!@sbindir@/nft~" $(DESTDIR)/$(confdir)/*
