@@ -691,7 +691,11 @@ struct expr *mapping_expr_alloc(const struct location *loc,
 static void map_expr_print(const struct expr *expr)
 {
 	expr_print(expr->map);
-	printf(" map ");
+	if (expr->mappings->ops->type == EXPR_SET_REF &&
+	    expr->mappings->set->datatype->type == TYPE_VERDICT)
+		printf(" vmap ");
+	else
+		printf(" map ");
 	expr_print(expr->mappings);
 }
 
