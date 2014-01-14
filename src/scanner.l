@@ -278,7 +278,7 @@ addrstring	({macaddr}|{ip4addr}|{ip6addr})
 
 "bridge"		{ return BRIDGE; }
 
-"eth"			{ return ETH; }
+"ether"			{ return ETHER; }
 "saddr"			{ return SADDR; }
 "daddr"			{ return DADDR; }
 "type"			{ return TYPE; }
