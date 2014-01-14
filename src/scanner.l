@@ -182,11 +182,17 @@ addrstring	({macaddr}|{ip4addr}|{ip6addr})
 %%
 
 "=="			{ return EQ; }
+"eq"			{ return EQ; }
 "!="			{ return NEQ; }
+"ne"			{ return NEQ; }
 "<="			{ return LTE; }
+"le"			{ return LTE; }
 "<"			{ return LT; }
+"lt"			{ return LT; }
 ">="			{ return GTE; }
+"ge"			{ return GTE; }
 ">"			{ return GT; }
+"gt"			{ return GT; }
 ","			{ return COMMA; }
 "."			{ return DOT; }
 ":"			{ return COLON; }
@@ -198,11 +204,17 @@ addrstring	({macaddr}|{ip4addr}|{ip6addr})
 "("			{ return '('; }
 ")"			{ return ')'; }
 "<<"			{ return LSHIFT; }
+"lshift"		{ return LSHIFT; }
 ">>"			{ return RSHIFT; }
+"rshift"		{ return RSHIFT; }
 "^"			{ return CARET; }
+"xor"			{ return CARET; }
 "&"			{ return AMPERSAND; }
+"and"			{ return AMPERSAND; }
 "|"			{ return '|'; }
+"or"			{ return '|'; }
 "!"			{ return NOT; }
+"not"			{ return NOT; }
 "/"			{ return SLASH; }
 "-"			{ return DASH; }
 "*"			{ return ASTERISK; }
