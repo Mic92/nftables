@@ -150,6 +150,7 @@ static void location_update(struct location *loc, struct location *rhs, int n)
 %token DASH			"-"
 %token AT			"@"
 %token ARROW			"=>"
+%token VMAP			"vmap"
 
 %token INCLUDE			"include"
 %token DEFINE			"define"
@@ -1272,7 +1273,7 @@ map_expr		:	concat_expr	MAP	expr
 			}
 			;
 
-verdict_map_expr	:	concat_expr	MAP	expr
+verdict_map_expr	:	concat_expr	VMAP	expr
 			{
 				$$ = map_expr_alloc(&@$, $1, $3);
 			}
