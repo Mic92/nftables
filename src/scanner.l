@@ -210,7 +210,6 @@ addrstring	({macaddr}|{ip4addr}|{ip6addr})
 "$"			{ return '$'; }
 "="			{ return '='; }
 "=>"			{ return ARROW; }
-"vmap"			{ return VMAP; }
 
 "include"		{ return INCLUDE; }
 "define"		{ return DEFINE; }

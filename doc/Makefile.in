@@ -10,11 +10,11 @@ install:	$(mandocs-y) $(pdfdocs-y)
 		@echo -e "  INSTALL\tdoc"
 		if test -n "$(mandocs-y)"; then \
 			$(MKDIR_P) $(DESTDIR)/${mandir}/man8 ;\
-			$(INSTALL) -m 755 -o root -g root $(mandocs-y) \
+			$(INSTALL) -m 755 -p $(mandocs-y) \
 					$(DESTDIR)/${mandir}/man8/ ;\
 		fi
 		if test -n "$(pdfdocs-y)"; then \
 			$(MKDIR_P) $(DESTDIR)/${pdfdir} ;\
-			$(INSTALL) -m 755 -o root -g root $(pdfdocs-y) \
+			$(INSTALL) -m 755 -p $(pdfdocs-y) \
 					$(DESTDIR)/${pdfdir}/ ;\
 		fi
