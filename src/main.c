@@ -111,7 +111,7 @@ static void show_help(const char *name)
 "  -a/--handle			Output rule handle.\n"
 "  -I/--includepath <directory>	Add <directory> to the paths searched for include files.\n"
 #ifdef DEBUG
-"  --debug <level [,level...]>	Specify debugging level (scanner, parser, eval, netlink, proto-ctx, all)\n"
+"  --debug <level [,level...]>	Specify debugging level (scanner, parser, eval, netlink, proto-ctx, segtree, all)\n"
 #endif
 "\n",
 	name);
@@ -141,6 +141,10 @@ static const struct {
 	{
 		.name		= "proto-ctx",
 		.level		= DEBUG_PROTO_CTX,
+	},
+	{
+		.name		= "segtree",
+		.level		= DEBUG_SEGTREE,
 	},
 	{
 		.name		= "all",

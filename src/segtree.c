@@ -157,6 +157,15 @@ static void __ei_insert(struct seg_tree *tree, struct elementary_interval *new)
 	rb_insert_color(&new->rb_node, &tree->root);
 }
 
+static bool segtree_debug(void)
+{
+#ifdef DEBUG
+	if (debug_level & DEBUG_SEGTREE)
+		return true;
+#endif
+	return false;
+}
+
 /**
  * ei_insert - insert an elementary interval into the tree
  *
@@ -180,7 +189,8 @@ static void ei_insert(struct seg_tree *tree, struct elementary_interval *new)
 	lei = ei_lookup(tree, new->left);
 	rei = ei_lookup(tree, new->right);
 
-	pr_debug("insert: [%Zx %Zx]\n", new->left, new->right);
+	if (segtree_debug())
+		pr_debug("insert: [%Zx %Zx]\n", new->left, new->right);
 
 	if (lei != NULL && rei != NULL && lei == rei) {
 		/*
@@ -189,7 +199,8 @@ static void ei_insert(struct seg_tree *tree, struct elementary_interval *new)
 		 *
 		 * [lei_left, new_left) and (new_right, rei_right]
 		 */
-		pr_debug("split [%Zx %Zx]\n", lei->left, lei->right);
+		if (segtree_debug())
+			pr_debug("split [%Zx %Zx]\n", lei->left, lei->right);
 
 		ei_remove(tree, lei);
 
@@ -208,7 +219,10 @@ static void ei_insert(struct seg_tree *tree, struct elementary_interval *new)
 			 *
 			 * [lei_left, new_left)[new_left, new_right]
 			 */
-			pr_debug("adjust left [%Zx %Zx]\n", lei->left, lei->right);
+			if (segtree_debug()) {
+				pr_debug("adjust left [%Zx %Zx]\n",
+					 lei->left, lei->right);
+			}
 
 			mpz_sub_ui(lei->right, new->left, 1);
 			mpz_sub(lei->size, lei->right, lei->left);
@@ -223,7 +237,10 @@ static void ei_insert(struct seg_tree *tree, struct elementary_interval *new)
 			 *
 			 * [new_left, new_right](new_right, rei_right]
 			 */
-			pr_debug("adjust right [%Zx %Zx]\n", rei->left, rei->right);
+			if (segtree_debug()) {
+				pr_debug("adjust right [%Zx %Zx]\n",
+					 rei->left, rei->right);
+			}
 
 			mpz_add_ui(rei->left, new->right, 1);
 			mpz_sub(rei->size, rei->right, rei->left);
@@ -350,7 +367,7 @@ static void set_to_segtree(struct expr *set, struct seg_tree *tree)
 	for (n = 0; n < set->size; n++) {
 		if (n < set->size - 1 &&
 		    interval_conflict(intervals[n], intervals[n+1]))
-			printf("conflict\n");
+			pr_debug("conflict\n");
 		ei_insert(tree, intervals[n]);
 	}
 
@@ -371,7 +388,8 @@ static void segtree_linearize(struct list_head *list, struct seg_tree *tree)
 	 * Convert the tree of open intervals to half-closed map expressions.
 	 */
 	rb_for_each_entry_safe(ei, node, next, &tree->root, rb_node) {
-		pr_debug("iter: [%Zx %Zx]\n", ei->left, ei->right);
+		if (segtree_debug())
+			pr_debug("iter: [%Zx %Zx]\n", ei->left, ei->right);
 
 		if (prev == NULL) {
 			/*
@@ -454,14 +472,19 @@ void set_to_intervals(struct set *set)
 	segtree_linearize(&list, &tree);
 
 	list_for_each_entry_safe(ei, next, &list, list) {
-		pr_debug("list: [%.*Zx %.*Zx]\n",
-			 2 * tree.keylen / BITS_PER_BYTE, ei->left,
-			 2 * tree.keylen / BITS_PER_BYTE, ei->right);
+		if (segtree_debug()) {
+			pr_debug("list: [%.*Zx %.*Zx]\n",
+				 2 * tree.keylen / BITS_PER_BYTE, ei->left,
+				 2 * tree.keylen / BITS_PER_BYTE, ei->right);
+		}
 		set_insert_interval(set->init, &tree, ei);
 		ei_destroy(ei);
 	}
 
-	expr_print(set->init); printf("\n");
+	if (segtree_debug()) {
+		expr_print(set->init);
+		pr_debug("\n");
+	}
 }
 
 static bool range_is_prefix(const mpz_t range)
