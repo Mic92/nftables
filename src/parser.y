@@ -194,7 +194,7 @@ static void location_update(struct location *loc, struct location *rhs, int n)
 
 %token BRIDGE			"bridge"
 
-%token ETH			"eth"
+%token ETHER			"ether"
 %token SADDR			"saddr"
 %token DADDR			"daddr"
 %token TYPE			"type"
@@ -1467,7 +1467,7 @@ payload_base_spec	:	LL_HDR		{ $$ = PROTO_BASE_LL_HDR; }
 			|	TRANSPORT_HDR	{ $$ = PROTO_BASE_TRANSPORT_HDR; }
 			;
 
-eth_hdr_expr		:	ETH	eth_hdr_field
+eth_hdr_expr		:	ETHER	eth_hdr_field
 			{
 				$$ = payload_expr_alloc(&@$, &proto_eth, $2);
 			}

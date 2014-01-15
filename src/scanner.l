@@ -118,43 +118,43 @@ slash		\/
 
 hex4		([[:xdigit:]]{1,4})
 v680		(({hex4}:){7}{hex4})
-v670		((:)(:{hex4}{7}))
-v671		((({hex4}:){1})(:{hex4}{6}))
-v672		((({hex4}:){2})(:{hex4}{5}))
-v673		((({hex4}:){3})(:{hex4}{4}))
-v674		((({hex4}:){4})(:{hex4}{3}))
-v675		((({hex4}:){5})(:{hex4}{2}))
+v670		((:)((:{hex4}){7}))
+v671		((({hex4}:){1})((:{hex4}){6}))
+v672		((({hex4}:){2})((:{hex4}){5}))
+v673		((({hex4}:){3})((:{hex4}){4}))
+v674		((({hex4}:){4})((:{hex4}){3}))
+v675		((({hex4}:){5})((:{hex4}){2}))
 v676		((({hex4}:){6})(:{hex4}{1}))
 v677		((({hex4}:){7})(:))
 v67		({v670}|{v671}|{v672}|{v673}|{v674}|{v675}|{v676}|{v677})
-v660		((:)(:{hex4}{6}))
-v661		((({hex4}:){1})(:{hex4}{5}))
-v662		((({hex4}:){2})(:{hex4}{4}))
-v663		((({hex4}:){3})(:{hex4}{3}))
-v664		((({hex4}:){4})(:{hex4}{2}))
-v665		((({hex4}:){5})(:{hex4}{1}))
+v660		((:)((:{hex4}){6}))
+v661		((({hex4}:){1})((:{hex4}){5}))
+v662		((({hex4}:){2})((:{hex4}){4}))
+v663		((({hex4}:){3})((:{hex4}){3}))
+v664		((({hex4}:){4})((:{hex4}){2}))
+v665		((({hex4}:){5})((:{hex4}){1}))
 v666		((({hex4}:){6})(:))
 v66		({v660}|{v661}|{v662}|{v663}|{v664}|{v665}|{v666})
-v650		((:)(:{hex4}{5}))
-v651		((({hex4}:){1})(:{hex4}{4}))
-v652		((({hex4}:){2})(:{hex4}{3}))
-v653		((({hex4}:){3})(:{hex4}{2}))
+v650		((:)((:{hex4}){5}))
+v651		((({hex4}:){1})((:{hex4}){4}))
+v652		((({hex4}:){2})((:{hex4}){3}))
+v653		((({hex4}:){3})((:{hex4}){2}))
 v654		((({hex4}:){4})(:{hex4}{1}))
 v655		((({hex4}:){5})(:))
 v65		({v650}|{v651}|{v652}|{v653}|{v654}|{v655})
-v640		((:)(:{hex4}{4}))
-v641		((({hex4}:){1})(:{hex4}{3}))
-v642		((({hex4}:){2})(:{hex4}{2}))
-v643		((({hex4}:){3})(:{hex4}{1}))
+v640		((:)((:{hex4}){4}))
+v641		((({hex4}:){1})((:{hex4}){3}))
+v642		((({hex4}:){2})((:{hex4}){2}))
+v643		((({hex4}:){3})((:{hex4}){1}))
 v644		((({hex4}:){4})(:))
 v64		({v640}|{v641}|{v642}|{v643}|{v644})
-v630		((:)(:{hex4}{3}))
-v631		((({hex4}:){1})(:{hex4}{2}))
-v632		((({hex4}:){2})(:{hex4}{1}))
+v630		((:)((:{hex4}){3}))
+v631		((({hex4}:){1})((:{hex4}){2}))
+v632		((({hex4}:){2})((:{hex4}){1}))
 v633		((({hex4}:){3})(:))
 v63		({v630}|{v631}|{v632}|{v633})
-v620		((:)(:{hex4}{2}))
-v621		((({hex4}:){1})(:{hex4}{1}))
+v620		((:)((:{hex4}){2}))
+v621		((({hex4}:){1})((:{hex4}){1}))
 v622		((({hex4}:){2})(:))
 v62		({v620}|{v621}|{v622})
 v610		((:)(:{hex4}{1}))
@@ -182,11 +182,17 @@ addrstring	({macaddr}|{ip4addr}|{ip6addr})
 %%
 
 "=="			{ return EQ; }
+"eq"			{ return EQ; }
 "!="			{ return NEQ; }
+"ne"			{ return NEQ; }
 "<="			{ return LTE; }
+"le"			{ return LTE; }
 "<"			{ return LT; }
+"lt"			{ return LT; }
 ">="			{ return GTE; }
+"ge"			{ return GTE; }
 ">"			{ return GT; }
+"gt"			{ return GT; }
 ","			{ return COMMA; }
 "."			{ return DOT; }
 ":"			{ return COLON; }
@@ -198,11 +204,17 @@ addrstring	({macaddr}|{ip4addr}|{ip6addr})
 "("			{ return '('; }
 ")"			{ return ')'; }
 "<<"			{ return LSHIFT; }
+"lshift"		{ return LSHIFT; }
 ">>"			{ return RSHIFT; }
+"rshift"		{ return RSHIFT; }
 "^"			{ return CARET; }
+"xor"			{ return CARET; }
 "&"			{ return AMPERSAND; }
+"and"			{ return AMPERSAND; }
 "|"			{ return '|'; }
+"or"			{ return '|'; }
 "!"			{ return NOT; }
+"not"			{ return NOT; }
 "/"			{ return SLASH; }
 "-"			{ return DASH; }
 "*"			{ return ASTERISK; }
@@ -286,7 +298,7 @@ addrstring	({macaddr}|{ip4addr}|{ip6addr})
 
 "bridge"		{ return BRIDGE; }
 
-"eth"			{ return ETH; }
+"ether"			{ return ETHER; }
 "saddr"			{ return SADDR; }
 "daddr"			{ return DADDR; }
 "type"			{ return TYPE; }
