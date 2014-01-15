@@ -787,7 +787,7 @@ const struct datatype ethertype_type = {
 	ETHHDR_TEMPLATE(__name, &etheraddr_type, __member)
 
 const struct proto_desc proto_eth = {
-	.name		= "eth",
+	.name		= "ether",
 	.base		= PROTO_BASE_LL_HDR,
 	.protocol_key	= ETHHDR_TYPE,
 	.protocols	= {
