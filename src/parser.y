@@ -294,7 +294,6 @@ static void location_update(struct location *loc, struct location *rhs, int n)
 %token SKGID			"skgid"
 %token NFTRACE			"nftrace"
 %token RTCLASSID		"rtclassid"
-%token SECMARK			"secmark"
 
 %token CT			"ct"
 %token DIRECTION		"direction"
@@ -1393,7 +1392,6 @@ meta_key		:	LENGTH		{ $$ = NFT_META_LEN; }
 			|	SKGID		{ $$ = NFT_META_SKGID; }
 			|	NFTRACE		{ $$ = NFT_META_NFTRACE; }
 			|	RTCLASSID	{ $$ = NFT_META_RTCLASSID; }
-			|	SECMARK		{ $$ = NFT_META_SECMARK; }
 			;
 
 meta_stmt		:	META	meta_key	SET	expr
@@ -1412,7 +1410,6 @@ ct_key			:	STATE		{ $$ = NFT_CT_STATE; }
 			|	DIRECTION	{ $$ = NFT_CT_DIRECTION; }
 			|	STATUS		{ $$ = NFT_CT_STATUS; }
 			|	MARK		{ $$ = NFT_CT_MARK; }
-			|	SECMARK		{ $$ = NFT_CT_SECMARK; }
 			|	EXPIRATION	{ $$ = NFT_CT_EXPIRATION; }
 			|	HELPER		{ $$ = NFT_CT_HELPER; }
 			|	L3PROTOCOL	{ $$ = NFT_CT_L3PROTOCOL; }

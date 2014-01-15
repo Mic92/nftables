@@ -384,7 +384,6 @@ addrstring	({macaddr}|{ip4addr}|{ip6addr})
 "skgid"			{ return SKGID; }
 "nftrace"		{ return NFTRACE; }
 "rtclassid"		{ return RTCLASSID; }
-"secmark"		{ return SECMARK; }
 
 "ct"			{ return CT; }
 "direction"		{ return DIRECTION; }
