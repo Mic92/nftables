@@ -1026,7 +1026,7 @@ const struct datatype ethertype_type = {
 	ETHHDR_TEMPLATE(__name, &etheraddr_type, __member)
 
 const struct payload_desc payload_eth = {
-	.name		= "eth",
+	.name		= "ether",
 	.base		= PAYLOAD_BASE_LL_HDR,
 	.protocol_key	= ETHHDR_TYPE,
 	.protocols	= {
