@@ -335,7 +335,18 @@ static const struct meta_template meta_templates[] = {
 
 static void meta_expr_print(const struct expr *expr)
 {
-	printf("meta %s", meta_templates[expr->meta.key].token);
+	switch (expr->meta.key) {
+	case NFT_META_LEN:
+	case NFT_META_NFPROTO:
+	case NFT_META_L4PROTO:
+	case NFT_META_PROTOCOL:
+	case NFT_META_PRIORITY:
+		printf("meta %s", meta_templates[expr->meta.key].token);
+		break;
+	default:
+		printf("%s", meta_templates[expr->meta.key].token);
+		break;
+	}
 }
 
 static void meta_expr_clone(struct expr *new, const struct expr *expr)

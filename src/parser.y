@@ -463,7 +463,7 @@ static void location_update(struct location *loc, struct location *rhs, int n)
 
 %type <expr>			meta_expr
 %destructor { expr_free($$); }	meta_expr
-%type <val>			meta_key
+%type <val>			meta_key	meta_key_qualified	meta_key_unqualified
 
 %type <expr>			ct_expr
 %destructor { expr_free($$); }	ct_expr
@@ -1374,14 +1374,24 @@ meta_expr		:	META	meta_key
 			{
 				$$ = meta_expr_alloc(&@$, $2);
 			}
+			|	meta_key_unqualified
+			{
+				$$ = meta_expr_alloc(&@$, $1);
+			}
 			;
 
-meta_key		:	LENGTH		{ $$ = NFT_META_LEN; }
+meta_key		:	meta_key_qualified
+			|	meta_key_unqualified
+			;
+
+meta_key_qualified	:	LENGTH		{ $$ = NFT_META_LEN; }
 			|	NFPROTO		{ $$ = NFT_META_NFPROTO; }
 			|	L4PROTO		{ $$ = NFT_META_L4PROTO; }
 			|	PROTOCOL	{ $$ = NFT_META_PROTOCOL; }
 			|	PRIORITY	{ $$ = NFT_META_PRIORITY; }
-			|	MARK		{ $$ = NFT_META_MARK; }
+			;
+
+meta_key_unqualified	:	MARK		{ $$ = NFT_META_MARK; }
 			|	IIF		{ $$ = NFT_META_IIF; }
 			|	IIFNAME		{ $$ = NFT_META_IIFNAME; }
 			|	IIFTYPE		{ $$ = NFT_META_IIFTYPE; }
@@ -1397,6 +1407,10 @@ meta_key		:	LENGTH		{ $$ = NFT_META_LEN; }
 meta_stmt		:	META	meta_key	SET	expr
 			{
 				$$ = meta_stmt_alloc(&@$, $2, $4);
+			}
+			|	meta_key_unqualified	SET	expr
+			{
+				$$ = meta_stmt_alloc(&@$, $1, $3);
 			}
 			;
 
