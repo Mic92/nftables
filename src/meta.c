@@ -333,8 +333,6 @@ static void meta_expr_print(const struct expr *expr)
 {
 	switch (expr->meta.key) {
 	case NFT_META_LEN:
-	case NFT_META_NFPROTO:
-	case NFT_META_L4PROTO:
 	case NFT_META_PROTOCOL:
 	case NFT_META_PRIORITY:
 		printf("meta %s", meta_templates[expr->meta.key].token);
