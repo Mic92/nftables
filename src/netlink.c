@@ -378,7 +378,7 @@ void netlink_dump_rule(struct nft_rule *nlr)
 		return;
 
 	nft_rule_snprintf(buf, sizeof(buf), nlr, 0, 0);
-	fprintf(stderr, "%s\n", buf);
+	fprintf(stdout, "%s\n", buf);
 #endif
 }
 
@@ -391,7 +391,7 @@ void netlink_dump_expr(struct nft_rule_expr *nle)
 		return;
 
 	nft_rule_expr_snprintf(buf, sizeof(buf), nle, 0, 0);
-	fprintf(stderr, "%s\n", buf);
+	fprintf(stdout, "%s\n", buf);
 #endif
 }
 
@@ -446,7 +446,7 @@ void netlink_dump_chain(struct nft_chain *nlc)
 		return;
 
 	nft_chain_snprintf(buf, sizeof(buf), nlc, 0, 0);
-	fprintf(stderr, "%s\n", buf);
+	fprintf(stdout, "%s\n", buf);
 #endif
 }
 
@@ -665,7 +665,7 @@ void netlink_dump_table(struct nft_table *nlt)
 		return;
 
 	nft_table_snprintf(buf, sizeof(buf), nlt, 0, 0);
-	fprintf(stderr, "%s\n", buf);
+	fprintf(stdout, "%s\n", buf);
 #endif
 }
 
@@ -763,7 +763,7 @@ void netlink_dump_set(struct nft_set *nls)
 		return;
 
 	nft_set_snprintf(buf, sizeof(buf), nls, 0, 0);
-	fprintf(stderr, "%s\n", buf);
+	fprintf(stdout, "%s\n", buf);
 #endif
 }
 
