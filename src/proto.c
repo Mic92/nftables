@@ -743,7 +743,7 @@ static const struct symbol_table ethertype_tbl = {
 	.symbols	= {
 		SYMBOL("ip",		ETH_P_IP),
 		SYMBOL("arp",		ETH_P_ARP),
-		SYMBOL("ipv6",		ETH_P_IPV6),
+		SYMBOL("ip6",		ETH_P_IPV6),
 		SYMBOL("vlan",		ETH_P_8021Q),
 		SYMBOL_LIST_END
 	},

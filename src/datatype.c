@@ -398,6 +398,7 @@ const struct datatype ipaddr_type = {
 	.basetype	= &integer_type,
 	.print		= ipaddr_type_print,
 	.parse		= ipaddr_type_parse,
+	.flags		= DTYPE_F_PREFIX,
 };
 
 static void ip6addr_type_print(const struct expr *expr)
@@ -455,6 +456,7 @@ const struct datatype ip6addr_type = {
 	.basetype	= &integer_type,
 	.print		= ip6addr_type_print,
 	.parse		= ip6addr_type_parse,
+	.flags		= DTYPE_F_PREFIX,
 };
 
 static void inet_protocol_type_print(const struct expr *expr)
@@ -680,6 +682,7 @@ const struct datatype mark_type = {
 	.basefmt	= "0x%.8Zx",
 	.print		= mark_type_print,
 	.parse		= mark_type_parse,
+	.flags		= DTYPE_F_PREFIX,
 };
 
 static void time_type_print(const struct expr *expr)

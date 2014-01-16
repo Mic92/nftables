@@ -85,8 +85,15 @@ enum byteorder {
 
 struct expr;
 
+/**
+ * enum datatype_flags
+ *
+ * @DTYPE_F_ALLOC:		datatype is dynamically allocated
+ * @DTYPE_F_PREFIX:		preferred representation for ranges is a prefix
+ */
 enum datatype_flags {
 	DTYPE_F_ALLOC		= (1 << 0),
+	DTYPE_F_PREFIX		= (1 << 1),
 };
 
 /**

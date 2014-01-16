@@ -509,10 +509,11 @@ static struct expr *expr_value(struct expr *expr)
 
 void interval_map_decompose(struct expr *set)
 {
-	struct expr *ranges[set->size];
-	struct expr *i, *next, *low = NULL;
+	struct expr *ranges[set->size * 2];
+	struct expr *i, *next, *low = NULL, *end;
 	unsigned int n, size;
 	mpz_t range, p;
+	bool interval;
 
 	mpz_init(range);
 	mpz_init(p);
@@ -520,8 +521,20 @@ void interval_map_decompose(struct expr *set)
 	size = set->size;
 	n = 0;
 
+	interval = false;
 	list_for_each_entry_safe_reverse(i, next, &set->expressions, list) {
 		compound_expr_remove(set, i);
+
+		if (i->flags & EXPR_F_INTERVAL_END)
+			interval = false;
+		else if (interval) {
+			end = expr_clone(expr_value(i));
+			end->flags |= EXPR_F_INTERVAL_END;
+			ranges[n++] = end;
+			size++;
+		} else
+			interval = true;
+
 		ranges[n++] = i;
 	}
 
@@ -552,7 +565,9 @@ void interval_map_decompose(struct expr *set)
 
 		if (!mpz_cmp_ui(range, 0))
 			compound_expr_add(set, low);
-		else if (!range_is_prefix(range) || mpz_cmp_ui(p, 0)) {
+		else if ((!range_is_prefix(range) ||
+			  !(i->dtype->flags & DTYPE_F_PREFIX)) ||
+			 mpz_cmp_ui(p, 0)) {
 			struct expr *tmp;
 
 			tmp = constant_expr_alloc(&low->location, low->dtype,
@@ -567,8 +582,6 @@ void interval_map_decompose(struct expr *set)
 				tmp = mapping_expr_alloc(&tmp->location, tmp, low->right);
 
 			compound_expr_add(set, tmp);
-
-			low = expr_get(tmp->right);
 		} else {
 			struct expr *prefix;
 			unsigned int prefix_len;
@@ -576,13 +589,9 @@ void interval_map_decompose(struct expr *set)
 			prefix_len = expr_value(i)->len - mpz_scan0(range, 0);
 			prefix = prefix_expr_alloc(&low->location, expr_value(low),
 						   prefix_len);
-
-			if (low->ops->type == EXPR_MAPPING) {
+			if (low->ops->type == EXPR_MAPPING)
 				prefix = mapping_expr_alloc(&low->location, prefix,
 							    low->right);
-				/* Update mapping of "low" to the current mapping */
-				low->right = expr_get(i->right);
-			}
 
 			compound_expr_add(set, prefix);
 		}
@@ -592,5 +601,19 @@ void interval_map_decompose(struct expr *set)
 			low = NULL;
 		}
 		expr_free(i);
+	}
+
+	/* Unclosed interval */
+	if (low != NULL) {
+		i = constant_expr_alloc(&low->location, low->dtype,
+					low->byteorder, expr_value(low)->len,
+					NULL);
+		mpz_init_bitmask(i->value, i->len);
+
+		i = range_expr_alloc(&low->location, expr_value(low), i);
+		if (low->ops->type == EXPR_MAPPING)
+			i = mapping_expr_alloc(&i->location, i, low->right);
+
+		compound_expr_add(set, i);
 	}
 }

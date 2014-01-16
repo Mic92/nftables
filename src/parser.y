@@ -14,6 +14,7 @@
 #include <stdio.h>
 #include <inttypes.h>
 #include <netinet/ip.h>
+#include <netinet/if_ether.h>
 #include <linux/netfilter.h>
 #include <linux/netfilter/nf_tables.h>
 #include <linux/netfilter/nf_conntrack_tuple_common.h>
@@ -1482,6 +1483,13 @@ vlan_hdr_expr		:	VLAN	vlan_hdr_field
 			{
 				$$ = payload_expr_alloc(&@$, &proto_vlan, $2);
 			}
+			|	VLAN
+			{
+				uint16_t data = ETH_P_8021Q;
+				$$ = constant_expr_alloc(&@$, &ethertype_type,
+							 BYTEORDER_HOST_ENDIAN,
+							 sizeof(data) * BITS_PER_BYTE, &data);
+			}
 			;
 
 vlan_hdr_field		:	ID		{ $$ = VLANHDR_VID; }
@@ -1493,6 +1501,13 @@ vlan_hdr_field		:	ID		{ $$ = VLANHDR_VID; }
 arp_hdr_expr		:	ARP	arp_hdr_field
 			{
 				$$ = payload_expr_alloc(&@$, &proto_arp, $2);
+			}
+			|	ARP
+			{
+				uint16_t data = ETH_P_ARP;
+				$$ = constant_expr_alloc(&@$, &ethertype_type,
+							 BYTEORDER_HOST_ENDIAN,
+							 sizeof(data) * BITS_PER_BYTE, &data);
 			}
 			;
 
@@ -1506,6 +1521,13 @@ arp_hdr_field		:	HTYPE		{ $$ = ARPHDR_HRD; }
 ip_hdr_expr		:	IP	ip_hdr_field
 			{
 				$$ = payload_expr_alloc(&@$, &proto_ip, $2);
+			}
+			|	IP
+			{
+				uint16_t data = ETH_P_IP;
+				$$ = constant_expr_alloc(&@$, &ethertype_type,
+							 BYTEORDER_HOST_ENDIAN,
+							 sizeof(data) * BITS_PER_BYTE, &data);
 			}
 			;
 
@@ -1547,6 +1569,13 @@ icmp_hdr_field		:	TYPE		{ $$ = ICMPHDR_TYPE; }
 ip6_hdr_expr		:	IP6	ip6_hdr_field
 			{
 				$$ = payload_expr_alloc(&@$, &proto_ip6, $2);
+			}
+			|	IP6
+			{
+				uint16_t data = ETH_P_IPV6;
+				$$ = constant_expr_alloc(&@$, &ethertype_type,
+							 BYTEORDER_HOST_ENDIAN,
+							 sizeof(data) * BITS_PER_BYTE, &data);
 			}
 			;
 
