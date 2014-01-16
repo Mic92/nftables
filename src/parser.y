@@ -1485,10 +1485,9 @@ vlan_hdr_expr		:	VLAN	vlan_hdr_field
 			}
 			|	VLAN
 			{
-				uint16_t data = ETH_P_8021Q;
-				$$ = constant_expr_alloc(&@$, &ethertype_type,
-							 BYTEORDER_HOST_ENDIAN,
-							 sizeof(data) * BITS_PER_BYTE, &data);
+				$$ = symbol_expr_alloc(&@$, SYMBOL_VALUE,
+						       current_scope(state),
+						       "vlan");
 			}
 			;
 
@@ -1504,10 +1503,9 @@ arp_hdr_expr		:	ARP	arp_hdr_field
 			}
 			|	ARP
 			{
-				uint16_t data = ETH_P_ARP;
-				$$ = constant_expr_alloc(&@$, &ethertype_type,
-							 BYTEORDER_HOST_ENDIAN,
-							 sizeof(data) * BITS_PER_BYTE, &data);
+				$$ = symbol_expr_alloc(&@$, SYMBOL_VALUE,
+						       current_scope(state),
+						       "arp");
 			}
 			;
 
@@ -1524,10 +1522,9 @@ ip_hdr_expr		:	IP	ip_hdr_field
 			}
 			|	IP
 			{
-				uint16_t data = ETH_P_IP;
-				$$ = constant_expr_alloc(&@$, &ethertype_type,
-							 BYTEORDER_HOST_ENDIAN,
-							 sizeof(data) * BITS_PER_BYTE, &data);
+				$$ = symbol_expr_alloc(&@$, SYMBOL_VALUE,
+						       current_scope(state),
+						       "ip");
 			}
 			;
 
@@ -1572,10 +1569,9 @@ ip6_hdr_expr		:	IP6	ip6_hdr_field
 			}
 			|	IP6
 			{
-				uint16_t data = ETH_P_IPV6;
-				$$ = constant_expr_alloc(&@$, &ethertype_type,
-							 BYTEORDER_HOST_ENDIAN,
-							 sizeof(data) * BITS_PER_BYTE, &data);
+				$$ = symbol_expr_alloc(&@$, SYMBOL_VALUE,
+						       current_scope(state),
+						       "ip6");
 			}
 			;
 
