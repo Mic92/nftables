@@ -89,6 +89,7 @@ struct set *set_lookup(const struct table *table, const char *name)
 
 void set_print(const struct set *set)
 {
+	const char *delim = "";
 	const char *type;
 
 	type = set->flags & SET_F_MAP ? "map" : "set";
@@ -99,12 +100,14 @@ void set_print(const struct set *set)
 		printf(" : %s", set->datatype->name);
 	printf("\n");
 
-	if (set->flags & SET_F_ANONYMOUS)
-		printf("\t\tanonymous\n");
-	if (set->flags & SET_F_CONSTANT)
-		printf("\t\tconstant\n");
-	if (set->flags & SET_F_INTERVAL)
-		printf("\t\tinterval\n");
+	if (set->flags & (SET_F_INTERVAL)) {
+		printf("\t\tflags ");
+		if (set->flags & SET_F_INTERVAL) {
+			printf("%sinterval", delim);
+			delim = ",";
+		}
+		printf("\n");
+	}
 
 	if (set->init != NULL && set->init->size > 0) {
 		printf("\t\telements = ");

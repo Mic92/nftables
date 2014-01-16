@@ -182,6 +182,8 @@ static void location_update(struct location *loc, struct location *rhs, int n)
 %token RETURN			"return"
 %token QUEUE			"queue"
 
+%token INTERVAL			"interval"
+
 %token <val> NUM		"number"
 %token <string> STRING		"string"
 %token <string> QUOTED_STRING
@@ -352,6 +354,8 @@ static void location_update(struct location *loc, struct location *rhs, int n)
 %destructor { chain_free($$); }	chain_block_alloc
 %type <rule>			rule
 %destructor { rule_free($$); }	rule
+
+%type <val>			set_flag_list	set_flag
 
 %type <set>			set_block_alloc set_block
 %destructor { set_free($$); }	set_block_alloc
@@ -737,6 +741,21 @@ set_block		:	/* empty */	{ $$ = $<set>-1; }
 				}
 				$$ = $1;
 			}
+			|	set_block	FLAGS		set_flag_list	stmt_seperator
+			{
+				$1->flags = $3;
+				$$ = $1;
+			}
+			;
+
+set_flag_list		:	set_flag_list	COMMA		set_flag
+			{
+				$$ = $1 | $3;
+			}
+			|	set_flag
+			;
+
+set_flag		:	INTERVAL	{ $$ = SET_F_INTERVAL; }
 			;
 
 map_block_alloc		:	/* empty */
@@ -767,6 +786,11 @@ map_block		:	/* empty */	{ $$ = $<set>-1; }
 					YYERROR;
 				}
 
+				$$ = $1;
+			}
+			|	map_block	FLAGS		set_flag_list	stmt_seperator
+			{
+				$1->flags = $3;
 				$$ = $1;
 			}
 			;
