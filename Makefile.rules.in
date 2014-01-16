@@ -22,7 +22,14 @@ configure:		configure.ac
 
 %.c %.h:		%.y	$(makedeps)
 			@echo -e "  YACC\t\t$<"
-			$(YACC) $(YACCFLAGS) -d -o $@ $<
+			$(YACC) $(YACCFLAGS) --defines=$*.h.tmp -o $@ $<
+			( \
+				echo "#ifndef __$(*F)_H"; \
+				echo "#define __$(*F)_H"; \
+				cat $*.h.tmp; \
+				echo "#endif /* __$(*F)_H */" \
+			) > $*.h
+			$(RM) $*.h.tmp
 
 %.c %.h:		%.l	$(makedeps)
 			@echo -e "  LEX\t\t$<"
