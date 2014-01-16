@@ -61,6 +61,7 @@ static const struct datatype realm_type = {
 	.basetype	= &integer_type,
 	.print		= realm_type_print,
 	.parse		= realm_type_parse,
+	.flags		= DTYPE_F_PREFIX,
 };
 
 static void tchandle_type_print(const struct expr *expr)

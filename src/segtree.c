@@ -552,7 +552,9 @@ void interval_map_decompose(struct expr *set)
 
 		if (!mpz_cmp_ui(range, 0))
 			compound_expr_add(set, low);
-		else if (!range_is_prefix(range) || mpz_cmp_ui(p, 0)) {
+		else if ((!range_is_prefix(range) ||
+			  !(i->dtype->flags & DTYPE_F_PREFIX)) ||
+			 mpz_cmp_ui(p, 0)) {
 			struct expr *tmp;
 
 			tmp = constant_expr_alloc(&low->location, low->dtype,
