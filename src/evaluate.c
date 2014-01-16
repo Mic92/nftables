@@ -1222,6 +1222,12 @@ static int set_evaluate(struct eval_ctx *ctx, struct set *set)
 		return set_error(ctx, set, "unqualified key data type "
 				 "specified in %s definition", type);
 
+	if (set->init != NULL) {
+		expr_set_context(&ctx->ectx, set->keytype, set->keylen);
+		if (expr_evaluate(ctx, &set->init) < 0)
+			return -1;
+	}
+
 	if (!(set->flags & SET_F_MAP))
 		return 0;
 

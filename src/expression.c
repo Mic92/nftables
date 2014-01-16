@@ -644,7 +644,7 @@ struct expr *set_expr_alloc(const struct location *loc)
 static void mapping_expr_print(const struct expr *expr)
 {
 	expr_print(expr->left);
-	printf(" => ");
+	printf(" : ");
 	expr_print(expr->right);
 }
 

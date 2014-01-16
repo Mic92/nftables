@@ -150,7 +150,6 @@ static void location_update(struct location *loc, struct location *rhs, int n)
 %token ASTERISK			"*"
 %token DASH			"-"
 %token AT			"@"
-%token ARROW			"=>"
 %token VMAP			"vmap"
 
 %token INCLUDE			"include"
@@ -183,6 +182,10 @@ static void location_update(struct location *loc, struct location *rhs, int n)
 %token JUMP			"jump"
 %token GOTO			"goto"
 %token RETURN			"return"
+
+%token CONSTANT			"constant"
+%token INTERVAL			"interval"
+%token ELEMENTS			"elements"
 
 %token <val> NUM		"number"
 %token <string> STRING		"string"
@@ -363,6 +366,8 @@ static void location_update(struct location *loc, struct location *rhs, int n)
 %destructor { chain_free($$); }	chain_block_alloc
 %type <rule>			rule
 %destructor { rule_free($$); }	rule
+
+%type <val>			set_flag_list	set_flag
 
 %type <set>			set_block_alloc set_block
 %destructor { set_free($$); }	set_block_alloc
@@ -751,6 +756,27 @@ set_block		:	/* empty */	{ $$ = $<set>-1; }
 				}
 				$$ = $1;
 			}
+			|	set_block	FLAGS		set_flag_list	stmt_seperator
+			{
+				$1->flags = $3;
+				$$ = $1;
+			}
+			|	set_block	ELEMENTS	'='		set_expr
+			{
+				$1->init = $4;
+				$$ = $1;
+			}
+			;
+
+set_flag_list		:	set_flag_list	COMMA		set_flag
+			{
+				$$ = $1 | $3;
+			}
+			|	set_flag
+			;
+
+set_flag		:	CONSTANT	{ $$ = SET_F_CONSTANT; }
+			|	INTERVAL	{ $$ = SET_F_INTERVAL; }
 			;
 
 map_block_alloc		:	/* empty */
@@ -764,7 +790,7 @@ map_block		:	/* empty */	{ $$ = $<set>-1; }
 			|	map_block	common_block
 			|	map_block	stmt_seperator
 			|	map_block	TYPE
-						identifier	ARROW	identifier
+						identifier	COLON	identifier
 						stmt_seperator
 			{
 				$1->keytype = datatype_lookup_byname($3);
@@ -781,6 +807,16 @@ map_block		:	/* empty */	{ $$ = $<set>-1; }
 					YYERROR;
 				}
 
+				$$ = $1;
+			}
+			|	map_block	FLAGS		set_flag_list	stmt_seperator
+			{
+				$1->flags = $3;
+				$$ = $1;
+			}
+			|	map_block	ELEMENTS	'='		set_expr
+			{
+				$1->init = $4;
 				$$ = $1;
 			}
 			;
@@ -1309,11 +1345,11 @@ set_list_member_expr	:	opt_newline	expr	opt_newline
 			{
 				$$ = $2;
 			}
-			|	opt_newline	map_lhs_expr	ARROW	concat_expr	opt_newline
+			|	opt_newline	map_lhs_expr	COLON	concat_expr	opt_newline
 			{
 				$$ = mapping_expr_alloc(&@$, $2, $4);
 			}
-			|	opt_newline	map_lhs_expr	ARROW	verdict_expr	opt_newline
+			|	opt_newline	map_lhs_expr	COLON	verdict_expr	opt_newline
 			{
 				$$ = mapping_expr_alloc(&@$, $2, $4);
 			}

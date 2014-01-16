@@ -39,7 +39,7 @@ mnl_talk(struct mnl_socket *nf_sock, const void *data, unsigned int len,
 	int ret;
 
 #ifdef DEBUG
-	if (debug_level & DEBUG_NETLINK)
+	if (debug_level & DEBUG_MNL)
 		mnl_nlmsg_fprintf(stdout, data, len, sizeof(struct nfgenmsg));
 #endif
 
@@ -207,7 +207,7 @@ static ssize_t mnl_nft_socket_sendmsg(const struct mnl_socket *nl)
 		iov[i].iov_len = mnl_nlmsg_batch_size(batch_page->batch);
 		i++;
 #ifdef DEBUG
-		if (debug_level & DEBUG_NETLINK) {
+		if (debug_level & DEBUG_MNL) {
 			mnl_nlmsg_fprintf(stdout,
 					  mnl_nlmsg_batch_head(batch_page->batch),
 					  mnl_nlmsg_batch_size(batch_page->batch),

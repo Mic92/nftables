@@ -221,7 +221,6 @@ addrstring	({macaddr}|{ip4addr}|{ip6addr})
 "@"			{ return AT; }
 "$"			{ return '$'; }
 "="			{ return '='; }
-"=>"			{ return ARROW; }
 "vmap"			{ return VMAP; }
 
 "include"		{ return INCLUDE; }
@@ -257,6 +256,10 @@ addrstring	({macaddr}|{ip4addr}|{ip6addr})
 "rename"		{ return RENAME; }
 
 "position"		{ return POSITION; }
+
+"constant"		{ return CONSTANT; }
+"interval"		{ return INTERVAL; }
+"elements"		{ return ELEMENTS; }
 
 "counter"		{ return COUNTER; }
 "packets"		{ return PACKETS; }
