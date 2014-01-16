@@ -25,13 +25,13 @@ table filter {
 		type ifindex
 	}
 
-	# named map of type ifindex => ipv4_address
+	# named map of type ifindex : ipv4_address
 	map nat_map {
-		type ifindex => ipv4_address
+		type ifindex : ipv4_address
 	}
 
 	map jump_map {
-		type ifindex => verdict
+		type ifindex : verdict
 	}
 
 	chain input_1 { counter; }
@@ -48,6 +48,6 @@ table filter {
 		meta iif @local_ifs counter
 		meta iif vmap @jump_map
 
-		#meta iif vmap { eth0 => jump input1, eth1 => jump input2 }
+		#meta iif vmap { eth0 : jump input1, eth1 : jump input2 }
 	}
 }

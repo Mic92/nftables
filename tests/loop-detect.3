@@ -4,4 +4,4 @@
 flush table filter
 add filter chain1 jump chain2
 add filter chain2 jump chain3
-add filter chain3 ip daddr vmap { 10.0.0.1 => continue, 192.168.0.1 => jump chain1 }
+add filter chain3 ip daddr vmap { 10.0.0.1 : continue, 192.168.0.1 : jump chain1 }

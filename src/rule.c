@@ -96,7 +96,7 @@ void set_print(const struct set *set)
 
 	printf("\t\ttype %s", set->keytype->name);
 	if (set->flags & SET_F_MAP)
-		printf(" => %s", set->datatype->name);
+		printf(" : %s", set->datatype->name);
 	printf("\n");
 
 	if (set->flags & SET_F_ANONYMOUS)

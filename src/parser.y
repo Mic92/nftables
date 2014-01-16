@@ -150,7 +150,6 @@ static void location_update(struct location *loc, struct location *rhs, int n)
 %token ASTERISK			"*"
 %token DASH			"-"
 %token AT			"@"
-%token ARROW			"=>"
 %token VMAP			"vmap"
 
 %token INCLUDE			"include"
@@ -751,7 +750,7 @@ map_block		:	/* empty */	{ $$ = $<set>-1; }
 			|	map_block	common_block
 			|	map_block	stmt_seperator
 			|	map_block	TYPE
-						identifier	ARROW	identifier
+						identifier	COLON	identifier
 						stmt_seperator
 			{
 				$1->keytype = datatype_lookup_byname($3);
@@ -1243,11 +1242,11 @@ set_list_member_expr	:	opt_newline	expr	opt_newline
 			{
 				$$ = $2;
 			}
-			|	opt_newline	map_lhs_expr	ARROW	concat_expr	opt_newline
+			|	opt_newline	map_lhs_expr	COLON	concat_expr	opt_newline
 			{
 				$$ = mapping_expr_alloc(&@$, $2, $4);
 			}
-			|	opt_newline	map_lhs_expr	ARROW	verdict_expr	opt_newline
+			|	opt_newline	map_lhs_expr	COLON	verdict_expr	opt_newline
 			{
 				$$ = mapping_expr_alloc(&@$, $2, $4);
 			}

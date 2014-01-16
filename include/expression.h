@@ -27,7 +27,7 @@
  * @EXPR_LIST:		list of expressions
  * @EXPR_SET:		literal set
  * @EXPR_SET_REF:	set reference
- * @EXPR_MAPPING:	a single mapping (key => value)
+ * @EXPR_MAPPING:	a single mapping (key : value)
  * @EXPR_MAP:		map operation (expr map { EXPR_MAPPING, ... })
  * @EXPR_UNARY:		byteorder conversion, generated during evaluation
  * @EXPR_BINOP:		binary operations (bitwise, shifts)
