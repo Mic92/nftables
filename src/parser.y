@@ -14,6 +14,7 @@
 #include <stdio.h>
 #include <inttypes.h>
 #include <netinet/ip.h>
+#include <netinet/if_ether.h>
 #include <linux/netfilter.h>
 #include <linux/netfilter/nf_tables.h>
 #include <linux/netfilter/nf_conntrack_tuple_common.h>
@@ -23,7 +24,6 @@
 #include <expression.h>
 #include <utils.h>
 #include <parser.h>
-#include <if_ether.h>
 #include <erec.h>
 
 #include "parser.h"
