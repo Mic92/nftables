@@ -182,7 +182,9 @@ static void location_update(struct location *loc, struct location *rhs, int n)
 %token RETURN			"return"
 %token QUEUE			"queue"
 
+%token CONSTANT			"constant"
 %token INTERVAL			"interval"
+%token ELEMENTS			"elements"
 
 %token <val> NUM		"number"
 %token <string> STRING		"string"
@@ -746,6 +748,11 @@ set_block		:	/* empty */	{ $$ = $<set>-1; }
 				$1->flags = $3;
 				$$ = $1;
 			}
+			|	set_block	ELEMENTS	'='		set_expr
+			{
+				$1->init = $4;
+				$$ = $1;
+			}
 			;
 
 set_flag_list		:	set_flag_list	COMMA		set_flag
@@ -755,7 +762,8 @@ set_flag_list		:	set_flag_list	COMMA		set_flag
 			|	set_flag
 			;
 
-set_flag		:	INTERVAL	{ $$ = SET_F_INTERVAL; }
+set_flag		:	CONSTANT	{ $$ = SET_F_CONSTANT; }
+			|	INTERVAL	{ $$ = SET_F_INTERVAL; }
 			;
 
 map_block_alloc		:	/* empty */
@@ -791,6 +799,11 @@ map_block		:	/* empty */	{ $$ = $<set>-1; }
 			|	map_block	FLAGS		set_flag_list	stmt_seperator
 			{
 				$1->flags = $3;
+				$$ = $1;
+			}
+			|	map_block	ELEMENTS	'='		set_expr
+			{
+				$1->init = $4;
 				$$ = $1;
 			}
 			;

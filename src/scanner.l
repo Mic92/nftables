@@ -256,7 +256,9 @@ addrstring	({macaddr}|{ip4addr}|{ip6addr})
 
 "position"		{ return POSITION; }
 
+"constant"		{ return CONSTANT; }
 "interval"		{ return INTERVAL; }
+"elements"		{ return ELEMENTS; }
 
 "counter"		{ return COUNTER; }
 "packets"		{ return PACKETS; }

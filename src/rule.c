@@ -100,8 +100,12 @@ void set_print(const struct set *set)
 		printf(" : %s", set->datatype->name);
 	printf("\n");
 
-	if (set->flags & (SET_F_INTERVAL)) {
+	if (set->flags & (SET_F_CONSTANT | SET_F_INTERVAL)) {
 		printf("\t\tflags ");
+		if (set->flags & SET_F_CONSTANT) {
+			printf("%sconstant", delim);
+			delim = ",";
+		}
 		if (set->flags & SET_F_INTERVAL) {
 			printf("%sinterval", delim);
 			delim = ",";
