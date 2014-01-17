@@ -394,7 +394,7 @@ int mnl_nft_chain_add(struct mnl_socket *nf_sock, struct nft_chain *nlc,
 
 	nlh = nft_chain_nlmsg_build_hdr(buf, NFT_MSG_NEWCHAIN,
 			nft_chain_attr_get_u32(nlc, NFT_CHAIN_ATTR_FAMILY),
-			NLM_F_ACK|flags, seq);
+			NLM_F_CREATE|NLM_F_ACK|flags, seq);
 	nft_chain_nlmsg_build_payload(nlh, nlc);
 
 	return mnl_talk(nf_sock, nlh, nlh->nlmsg_len, NULL, NULL);
