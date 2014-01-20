@@ -4,7 +4,7 @@
 AC_PREREQ(2.61)
 
 AC_COPYRIGHT([Copyright (c) 2008 Patrick McHardy <kaber@trash.net>])
-AC_INIT([nftables], [0.099], [netfilter-devel@vger.kernel.org])
+AC_INIT([nftables], [0.100], [netfilter-devel@vger.kernel.org])
 AC_DEFINE([RELEASE_NAME], ["keith-alexander-filter"], [Release name])
 
 AC_CONFIG_SRCDIR([src/rule.c])
