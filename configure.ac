@@ -53,7 +53,7 @@ fi
 AC_CHECK_LIB([mnl], [mnl_socket_open], ,
 	     AC_MSG_ERROR([No suitable version of libmnl found]))
 
-AC_CHECK_LIB([nftables], [nft_rule_alloc], ,
+AC_CHECK_LIB([nftnl], [nft_rule_alloc], ,
 	     AC_MSG_ERROR([No suitable version of libnftnl found]))
 
 AC_CHECK_LIB([gmp], [__gmpz_init], ,
