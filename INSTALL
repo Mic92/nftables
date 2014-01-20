@@ -8,7 +8,7 @@ Installation instructions for nftables
 
   - libmnl: git://git.netfilter.org/libmnl.git
 
-  - libnftables: git://git.netfilter.org/libnftables.git
+  - libnftnl: git://git.netfilter.org/libnftnl.git
 
   - flex
 
