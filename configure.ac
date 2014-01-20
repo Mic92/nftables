@@ -4,8 +4,8 @@
 AC_PREREQ(2.61)
 
 AC_COPYRIGHT([Copyright (c) 2008 Patrick McHardy <kaber@trash.net>])
-AC_INIT([nftables], [0.01-alpha1], [netfilter-devel@vger.kernel.org])
-AC_DEFINE([RELEASE_NAME], ["schäublefilter"], [Release name])
+AC_INIT([nftables], [0.099], [netfilter-devel@vger.kernel.org])
+AC_DEFINE([RELEASE_NAME], ["keith-alexander-filter"], [Release name])
 
 AC_CONFIG_SRCDIR([src/rule.c])
 AC_CONFIG_HEADER([config.h])
@@ -54,7 +54,7 @@ AC_CHECK_LIB([mnl], [mnl_socket_open], ,
 	     AC_MSG_ERROR([No suitable version of libmnl found]))
 
 AC_CHECK_LIB([nftables], [nft_rule_alloc], ,
-	     AC_MSG_ERROR([No suitable version of libnftables found]))
+	     AC_MSG_ERROR([No suitable version of libnftnl found]))
 
 AC_CHECK_LIB([gmp], [__gmpz_init], ,
 	     AC_MSG_ERROR([No suitable version of libgmp found]))

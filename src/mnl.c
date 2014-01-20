@@ -9,11 +9,11 @@
  */
 
 #include <libmnl/libmnl.h>
-#include <libnftables/table.h>
-#include <libnftables/chain.h>
-#include <libnftables/rule.h>
-#include <libnftables/expr.h>
-#include <libnftables/set.h>
+#include <libnftnl/table.h>
+#include <libnftnl/chain.h>
+#include <libnftnl/rule.h>
+#include <libnftnl/expr.h>
+#include <libnftnl/set.h>
 
 #include <linux/netfilter/nfnetlink.h>
 #include <linux/netfilter/nf_tables.h>
@@ -394,7 +394,7 @@ int mnl_nft_chain_add(struct mnl_socket *nf_sock, struct nft_chain *nlc,
 
 	nlh = nft_chain_nlmsg_build_hdr(buf, NFT_MSG_NEWCHAIN,
 			nft_chain_attr_get_u32(nlc, NFT_CHAIN_ATTR_FAMILY),
-			NLM_F_ACK|flags, seq);
+			NLM_F_CREATE|NLM_F_ACK|flags, seq);
 	nft_chain_nlmsg_build_payload(nlh, nlc);
 
 	return mnl_talk(nf_sock, nlh, nlh->nlmsg_len, NULL, NULL);
