@@ -249,6 +249,7 @@ addrstring	({macaddr}|{ip4addr}|{ip6addr})
 "inet"			{ return INET; }
 
 "add"			{ return ADD; }
+"create"		{ return CREATE; }
 "insert"		{ return INSERT; }
 "delete"		{ return DELETE; }
 "list"			{ return LIST; }

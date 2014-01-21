@@ -198,7 +198,8 @@ extern void set_print(const struct set *set);
  * enum cmd_ops - command operations
  *
  * @CMD_INVALID:	invalid
- * @CMD_ADD:		add object
+ * @CMD_ADD:		add object (non-exclusive)
+ * @CMD_CREATE:		create object (exclusive)
  * @CMD_INSERT:		insert object
  * @CMD_DELETE:		delete object
  * @CMD_LIST:		list container
@@ -208,6 +209,7 @@ extern void set_print(const struct set *set);
 enum cmd_ops {
 	CMD_INVALID,
 	CMD_ADD,
+	CMD_CREATE,
 	CMD_INSERT,
 	CMD_DELETE,
 	CMD_LIST,

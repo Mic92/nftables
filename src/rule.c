@@ -462,9 +462,10 @@ void cmd_free(struct cmd *cmd)
 #include <netlink.h>
 
 static int do_add_chain(struct netlink_ctx *ctx, const struct handle *h,
-			const struct location *loc, struct chain *chain)
+			const struct location *loc, struct chain *chain,
+			bool excl)
 {
-	if (netlink_add_chain(ctx, h, loc, chain) < 0)
+	if (netlink_add_chain(ctx, h, loc, chain, excl) < 0)
 		return -1;
 	if (chain != NULL) {
 		if (netlink_add_rule_list(ctx, h, &chain->rules) < 0)
@@ -496,12 +497,13 @@ static int do_add_set(struct netlink_ctx *ctx, const struct handle *h,
 }
 
 static int do_add_table(struct netlink_ctx *ctx, const struct handle *h,
-			const struct location *loc, struct table *table)
+			const struct location *loc, struct table *table,
+			bool excl)
 {
 	struct chain *chain;
 	struct set *set;
 
-	if (netlink_add_table(ctx, h, loc, table) < 0)
+	if (netlink_add_table(ctx, h, loc, table, excl) < 0)
 		return -1;
 	if (table != NULL) {
 		list_for_each_entry(set, &table->sets, list) {
@@ -511,22 +513,22 @@ static int do_add_table(struct netlink_ctx *ctx, const struct handle *h,
 		}
 		list_for_each_entry(chain, &table->chains, list) {
 			if (do_add_chain(ctx, &chain->handle, &chain->location,
-					 chain) < 0)
+					 chain, excl) < 0)
 				return -1;
 		}
 	}
 	return 0;
 }
 
-static int do_command_add(struct netlink_ctx *ctx, struct cmd *cmd)
+static int do_command_add(struct netlink_ctx *ctx, struct cmd *cmd, bool excl)
 {
 	switch (cmd->obj) {
 	case CMD_OBJ_TABLE:
 		return do_add_table(ctx, &cmd->handle, &cmd->location,
-				    cmd->table);
+				    cmd->table, excl);
 	case CMD_OBJ_CHAIN:
 		return do_add_chain(ctx, &cmd->handle, &cmd->location,
-				    cmd->chain);
+				    cmd->chain, excl);
 	case CMD_OBJ_RULE:
 		return netlink_add_rule_batch(ctx, &cmd->handle,
 					      cmd->rule, NLM_F_APPEND);
@@ -726,7 +728,9 @@ int do_command(struct netlink_ctx *ctx, struct cmd *cmd)
 {
 	switch (cmd->op) {
 	case CMD_ADD:
-		return do_command_add(ctx, cmd);
+		return do_command_add(ctx, cmd, false);
+	case CMD_CREATE:
+		return do_command_add(ctx, cmd, true);
 	case CMD_INSERT:
 		return do_command_insert(ctx, cmd);
 	case CMD_DELETE:

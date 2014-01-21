@@ -82,7 +82,7 @@ extern int netlink_del_rule_batch(struct netlink_ctx *ctx,
 
 extern int netlink_add_chain(struct netlink_ctx *ctx, const struct handle *h,
 			     const struct location *loc,
-			     const struct chain *chain);
+			     const struct chain *chain, bool excl);
 extern int netlink_rename_chain(struct netlink_ctx *ctx, const struct handle *h,
 				const struct location *loc, const char *name);
 extern int netlink_delete_chain(struct netlink_ctx *ctx, const struct handle *h,
@@ -98,7 +98,7 @@ extern int netlink_flush_chain(struct netlink_ctx *ctx, const struct handle *h,
 
 extern int netlink_add_table(struct netlink_ctx *ctx, const struct handle *h,
 			     const struct location *loc,
-			     const struct table *table);
+			     const struct table *table, bool excl);
 extern int netlink_delete_table(struct netlink_ctx *ctx, const struct handle *h,
 				const struct location *loc);
 extern int netlink_list_tables(struct netlink_ctx *ctx, const struct handle *h,

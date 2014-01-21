@@ -451,7 +451,8 @@ void netlink_dump_chain(struct nft_chain *nlc)
 }
 
 int netlink_add_chain(struct netlink_ctx *ctx, const struct handle *h,
-		      const struct location *loc, const struct chain *chain)
+		      const struct location *loc, const struct chain *chain,
+		      bool excl)
 {
 	struct nft_chain *nlc;
 	int err;
@@ -466,7 +467,7 @@ int netlink_add_chain(struct netlink_ctx *ctx, const struct handle *h,
 				       chain->type);
 	}
 	netlink_dump_chain(nlc);
-	err = mnl_nft_chain_add(nf_sock, nlc, NLM_F_EXCL);
+	err = mnl_nft_chain_add(nf_sock, nlc, excl ? NLM_F_EXCL : 0);
 	nft_chain_free(nlc);
 
 	if (err < 0)
@@ -625,13 +626,14 @@ int netlink_flush_chain(struct netlink_ctx *ctx, const struct handle *h,
 }
 
 int netlink_add_table(struct netlink_ctx *ctx, const struct handle *h,
-		      const struct location *loc, const struct table *table)
+		      const struct location *loc, const struct table *table,
+		      bool excl)
 {
 	struct nft_table *nlt;
 	int err;
 
 	nlt = alloc_nft_table(h);
-	err = mnl_nft_table_add(nf_sock, nlt, NLM_F_EXCL);
+	err = mnl_nft_table_add(nf_sock, nlt, excl ? NLM_F_EXCL : 0);
 	nft_table_free(nlt);
 
 	if (err < 0)

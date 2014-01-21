@@ -280,7 +280,7 @@ int mnl_nft_rule_batch_add(struct nft_rule *nlr, unsigned int flags,
 	nlh = nft_rule_nlmsg_build_hdr(mnl_nlmsg_batch_current(batch),
 			NFT_MSG_NEWRULE,
 			nft_rule_attr_get_u32(nlr, NFT_RULE_ATTR_FAMILY),
-			flags|NLM_F_CREATE, seqnum);
+			NLM_F_CREATE | flags, seqnum);
 
 	nft_rule_nlmsg_build_payload(nlh, nlr);
 	if (!mnl_nlmsg_batch_next(batch))
@@ -318,7 +318,7 @@ int mnl_nft_rule_add(struct mnl_socket *nf_sock, struct nft_rule *nlr,
 
 	nlh = nft_rule_nlmsg_build_hdr(buf, NFT_MSG_NEWRULE,
 			nft_rule_attr_get_u32(nlr, NFT_RULE_ATTR_FAMILY),
-			flags|NLM_F_ACK|NLM_F_CREATE, seq);
+			NLM_F_ACK | NLM_F_CREATE | flags, seq);
 	nft_rule_nlmsg_build_payload(nlh, nlr);
 
 	return mnl_talk(nf_sock, nlh, nlh->nlmsg_len, NULL, NULL);
@@ -394,7 +394,7 @@ int mnl_nft_chain_add(struct mnl_socket *nf_sock, struct nft_chain *nlc,
 
 	nlh = nft_chain_nlmsg_build_hdr(buf, NFT_MSG_NEWCHAIN,
 			nft_chain_attr_get_u32(nlc, NFT_CHAIN_ATTR_FAMILY),
-			NLM_F_CREATE|NLM_F_ACK|flags, seq);
+			NLM_F_CREATE | NLM_F_ACK | flags, seq);
 	nft_chain_nlmsg_build_payload(nlh, nlc);
 
 	return mnl_talk(nf_sock, nlh, nlh->nlmsg_len, NULL, NULL);
@@ -472,7 +472,7 @@ int mnl_nft_chain_get(struct mnl_socket *nf_sock, struct nft_chain *nlc,
 
 	nlh = nft_chain_nlmsg_build_hdr(buf, NFT_MSG_GETCHAIN,
 			nft_chain_attr_get_u32(nlc, NFT_CHAIN_ATTR_FAMILY),
-			NLM_F_ACK|flags, seq);
+			NLM_F_ACK | flags, seq);
 	nft_chain_nlmsg_build_payload(nlh, nlc);
 
 	return mnl_talk(nf_sock, nlh, nlh->nlmsg_len, chain_get_cb, nlc);
@@ -489,7 +489,7 @@ int mnl_nft_table_add(struct mnl_socket *nf_sock, struct nft_table *nlt,
 
 	nlh = nft_table_nlmsg_build_hdr(buf, NFT_MSG_NEWTABLE,
 			nft_table_attr_get_u32(nlt, NFT_TABLE_ATTR_FAMILY),
-			NLM_F_EXCL|NLM_F_ACK, seq);
+			NLM_F_ACK | flags, seq);
 	nft_table_nlmsg_build_payload(nlh, nlt);
 
 	return mnl_talk(nf_sock, nlh, nlh->nlmsg_len, NULL, NULL);
@@ -590,7 +590,7 @@ int mnl_nft_set_add(struct mnl_socket *nf_sock, struct nft_set *nls,
 
 	nlh = nft_set_nlmsg_build_hdr(buf, NFT_MSG_NEWSET,
 			nft_set_attr_get_u32(nls, NFT_SET_ATTR_FAMILY),
-			flags|NLM_F_CREATE|NLM_F_ACK, seq);
+			NLM_F_CREATE | NLM_F_ACK | flags, seq);
 	nft_set_nlmsg_build_payload(nlh, nls);
 
 	return mnl_talk(nf_sock, nlh, nlh->nlmsg_len, set_add_cb, nls);
@@ -695,7 +695,7 @@ int mnl_nft_setelem_add(struct mnl_socket *nf_sock, struct nft_set *nls,
 
 	nlh = nft_set_elem_nlmsg_build_hdr(buf, NFT_MSG_NEWSETELEM,
 			nft_set_attr_get_u32(nls, NFT_SET_ATTR_FAMILY),
-			NLM_F_CREATE|NLM_F_EXCL|NLM_F_ACK, seq);
+			NLM_F_CREATE | NLM_F_ACK | flags, seq);
 	nft_set_elems_nlmsg_build_payload(nlh, nls);
 
 	return mnl_talk(nf_sock, nlh, nlh->nlmsg_len, NULL, NULL);
