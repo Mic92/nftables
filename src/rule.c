@@ -482,14 +482,17 @@ static int do_add_setelems(struct netlink_ctx *ctx, const struct handle *h,
 	return 0;
 }
 
+extern void set_desc_create(struct set *set);
 static int do_add_set(struct netlink_ctx *ctx, const struct handle *h,
 		      struct set *set)
 {
 	if (netlink_add_set(ctx, h, set) < 0)
-		return -1;
+		; //return -1;
 	if (set->init != NULL) {
 		if (set->flags & SET_F_INTERVAL)
 			set_to_intervals(set);
+		set_desc_create(set);
+
 		if (do_add_setelems(ctx, &set->handle, set->init) < 0)
 			return -1;
 	}

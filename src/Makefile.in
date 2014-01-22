@@ -18,6 +18,7 @@ nft-obj			+= netlink.o
 nft-obj			+= netlink_linearize.o
 nft-obj			+= netlink_delinearize.o
 nft-obj			+= segtree.o
+nft-obj			+= set_desc.o
 nft-obj			+= rbtree.o
 nft-obj			+= gmputil.o
 nft-obj			+= utils.o
