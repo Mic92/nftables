@@ -136,4 +136,7 @@ extern int netlink_batch_send(struct list_head *err_list);
 extern int netlink_io_error(struct netlink_ctx *ctx,
 			    const struct location *loc, const char *fmt, ...);
 
+extern struct nft_ruleset *netlink_dump_ruleset(struct netlink_ctx *ctx,
+						const struct handle *h,
+						const struct location *loc);
 #endif /* NFTABLES_NETLINK_H */

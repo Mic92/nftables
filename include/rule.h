@@ -205,6 +205,7 @@ extern void set_print(const struct set *set);
  * @CMD_LIST:		list container
  * @CMD_FLUSH:		flush container
  * @CMD_RENAME:		rename object
+ * @CMD_EXPORT:		export the ruleset in a given format
  */
 enum cmd_ops {
 	CMD_INVALID,
@@ -215,6 +216,7 @@ enum cmd_ops {
 	CMD_LIST,
 	CMD_FLUSH,
 	CMD_RENAME,
+	CMD_EXPORT,
 };
 
 /**
@@ -227,6 +229,7 @@ enum cmd_ops {
  * @CMD_OBJ_RULE:	rule
  * @CMD_OBJ_CHAIN:	chain
  * @CMD_OBJ_TABLE:	table
+ * @CMD_OBJ_RULESET:	ruleset
  */
 enum cmd_obj {
 	CMD_OBJ_INVALID,
@@ -236,6 +239,7 @@ enum cmd_obj {
 	CMD_OBJ_RULE,
 	CMD_OBJ_CHAIN,
 	CMD_OBJ_TABLE,
+	CMD_OBJ_RULESET,
 };
 
 /**
@@ -249,6 +253,7 @@ enum cmd_obj {
  * @seqnum:	sequence number to match netlink errors
  * @union:	object
  * @arg:	argument data
+ * @format:	info about the export/import format
  */
 struct cmd {
 	struct list_head	list;
@@ -266,6 +271,7 @@ struct cmd {
 		struct table	*table;
 	};
 	const void		*arg;
+	uint32_t		format;
 };
 
 extern struct cmd *cmd_alloc(enum cmd_ops op, enum cmd_obj obj,

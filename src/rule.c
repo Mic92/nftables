@@ -18,7 +18,10 @@
 #include <statement.h>
 #include <rule.h>
 #include <utils.h>
+#include <netlink.h>
 
+#include <libnftnl/common.h>
+#include <libnftnl/ruleset.h>
 #include <netinet/ip.h>
 #include <linux/netfilter.h>
 #include <linux/netfilter_arp.h>
@@ -592,6 +595,21 @@ static int do_list_sets(struct netlink_ctx *ctx, const struct location *loc,
 	return 0;
 }
 
+static int do_command_export(struct netlink_ctx *ctx, struct cmd *cmd)
+{
+	struct nft_ruleset *rs = netlink_dump_ruleset(ctx, &cmd->handle,
+						      &cmd->location);
+
+	if (rs == NULL)
+		return -1;
+
+	nft_ruleset_fprintf(stdout, rs, cmd->format, 0);
+	fprintf(stdout, "\n");
+
+	nft_ruleset_free(rs);
+	return 0;
+}
+
 static int do_command_list(struct netlink_ctx *ctx, struct cmd *cmd)
 {
 	struct table *table = NULL;
@@ -744,6 +762,8 @@ int do_command(struct netlink_ctx *ctx, struct cmd *cmd)
 		return do_command_flush(ctx, cmd);
 	case CMD_RENAME:
 		return do_command_rename(ctx, cmd);
+	case CMD_EXPORT:
+		return do_command_export(ctx, cmd);
 	default:
 		BUG("invalid command object type %u\n", cmd->obj);
 	}

@@ -18,6 +18,7 @@
 #include <linux/netfilter.h>
 #include <linux/netfilter/nf_tables.h>
 #include <linux/netfilter/nf_conntrack_tuple_common.h>
+#include <libnftnl/common.h>
 
 #include <rule.h>
 #include <statement.h>
@@ -176,6 +177,7 @@ static void location_update(struct location *loc, struct location *rhs, int n)
 %token FLUSH			"flush"
 %token RENAME			"rename"
 %token DESCRIBE			"describe"
+%token EXPORT			"export"
 
 %token ACCEPT			"accept"
 %token DROP			"drop"
@@ -346,14 +348,17 @@ static void location_update(struct location *loc, struct location *rhs, int n)
 
 %token POSITION			"position"
 
+%token XML			"xml"
+%token JSON			"json"
+
 %type <string>			identifier string
 %destructor { xfree($$); }	identifier string
 
 %type <cmd>			line
 %destructor { cmd_free($$); }	line
 
-%type <cmd>			base_cmd add_cmd create_cmd insert_cmd delete_cmd list_cmd flush_cmd rename_cmd
-%destructor { cmd_free($$); }	base_cmd add_cmd create_cmd insert_cmd delete_cmd list_cmd flush_cmd rename_cmd
+%type <cmd>			base_cmd add_cmd create_cmd insert_cmd delete_cmd list_cmd flush_cmd rename_cmd export_cmd
+%destructor { cmd_free($$); }	base_cmd add_cmd create_cmd insert_cmd delete_cmd list_cmd flush_cmd rename_cmd export_cmd
 
 %type <handle>			table_spec tables_spec chain_spec chain_identifier ruleid_spec
 %destructor { handle_free(&$$); } table_spec tables_spec chain_spec chain_identifier ruleid_spec
@@ -476,6 +481,8 @@ static void location_update(struct location *loc, struct location *rhs, int n)
 %destructor { expr_free($$); }	ct_expr
 %type <val>			ct_key
 
+%type <val>			export_format
+
 %%
 
 input			:	/* empty */
@@ -544,6 +551,7 @@ base_cmd		:	/* empty */	add_cmd		{ $$ = $1; }
 			|	LIST		list_cmd	{ $$ = $2; }
 			|	FLUSH		flush_cmd	{ $$ = $2; }
 			|	RENAME		rename_cmd	{ $$ = $2; }
+			|	EXPORT		export_cmd	{ $$ = $2; }
 			|	DESCRIBE	primary_expr
 			{
 				expr_describe($2);
@@ -700,6 +708,14 @@ rename_cmd		:	CHAIN		chain_spec	identifier
 			{
 				$$ = cmd_alloc(CMD_RENAME, CMD_OBJ_CHAIN, &$2, &@$, NULL);
 				$$->arg = $3;
+			}
+			;
+
+export_cmd		:	export_format
+			{
+				struct handle h = { .family = NFPROTO_UNSPEC };
+				$$ = cmd_alloc(CMD_EXPORT, CMD_OBJ_RULESET, &h, &@$, NULL);
+				$$->format = $1;
 			}
 			;
 
@@ -1914,4 +1930,7 @@ mh_hdr_field		:	NEXTHDR		{ $$ = MHHDR_NEXTHDR; }
 			|	CHECKSUM	{ $$ = MHHDR_CHECKSUM; }
 			;
 
+export_format		: 	XML 		{ $$ = NFT_OUTPUT_XML; }
+			|	JSON		{ $$ = NFT_OUTPUT_JSON; }
+			;
 %%

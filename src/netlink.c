@@ -13,12 +13,15 @@
 #include <fcntl.h>
 #include <errno.h>
 #include <libmnl/libmnl.h>
+#include <netinet/in.h>
+#include <arpa/inet.h>
 
 #include <libnftnl/table.h>
 #include <libnftnl/chain.h>
 #include <libnftnl/expr.h>
 #include <libnftnl/set.h>
 #include <linux/netfilter/nf_tables.h>
+#include <linux/netfilter.h>
 
 #include <nftables.h>
 #include <netlink.h>
@@ -1049,4 +1052,18 @@ out:
 int netlink_batch_send(struct list_head *err_list)
 {
 	return mnl_batch_talk(nf_sock, err_list);
+}
+
+struct nft_ruleset *netlink_dump_ruleset(struct netlink_ctx *ctx,
+					 const struct handle *h,
+					 const struct location *loc)
+{
+	struct nft_ruleset *rs;
+
+	rs = mnl_nft_ruleset_dump(nf_sock, h->family);
+	if (rs == NULL)
+		netlink_io_error(ctx, loc, "Could not receive ruleset: %s",
+				 strerror(errno));
+
+	return rs;
 }

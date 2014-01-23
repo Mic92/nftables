@@ -255,6 +255,7 @@ addrstring	({macaddr}|{ip4addr}|{ip6addr})
 "list"			{ return LIST; }
 "flush"			{ return FLUSH; }
 "rename"		{ return RENAME; }
+"export"		{ return EXPORT; }
 
 "position"		{ return POSITION; }
 
@@ -410,6 +411,9 @@ addrstring	({macaddr}|{ip4addr}|{ip6addr})
 "l3proto"		{ return L3PROTOCOL; }
 "proto-src"		{ return PROTO_SRC; }
 "proto-dst"		{ return PROTO_DST; }
+
+"xml"			{ return XML; }
+"json"			{ return JSON; }
 
 {addrstring}		{
 				yylval->string = xstrdup(yytext);

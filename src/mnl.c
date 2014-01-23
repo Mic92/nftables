@@ -9,6 +9,8 @@
  */
 
 #include <libmnl/libmnl.h>
+#include <libnftnl/common.h>
+#include <libnftnl/ruleset.h>
 #include <libnftnl/table.h>
 #include <libnftnl/chain.h>
 #include <libnftnl/rule.h>
@@ -645,7 +647,8 @@ mnl_nft_set_dump(struct mnl_socket *nf_sock, int family, const char *table)
 
 	nlh = nft_set_nlmsg_build_hdr(buf, NFT_MSG_GETSET, family,
 				      NLM_F_DUMP|NLM_F_ACK, seq);
-	nft_set_attr_set(s, NFT_SET_ATTR_TABLE, table);
+	if (table != NULL)
+		nft_set_attr_set(s, NFT_SET_ATTR_TABLE, table);
 	nft_set_nlmsg_build_payload(nlh, s);
 	nft_set_free(s);
 
@@ -732,4 +735,63 @@ int mnl_nft_setelem_get(struct mnl_socket *nf_sock, struct nft_set *nls)
 	nft_set_nlmsg_build_payload(nlh, nls);
 
 	return mnl_talk(nf_sock, nlh, nlh->nlmsg_len, set_elem_cb, nls);
+}
+
+/*
+ * ruleset
+ */
+struct nft_ruleset *mnl_nft_ruleset_dump(struct mnl_socket *nf_sock,
+					 uint32_t family)
+{
+	struct nft_ruleset *rs;
+	struct nft_table_list *t;
+	struct nft_chain_list *c;
+	struct nft_set_list *sl;
+	struct nft_set_list_iter *i;
+	struct nft_set *s;
+	struct nft_rule_list *r;
+	int ret = 0;
+
+	rs = nft_ruleset_alloc();
+	if (rs == NULL)
+		memory_allocation_error();
+
+	t = mnl_nft_table_dump(nf_sock, family);
+	if (t != NULL)
+		nft_ruleset_attr_set(rs, NFT_RULESET_ATTR_TABLELIST, t);
+
+	c = mnl_nft_chain_dump(nf_sock, family);
+	if (c != NULL)
+		nft_ruleset_attr_set(rs, NFT_RULESET_ATTR_CHAINLIST, c);
+
+	sl = mnl_nft_set_dump(nf_sock, family, NULL);
+	if (sl != NULL) {
+		i = nft_set_list_iter_create(sl);
+		s = nft_set_list_iter_next(i);
+		while (s != NULL) {
+			ret = mnl_nft_setelem_get(nf_sock, s);
+			if (ret != 0)
+				goto out;
+
+			s = nft_set_list_iter_next(i);
+		}
+		nft_set_list_iter_destroy(i);
+
+		nft_ruleset_attr_set(rs, NFT_RULESET_ATTR_SETLIST, sl);
+	}
+
+	r = mnl_nft_rule_dump(nf_sock, family);
+	if (r != NULL)
+		nft_ruleset_attr_set(rs, NFT_RULESET_ATTR_RULELIST, r);
+
+	if (!(nft_ruleset_attr_is_set(rs, NFT_RULESET_ATTR_TABLELIST)) &&
+	    !(nft_ruleset_attr_is_set(rs, NFT_RULESET_ATTR_CHAINLIST)) &&
+	    !(nft_ruleset_attr_is_set(rs, NFT_RULESET_ATTR_SETLIST)) &&
+	    !(nft_ruleset_attr_is_set(rs, NFT_RULESET_ATTR_RULELIST)))
+		goto out;
+
+	return rs;
+out:
+	nft_ruleset_free(rs);
+	return NULL;
 }
