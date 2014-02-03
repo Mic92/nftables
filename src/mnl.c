@@ -21,6 +21,7 @@
 #include <linux/netfilter/nf_tables.h>
 
 #include <mnl.h>
+#include <string.h>
 #include <errno.h>
 #include <utils.h>
 #include <nftables.h>
@@ -100,12 +101,21 @@ struct batch_page {
 static void mnl_batch_page_add(void)
 {
 	struct batch_page *batch_page;
+	struct nlmsghdr *last_nlh;
+
+	/* Get the last message not fitting in the batch */
+	last_nlh = mnl_nlmsg_batch_current(batch);
 
 	batch_page = xmalloc(sizeof(struct batch_page));
 	batch_page->batch = batch;
 	list_add_tail(&batch_page->head, &batch_page_list);
 	batch_num_pages++;
 	batch = mnl_batch_alloc();
+
+	/* Copy the last message not fitting to the new batch page */
+	memcpy(mnl_nlmsg_batch_current(batch), last_nlh, last_nlh->nlmsg_len);
+	/* No overflow may happen as this is a new empty batch page */
+	mnl_nlmsg_batch_next(batch);
 }
 
 static uint32_t mnl_batch_put(int type)
