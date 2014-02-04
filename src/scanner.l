@@ -88,7 +88,6 @@ static void reset_pos(struct parser_state *state, struct location *loc)
 	state->indesc->line_offset	= state->indesc->token_offset;
 	state->indesc->lineno		+= 1;
 	state->indesc->column		= 1;
-	loc->line_offset		= state->indesc->line_offset;
 }
 
 #define YY_USER_ACTION {					\
