@@ -1,0 +1,18 @@
+#! nft -f
+
+# mixed syntactical and non-syntactical errors in blocks
+table filter {
+	# missing identifier
+	chain
+
+	# missing chain block
+	chain output
+
+	chain output {
+		tcp
+		tcp dport
+		tcp dport tcp
+		tcp dport tcp dport
+		tcp dport ssh
+	}
+}

@@ -1,0 +1,9 @@
+#! nft -f
+
+# mixed syntactical and non-syntactical errors
+filter {
+filter input
+filter input tcp
+filter input tcp dport
+filter input tcp dport tcp
+filter input tcp dport tcp dport
