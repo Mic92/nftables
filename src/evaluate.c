@@ -872,17 +872,6 @@ static int expr_evaluate_relational(struct eval_ctx *ctx, struct expr **expr)
 		return -1;
 	right = rel->right;
 
-	if (!expr_is_constant(right))
-		return expr_binary_error(ctx, right, rel,
-					 "Right hand side of relational "
-					 "expression (%s) must be constant",
-					 expr_op_symbols[rel->op]);
-	if (expr_is_constant(left))
-		return expr_binary_error(ctx, left, right,
-					 "Relational expression (%s) has "
-					 "constant value",
-					 expr_op_symbols[rel->op]);
-
 	if (rel->op == OP_IMPLICIT) {
 		switch (right->ops->type) {
 		case EXPR_RANGE:
@@ -900,6 +889,17 @@ static int expr_evaluate_relational(struct eval_ctx *ctx, struct expr **expr)
 			break;
 		}
 	}
+
+	if (!expr_is_constant(right))
+		return expr_binary_error(ctx, right, rel,
+					 "Right hand side of relational "
+					 "expression (%s) must be constant",
+					 expr_op_symbols[rel->op]);
+	if (expr_is_constant(left))
+		return expr_binary_error(ctx, left, right,
+					 "Relational expression (%s) has "
+					 "constant value",
+					 expr_op_symbols[rel->op]);
 
 	switch (rel->op) {
 	case OP_LOOKUP:
