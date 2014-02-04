@@ -52,12 +52,14 @@ static struct scope *current_scope(const struct parser_state *state)
 
 static void open_scope(struct parser_state *state, struct scope *scope)
 {
+	assert(state->scope < array_size(state->scopes) - 1);
 	scope_init(scope, current_scope(state));
 	state->scopes[++state->scope] = scope;
 }
 
 static void close_scope(struct parser_state *state)
 {
+	assert(state->scope > 0);
 	state->scope--;
 }
 
@@ -367,9 +369,9 @@ static void location_update(struct location *loc, struct location *rhs, int n)
 %type <val>			handle_spec family_spec position_spec
 
 %type <table>			table_block_alloc table_block
-%destructor { table_free($$); }	table_block_alloc
+%destructor { close_scope(state); table_free($$); }	table_block_alloc
 %type <chain>			chain_block_alloc chain_block
-%destructor { chain_free($$); }	chain_block_alloc
+%destructor { close_scope(state); chain_free($$); }	chain_block_alloc
 %type <rule>			rule
 %destructor { rule_free($$); }	rule
 
