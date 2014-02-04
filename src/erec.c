@@ -114,7 +114,9 @@ void erec_print(FILE *f, const struct error_record *erec)
 		if (indesc->location.indesc != NULL) {
 			const char *prefix = "In file included from";
 			iloc = &indesc->location;
-			for (tmp = iloc->indesc; tmp != NULL; tmp = iloc->indesc) {
+			for (tmp = iloc->indesc;
+			     tmp != NULL && tmp->type != INDESC_INTERNAL;
+			     tmp = iloc->indesc) {
 				fprintf(f, "%s %s:%u:%u-%u:\n", prefix,
 					tmp->name,
 					iloc->first_line, iloc->first_column,
