@@ -70,6 +70,7 @@ static void update_pos(struct parser_state *state, struct location *loc,
 {
 	loc->indesc			= state->indesc;
 	loc->first_line			= state->indesc->lineno;
+	loc->last_line			= state->indesc->lineno;
 	loc->first_column		= state->indesc->column;
 	loc->last_column		= state->indesc->column + len - 1;
 	state->indesc->column		+= len;
