@@ -37,6 +37,7 @@ void parser_init(struct parser_state *state, struct list_head *msgs)
 	init_list_head(&state->top_scope.symbols);
 	state->msgs = msgs;
 	state->scopes[0] = scope_init(&state->top_scope, NULL);
+	state->ectx.msgs = msgs;
 }
 
 static void yyerror(struct location *loc, void *scanner,
@@ -492,7 +493,11 @@ input			:	/* empty */
 			{
 				if ($2 != NULL) {
 					$2->location = @2;
-					list_add_tail(&$2->list, &state->cmds);
+					if (cmd_evaluate(&state->ectx, $2) < 0) {
+						if (++state->nerrs == max_errors)
+							YYABORT;
+					} else
+						list_add_tail(&$2->list, &state->cmds);
 				}
 			}
 			;
@@ -542,7 +547,12 @@ line			:	common_block			{ $$ = NULL; }
 				 */
 				if ($1 != NULL) {
 					$1->location = @1;
-					list_add_tail(&$1->list, &state->cmds);
+
+					if (cmd_evaluate(&state->ectx, $1) < 0) {
+						if (++state->nerrs == max_errors)
+							YYABORT;
+					} else
+						list_add_tail(&$1->list, &state->cmds);
 				}
 				$$ = NULL;
 

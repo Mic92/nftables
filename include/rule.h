@@ -303,7 +303,7 @@ struct eval_ctx {
 	struct proto_ctx	pctx;
 };
 
-extern int evaluate(struct eval_ctx *ctx, struct list_head *commands);
+extern int cmd_evaluate(struct eval_ctx *ctx, struct cmd *cmd);
 
 extern struct error_record *rule_postprocess(struct rule *rule);
 

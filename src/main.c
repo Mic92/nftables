@@ -216,16 +216,10 @@ out:
 
 int nft_run(void *scanner, struct parser_state *state, struct list_head *msgs)
 {
-	struct eval_ctx ctx;
-	int ret = 0;
+	int ret;
 
 	ret = nft_parse(scanner, state);
 	if (ret != 0 || state->nerrs > 0)
-		return -1;
-
-	memset(&ctx, 0, sizeof(ctx));
-	ctx.msgs = msgs;
-	if (evaluate(&ctx, &state->cmds) < 0)
 		return -1;
 
 	return nft_netlink(state, msgs);

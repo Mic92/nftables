@@ -26,6 +26,7 @@ struct parser_state {
 	unsigned int			scope;
 
 	struct list_head		cmds;
+	struct eval_ctx			ectx;
 };
 
 extern void parser_init(struct parser_state *state, struct list_head *msgs);

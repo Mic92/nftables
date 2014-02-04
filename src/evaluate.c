@@ -1384,7 +1384,7 @@ static int cmd_evaluate_delete(struct eval_ctx *ctx, struct cmd *cmd)
 	}
 }
 
-static int cmd_evaluate(struct eval_ctx *ctx, struct cmd *cmd)
+int cmd_evaluate(struct eval_ctx *ctx, struct cmd *cmd)
 {
 #ifdef DEBUG
 	if (debug_level & DEBUG_EVALUATION) {
@@ -1410,15 +1410,4 @@ static int cmd_evaluate(struct eval_ctx *ctx, struct cmd *cmd)
 	default:
 		BUG("invalid command operation %u\n", cmd->op);
 	};
-}
-
-int evaluate(struct eval_ctx *ctx, struct list_head *commands)
-{
-	struct cmd *cmd;
-
-	list_for_each_entry(cmd, commands, list) {
-		if (cmd_evaluate(ctx, cmd) < 0)
-			return -1;
-	}
-	return 0;
 }
