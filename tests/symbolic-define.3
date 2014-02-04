@@ -1,0 +1,6 @@
+#! nft -f
+
+# error: recursive definition of a variable
+define var1 = $var1
+
+filter input iif $var1

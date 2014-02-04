@@ -1,0 +1,7 @@
+#! nft -f
+
+# error: redefinition of an existing variable
+define var1 = eth0
+define var1 = eth0
+
+filter input iif $var1

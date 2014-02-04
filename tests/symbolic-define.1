@@ -1,0 +1,7 @@
+#! nft -f
+
+# error: variable use before definition
+define var2 = $var1
+define var1 = eth0
+
+filter input iif $var2

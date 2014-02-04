@@ -520,7 +520,15 @@ common_block		:	INCLUDE		QUOTED_STRING	stmt_seperator
 			}
 			|	DEFINE		identifier	'='	initializer_expr	stmt_seperator
 			{
-				symbol_bind(current_scope(state), $2, $4);
+				struct scope *scope = current_scope(state);
+
+				if (symbol_lookup(scope, $2) != NULL) {
+					erec_queue(error(&@2, "redfinition of symbol '%s'", $2),
+						   state->msgs);
+					YYERROR;
+				}
+
+				symbol_bind(scope, $2, $4);
 				xfree($2);
 			}
 			|	error		stmt_seperator
@@ -1228,9 +1236,16 @@ symbol_expr		:	string
 			}
 			|	'$'	identifier
 			{
+				struct scope *scope = current_scope(state);
+
+				if (symbol_lookup(scope, $2) == NULL) {
+					erec_queue(error(&@2, "unknown identifier '%s'", $2),
+						   state->msgs);
+					YYERROR;
+				}
+
 				$$ = symbol_expr_alloc(&@$, SYMBOL_DEFINE,
-						       current_scope(state),
-						       $2);
+						       scope, $2);
 				xfree($2);
 			}
 			|	AT	identifier
