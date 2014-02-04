@@ -518,6 +518,12 @@ common_block		:	INCLUDE		QUOTED_STRING	stmt_seperator
 				symbol_bind(current_scope(state), $2, $4);
 				xfree($2);
 			}
+			|	error		stmt_seperator
+			{
+				if (++state->nerrs == max_errors)
+					YYABORT;
+				yyerrok;
+			}
 			;
 
 line			:	common_block			{ $$ = NULL; }
@@ -542,7 +548,6 @@ line			:	common_block			{ $$ = NULL; }
 
 				YYACCEPT;
 			}
-			|	base_cmd	error		{ $$ = $1; }
 			;
 
 base_cmd		:	/* empty */	add_cmd		{ $$ = $1; }

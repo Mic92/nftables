@@ -26,6 +26,7 @@
 #include <erec.h>
 #include <mnl.h>
 
+unsigned int max_errors = 10;
 unsigned int numeric_output;
 unsigned int handle_output;
 #ifdef DEBUG
@@ -219,7 +220,7 @@ int nft_run(void *scanner, struct parser_state *state, struct list_head *msgs)
 	int ret = 0;
 
 	ret = nft_parse(scanner, state);
-	if (ret != 0)
+	if (ret != 0 || state->nerrs > 0)
 		return -1;
 
 	memset(&ctx, 0, sizeof(ctx));

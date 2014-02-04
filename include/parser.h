@@ -19,6 +19,7 @@ struct parser_state {
 	unsigned int			indesc_idx;
 
 	struct list_head		*msgs;
+	unsigned int			nerrs;
 
 	struct scope			top_scope;
 	struct scope			*scopes[SCOPE_NEST_MAX];

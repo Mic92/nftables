@@ -24,6 +24,7 @@ enum debug_level {
 
 #define INCLUDE_PATHS_MAX	16
 
+extern unsigned int max_errors;
 extern unsigned int numeric_output;
 extern unsigned int handle_output;
 extern unsigned int debug_level;
