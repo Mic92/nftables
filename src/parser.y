@@ -497,7 +497,7 @@ input			:	/* empty */
 						if (++state->nerrs == max_errors)
 							YYABORT;
 					} else
-						list_add_tail(&$2->list, &state->cmds);
+						list_splice_tail(&$2->list, &state->cmds);
 				}
 			}
 			;
@@ -560,7 +560,7 @@ line			:	common_block			{ $$ = NULL; }
 						if (++state->nerrs == max_errors)
 							YYABORT;
 					} else
-						list_add_tail(&$1->list, &state->cmds);
+						list_splice_tail(&$1->list, &state->cmds);
 				}
 				$$ = NULL;
 

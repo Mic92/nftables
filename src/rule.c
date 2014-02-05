@@ -426,6 +426,7 @@ struct cmd *cmd_alloc(enum cmd_ops op, enum cmd_obj obj,
 	struct cmd *cmd;
 
 	cmd = xzalloc(sizeof(*cmd));
+	init_list_head(&cmd->list);
 	cmd->op       = op;
 	cmd->obj      = obj;
 	cmd->handle   = *h;
