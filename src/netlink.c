@@ -33,6 +33,15 @@
 
 static struct mnl_socket *nf_sock;
 
+const struct input_descriptor indesc_netlink = {
+	.name	= "netlink",
+	.type	= INDESC_NETLINK,
+};
+
+const struct location netlink_location = {
+	.indesc	= &indesc_netlink,
+};
+
 static void __init netlink_open_sock(void)
 {
 	nf_sock = mnl_socket_open(NETLINK_NETFILTER);
@@ -55,7 +64,7 @@ int netlink_io_error(struct netlink_ctx *ctx, const struct location *loc,
 	va_list ap;
 
 	if (loc == NULL)
-		loc = &internal_location;
+		loc = &netlink_location;
 
 	va_start(ap, fmt);
 	erec = erec_vcreate(EREC_ERROR, loc, fmt, ap);
@@ -848,7 +857,7 @@ static int list_set_cb(struct nft_set *nls, void *arg)
 	} else
 		datatype = NULL;
 
-	set = set_alloc(&internal_location);
+	set = set_alloc(&netlink_location);
 	set->handle.family = nft_set_attr_get_u32(nls, NFT_SET_ATTR_FAMILY);
 	set->handle.table  =
 		xstrdup(nft_set_attr_get_str(nls, NFT_SET_ATTR_TABLE));
@@ -899,7 +908,7 @@ int netlink_get_set(struct netlink_ctx *ctx, const struct handle *h,
 					"Could not receive set from kernel: %s",
 					strerror(errno));
 
-	set = set_alloc(&internal_location);
+	set = set_alloc(&netlink_location);
 	set->handle.family = nft_set_attr_get_u32(nls, NFT_SET_ATTR_FAMILY);
 	set->handle.table  =
 		xstrdup(nft_set_attr_get_str(nls, NFT_SET_ATTR_TABLE));
@@ -984,7 +993,7 @@ static int list_setelem_cb(struct nft_set_elem *nlse, void *arg)
 	if (nft_set_elem_attr_is_set(nlse, NFT_SET_ELEM_ATTR_FLAGS))
 		flags = nft_set_elem_attr_get_u32(nlse, NFT_SET_ELEM_ATTR_FLAGS);
 
-	expr = netlink_alloc_value(&internal_location, &nld);
+	expr = netlink_alloc_value(&netlink_location, &nld);
 	expr->dtype	= set->keytype;
 	expr->byteorder	= set->keytype->byteorder;
 	if (expr->byteorder == BYTEORDER_HOST_ENDIAN)
@@ -1004,7 +1013,7 @@ static int list_setelem_cb(struct nft_set_elem *nlse, void *arg)
 		} else
 			goto out;
 
-		data = netlink_alloc_data(&internal_location, &nld,
+		data = netlink_alloc_data(&netlink_location, &nld,
 					  set->datatype->type == TYPE_VERDICT ?
 					  NFT_REG_VERDICT : NFT_REG_1);
 		data->dtype = set->datatype;
@@ -1012,7 +1021,7 @@ static int list_setelem_cb(struct nft_set_elem *nlse, void *arg)
 		if (data->byteorder == BYTEORDER_HOST_ENDIAN)
 			mpz_switch_byteorder(data->value, data->len / BITS_PER_BYTE);
 
-		expr = mapping_expr_alloc(&internal_location, expr, data);
+		expr = mapping_expr_alloc(&netlink_location, expr, data);
 	}
 out:
 	compound_expr_add(set->init, expr);

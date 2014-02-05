@@ -12,6 +12,9 @@
 
 #include <rule.h>
 
+extern const struct input_descriptor indesc_netlink;
+extern const struct location netlink_location;
+
 /** 
  * struct netlink_ctx
  *

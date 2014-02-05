@@ -545,11 +545,6 @@ static const struct {
 	{ .name = "queue",	.parse = netlink_parse_queue },
 };
 
-static const struct input_descriptor indesc_netlink = {
-	.name = "netlink",
-	.type  = INDESC_NETLINK,
-};
-
 static int netlink_parse_expr(struct nft_rule_expr *nle, void *arg)
 {
 	const char *type = nft_rule_expr_get_str(nle, NFT_RULE_EXPR_ATTR_NAME);
@@ -878,7 +873,7 @@ struct rule *netlink_delinearize_rule(struct netlink_ctx *ctx,
 	if (nft_rule_attr_is_set(nlr, NFT_RULE_ATTR_POSITION))
 		h.position = nft_rule_attr_get_u64(nlr, NFT_RULE_ATTR_POSITION);
 
-	pctx->rule = rule_alloc(&internal_location, &h);
+	pctx->rule = rule_alloc(&netlink_location, &h);
 	pctx->table = table_lookup(&h);
 	assert(pctx->table != NULL);
 	nft_rule_expr_foreach((struct nft_rule *)nlr, netlink_parse_expr, pctx);
