@@ -492,12 +492,16 @@ input			:	/* empty */
 			|	input		line
 			{
 				if ($2 != NULL) {
+					LIST_HEAD(list);
+
 					$2->location = @2;
+
+					list_add_tail(&$2->list, &list);
 					if (cmd_evaluate(&state->ectx, $2) < 0) {
 						if (++state->nerrs == max_errors)
 							YYABORT;
 					} else
-						list_splice_tail(&$2->list, &state->cmds);
+						list_splice_tail(&list, &state->cmds);
 				}
 			}
 			;
@@ -554,13 +558,16 @@ line			:	common_block			{ $$ = NULL; }
 				 * work.
 				 */
 				if ($1 != NULL) {
+					LIST_HEAD(list);
+
 					$1->location = @1;
 
+					list_add_tail(&$1->list, &list);
 					if (cmd_evaluate(&state->ectx, $1) < 0) {
 						if (++state->nerrs == max_errors)
 							YYABORT;
 					} else
-						list_splice_tail(&$1->list, &state->cmds);
+						list_splice_tail(&list, &state->cmds);
 				}
 				$$ = NULL;
 
