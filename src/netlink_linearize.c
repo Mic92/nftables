@@ -271,21 +271,20 @@ static void netlink_gen_flagcmp(struct netlink_linearize_ctx *ctx,
 
 	mpz_init_set_ui(zero, 0);
 
-	nle = alloc_nft_expr("bitwise");
 	netlink_gen_raw_data(zero, expr->right->byteorder, len, &nld);
+	netlink_gen_data(expr->right, &nld2);
+
+	nle = alloc_nft_expr("bitwise");
 	nft_rule_expr_set_u32(nle, NFT_EXPR_BITWISE_SREG, sreg);
 	nft_rule_expr_set_u32(nle, NFT_EXPR_BITWISE_DREG, sreg);
 	nft_rule_expr_set_u32(nle, NFT_EXPR_BITWISE_LEN, len);
-	netlink_gen_data(expr->right, &nld2);
 	nft_rule_expr_set(nle, NFT_EXPR_BITWISE_MASK, &nld2.value, nld2.len);
 	nft_rule_expr_set(nle, NFT_EXPR_BITWISE_XOR, &nld.value, nld.len);
 	nft_rule_add_expr(ctx->nlr, nle);
 
 	nle = alloc_nft_expr("cmp");
-	netlink_gen_raw_data(zero, expr->right->byteorder, len, &nld);
 	nft_rule_expr_set_u32(nle, NFT_EXPR_CMP_SREG, sreg);
 	nft_rule_expr_set_u32(nle, NFT_EXPR_CMP_OP, NFT_CMP_NEQ);
-	netlink_gen_data(expr->right, &nld);
 	nft_rule_expr_set(nle, NFT_EXPR_CMP_DATA, nld.value, nld.len);
 	nft_rule_add_expr(ctx->nlr, nle);
 
