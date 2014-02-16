@@ -885,7 +885,11 @@ static int expr_evaluate_relational(struct eval_ctx *ctx, struct expr **expr)
 			rel->op = OP_FLAGCMP;
 			break;
 		default:
-			rel->op = OP_EQ;
+			if (right->dtype->basetype != NULL &&
+			    right->dtype->basetype->type == TYPE_BITMASK)
+				rel->op = OP_FLAGCMP;
+			else
+				rel->op = OP_EQ;
 			break;
 		}
 	}
