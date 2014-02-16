@@ -692,28 +692,43 @@ next:
 	return k;
 }
 
+/* Convert a series of inclusive OR expressions into a list */
+static struct expr *binop_tree_to_list(struct expr *list, struct expr *expr)
+{
+	if (expr->ops->type == EXPR_BINOP && expr->op == OP_OR) {
+		if (list == NULL)
+			list = list_expr_alloc(&expr->location);
+		list = binop_tree_to_list(list, expr->left);
+		list = binop_tree_to_list(list, expr->right);
+	} else {
+		if (list == NULL)
+			return expr_get(expr);
+		compound_expr_add(list, expr_get(expr));
+	}
+
+	return list;
+}
+
 static void relational_binop_postprocess(struct expr *expr)
 {
-	struct expr *binop = expr->left, *value = expr->right, *i;
-	unsigned long n;
+	struct expr *binop = expr->left, *value = expr->right;
 
 	if (binop->op == OP_AND && expr->op == OP_NEQ &&
-	    expr->right->dtype->basetype->type == TYPE_BITMASK) {
+	    value->dtype->basetype->type == TYPE_BITMASK &&
+	    !mpz_cmp_ui(value->value, 0)) {
+		/* Flag comparison: data & flags != 0
+		 *
+		 * Split the flags into a list of flag values and convert the
+		 * op to OP_FLAGCMP.
+		 */
 		expr_free(expr->right);
-		expr->right = list_expr_alloc(&binop->left->location);
-		n = 0;
-		while ((n = mpz_scan1(binop->right->value, n)) != ULONG_MAX) {
-			i = constant_expr_alloc(&binop->right->location,
-						binop->left->dtype,
-						binop->right->byteorder,
-						binop->right->len, NULL);
-			mpz_set_ui(i->value, 1);
-			mpz_lshift_ui(i->value, n);
-			compound_expr_add(expr->right, i);
-			n++;
-		}
-		expr->left = binop->left;
-		expr->op = OP_FLAGCMP;
+		expr_free(value);
+
+		expr->left  = expr_get(binop->left);
+		expr->right = binop_tree_to_list(NULL, binop->right);
+		expr->op    = OP_FLAGCMP;
+
+		expr_free(binop);
 	} else if ((binop->left->dtype->type == TYPE_IPADDR ||
 		    binop->left->dtype->type == TYPE_IP6ADDR) &&
 		    binop->op == OP_AND) {
@@ -811,6 +826,11 @@ static void expr_postprocess(struct rule_pp_ctx *ctx,
 			mpz_clear(tmp);
 			expr->len = len;
 		}
+
+		if (expr->dtype->basetype != NULL &&
+		    expr->dtype->basetype->type == TYPE_BITMASK)
+			*exprp = bitmask_expr_to_binops(expr);
+
 		break;
 	case EXPR_RANGE:
 		expr_postprocess(ctx, stmt, &expr->left);

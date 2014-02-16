@@ -13,6 +13,7 @@
 #include <stdio.h>
 #include <stdint.h>
 #include <string.h>
+#include <limits.h>
 
 #include <expression.h>
 #include <datatype.h>
@@ -302,6 +303,59 @@ struct expr *constant_expr_splice(struct expr *expr, unsigned int len)
 	return slice;
 }
 
+/*
+ * Allocate a constant expression with a single bit set at position n.
+ */
+struct expr *flag_expr_alloc(const struct location *loc,
+			     const struct datatype *dtype,
+			     enum byteorder byteorder,
+			     unsigned int len, unsigned long n)
+{
+	struct expr *expr;
+
+	assert(n < len);
+
+	expr = constant_expr_alloc(loc, dtype, byteorder, len, NULL);
+	mpz_set_ui(expr->value, 1);
+	mpz_lshift_ui(expr->value, n);
+
+	return expr;
+}
+
+/*
+ * Convert an expression of basetype TYPE_BITMASK into a series of inclusive
+ * OR binop expressions of the individual flag values.
+ */
+struct expr *bitmask_expr_to_binops(struct expr *expr)
+{
+	struct expr *binop, *flag;
+	unsigned long n;
+
+	assert(expr->ops->type == EXPR_VALUE);
+	assert(expr->dtype->basetype->type == TYPE_BITMASK);
+
+	n = mpz_popcount(expr->value);
+	if (n == 0 || n == 1)
+		return expr;
+
+	binop = NULL;
+	n = 0;
+	while ((n = mpz_scan1(expr->value, n)) != ULONG_MAX) {
+		flag = flag_expr_alloc(&expr->location, expr->dtype,
+				       expr->byteorder, expr->len, n);
+		if (binop != NULL)
+			binop = binop_expr_alloc(&expr->location,
+						 OP_OR, binop, flag);
+		else
+			binop = flag;
+
+		n++;
+	}
+
+	expr_free(expr);
+	return binop;
+}
+
 static void prefix_expr_print(const struct expr *expr)
 {
 	expr_print(expr->prefix);
@@ -467,8 +521,8 @@ struct expr *binop_expr_alloc(const struct location *loc, enum ops op,
 {
 	struct expr *expr;
 
-	expr = expr_alloc(loc, &binop_expr_ops, &invalid_type,
-			  BYTEORDER_INVALID, 0);
+	expr = expr_alloc(loc, &binop_expr_ops, left->dtype,
+			  left->byteorder, 0);
 	expr->left  = left;
 	expr->op    = op;
 	expr->right = right;

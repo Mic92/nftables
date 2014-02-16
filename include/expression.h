@@ -316,6 +316,12 @@ extern struct expr *constant_expr_join(const struct expr *e1,
 				       const struct expr *e2);
 extern struct expr *constant_expr_splice(struct expr *expr, unsigned int len);
 
+extern struct expr *flag_expr_alloc(const struct location *loc,
+				    const struct datatype *dtype,
+				    enum byteorder byteorder,
+				    unsigned int len, unsigned long n);
+extern struct expr *bitmask_expr_to_binops(struct expr *expr);
+
 extern struct expr *prefix_expr_alloc(const struct location *loc,
 				      struct expr *expr,
 				      unsigned int prefix_len);
