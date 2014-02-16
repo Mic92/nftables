@@ -80,7 +80,9 @@ enum ops {
 	OP_FLAGCMP,
 	/* Set lookup */
 	OP_LOOKUP,
+	__OP_MAX
 };
+#define OP_MAX		(__OP_MAX - 1)
 
 extern const char *expr_op_symbols[];
 

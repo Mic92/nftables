@@ -404,16 +404,42 @@ struct expr *unary_expr_alloc(const struct location *loc,
 	return expr;
 }
 
+static uint8_t expr_binop_precedence[OP_MAX + 1] = {
+	[OP_LSHIFT]	= 1,
+	[OP_RSHIFT]	= 1,
+	[OP_AND]	= 2,
+	[OP_XOR]	= 3,
+	[OP_OR]		= 4,
+};
+
+static void binop_arg_print(const struct expr *op, const struct expr *arg)
+{
+	bool prec = false;
+
+	if (arg->ops->type == EXPR_BINOP &&
+	    expr_binop_precedence[op->op] != 0 &&
+	    expr_binop_precedence[op->op] < expr_binop_precedence[arg->op])
+		prec = 1;
+
+	if (prec)
+		printf("(");
+	expr_print(arg);
+	if (prec)
+		printf(")");
+}
+
 static void binop_expr_print(const struct expr *expr)
 {
-	expr_print(expr->left);
+	binop_arg_print(expr, expr->left);
+
 	if (expr_op_symbols[expr->op] &&
 	    (expr->op != OP_EQ ||
 	     expr->left->ops->type == EXPR_BINOP))
 		printf(" %s ", expr_op_symbols[expr->op]);
 	else
 		printf(" ");
-	expr_print(expr->right);
+
+	binop_arg_print(expr, expr->right);
 }
 
 static void binop_expr_clone(struct expr *new, const struct expr *expr)
