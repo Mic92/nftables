@@ -346,9 +346,9 @@ static void netlink_parse_meta_sreg(struct netlink_parse_ctx *ctx,
 	struct expr *expr;
 
 	expr = netlink_get_register(ctx, loc,
-			nft_rule_expr_get_u8(nle, NFT_EXPR_META_SREG));
+			nft_rule_expr_get_u32(nle, NFT_EXPR_META_SREG));
 	stmt = meta_stmt_alloc(loc,
-			       nft_rule_expr_get_u8(nle, NFT_EXPR_META_KEY),
+			       nft_rule_expr_get_u32(nle, NFT_EXPR_META_KEY),
 			       expr);
 	expr_set_type(expr, stmt->meta.tmpl->dtype, stmt->meta.tmpl->byteorder);
 
