@@ -428,8 +428,11 @@ static void location_update(struct location *loc, struct location *rhs, int n)
 %type <expr>			map_expr
 %destructor { expr_free($$); }	map_expr
 
-%type <expr>			verdict_map_expr
-%destructor { expr_free($$); }	verdict_map_expr
+%type <expr>			verdict_map_stmt
+%destructor { expr_free($$); }	verdict_map_stmt
+
+%type <expr>			verdict_map_expr verdict_map_list_expr verdict_map_list_member_expr
+%destructor { expr_free($$); }	verdict_map_expr verdict_map_list_expr verdict_map_list_member_expr
 
 %type <expr>			set_expr set_list_expr set_list_member_expr
 %destructor { expr_free($$); }	set_expr set_list_expr set_list_member_expr
@@ -1072,11 +1075,44 @@ verdict_stmt		:	verdict_expr
 			{
 				$$ = verdict_stmt_alloc(&@$, $1);
 			}
-			|	verdict_map_expr
+			|	verdict_map_stmt
 			{
 				$$ = verdict_stmt_alloc(&@$, $1);
 			}
 			;
+
+verdict_map_stmt	:	concat_expr	VMAP	verdict_map_expr
+			{
+				$$ = map_expr_alloc(&@$, $1, $3);
+			}
+			;
+
+verdict_map_expr	:	'{'	verdict_map_list_expr	'}'
+			{
+				$2->location = @$;
+				$$ = $2;
+			}
+			;
+
+verdict_map_list_expr	:	verdict_map_list_member_expr
+			{
+				$$ = set_expr_alloc(&@$);
+				compound_expr_add($$, $1);
+			}
+			|	verdict_map_list_expr	COMMA	verdict_map_list_member_expr
+			{
+				compound_expr_add($1, $3);
+				$$ = $1;
+			}
+			|	verdict_map_list_expr	COMMA	opt_newline
+			;
+
+verdict_map_list_member_expr:	opt_newline	map_lhs_expr	COLON	verdict_expr	opt_newline
+			{
+				$$ = mapping_expr_alloc(&@$, $2, $4);
+			}
+			;
+
 
 counter_stmt		:	counter_stmt_alloc
 			|	counter_stmt_alloc	counter_args
@@ -1404,12 +1440,6 @@ map_expr		:	concat_expr	MAP	expr
 			}
 			;
 
-verdict_map_expr	:	concat_expr	VMAP	expr
-			{
-				$$ = map_expr_alloc(&@$, $1, $3);
-			}
-			;
-
 expr			:	concat_expr
 			|	set_expr
 			|       map_expr
@@ -1441,10 +1471,6 @@ set_list_member_expr	:	opt_newline	expr	opt_newline
 				$$ = $2;
 			}
 			|	opt_newline	map_lhs_expr	COLON	concat_expr	opt_newline
-			{
-				$$ = mapping_expr_alloc(&@$, $2, $4);
-			}
-			|	opt_newline	map_lhs_expr	COLON	verdict_expr	opt_newline
 			{
 				$$ = mapping_expr_alloc(&@$, $2, $4);
 			}
