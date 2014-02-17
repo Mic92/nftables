@@ -661,7 +661,7 @@ static const struct symbol_table arpop_tbl = {
 		SYMBOL("request",	ARPOP_REQUEST),
 		SYMBOL("reply",		ARPOP_REPLY),
 		SYMBOL("rrequest",	ARPOP_RREQUEST),
-		SYMBOL("rreply",	ARPOP_REPLY),
+		SYMBOL("rreply",	ARPOP_RREPLY),
 		SYMBOL("inrequest",	ARPOP_InREQUEST),
 		SYMBOL("inreply",	ARPOP_InREPLY),
 		SYMBOL("nak",		ARPOP_NAK),
