@@ -663,33 +663,27 @@ static void meta_match_postprocess(struct rule_pp_ctx *ctx,
 	}
 }
 
-static int expr_value2cidr(struct expr *expr)
+/* Convert a bitmask to a prefix length */
+static unsigned int expr_mask_to_prefix(struct expr *expr)
 {
-	int i, j, k = 0;
-	uint32_t data[4], bits;
-	uint32_t len = div_round_up(expr->len, BITS_PER_BYTE) / sizeof(uint32_t);
+	unsigned long n;
 
-	assert(expr->ops->type == EXPR_VALUE);
+	n = mpz_scan1(expr->value, 0);
+	return mpz_scan0(expr->value, n + 1) - n;
+}
 
-	mpz_export_data(data, expr->value, expr->byteorder, len);
+/* Return true if a bitmask can be expressed as a prefix length */
+static bool expr_mask_is_prefix(const struct expr *expr)
+{
+	unsigned long n1, n2;
 
-	for (i = len - 1; i >= 0; i--) {
-		j = 32;
-		bits = UINT32_MAX >> 1;
-
-		if (data[i] == UINT32_MAX)
-			goto next;
-
-		while (--j >= 0) {
-			if (data[i] == bits)
-				break;
-
-			bits >>=1;
-		}
-next:
-		k += j;
-	}
-	return k;
+	n1 = mpz_scan1(expr->value, 0);
+	if (n1 == ULONG_MAX)
+		return false;
+	n2 = mpz_scan0(expr->value, n1 + 1);
+	if (n2 < expr->len || n2 == ULONG_MAX)
+		return false;
+	return true;
 }
 
 /* Convert a series of inclusive OR expressions into a list */
@@ -729,13 +723,13 @@ static void relational_binop_postprocess(struct expr *expr)
 		expr->op    = OP_FLAGCMP;
 
 		expr_free(binop);
-	} else if ((binop->left->dtype->type == TYPE_IPADDR ||
-		    binop->left->dtype->type == TYPE_IP6ADDR) &&
-		    binop->op == OP_AND) {
-		expr->left = expr_clone(binop->left);
+	} else if (binop->left->dtype->flags & DTYPE_F_PREFIX &&
+		   binop->op == OP_AND &&
+		   expr_mask_is_prefix(binop->right)) {
+		expr->left = expr_get(binop->left);
 		expr->right = prefix_expr_alloc(&expr->location,
-						expr_clone(value),
-						expr_value2cidr(binop->right));
+						expr_get(value),
+						expr_mask_to_prefix(binop->right));
 		expr_free(value);
 		expr_free(binop);
 	}

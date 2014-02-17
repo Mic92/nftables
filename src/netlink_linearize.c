@@ -193,9 +193,14 @@ static void netlink_gen_cmp(struct netlink_linearize_ctx *ctx,
 	netlink_gen_expr(ctx, expr->left, sreg);
 
 	if (expr->right->ops->type == EXPR_PREFIX) {
-		right = expr->right->prefix;
+		mpz_t mask;
 
-		netlink_gen_data(expr->right, &nld);
+		mpz_init(mask);
+		mpz_prefixmask(mask, expr->right->len, expr->right->prefix_len);
+		netlink_gen_raw_data(mask, expr->right->byteorder,
+				     expr->right->len / BITS_PER_BYTE, &nld);
+		mpz_clear(mask);
+
 		zero.len = nld.len;
 
 		nle = alloc_nft_expr("bitwise");
@@ -205,6 +210,8 @@ static void netlink_gen_cmp(struct netlink_linearize_ctx *ctx,
 		nft_rule_expr_set(nle, NFT_EXPR_BITWISE_MASK, &nld.value, nld.len);
 		nft_rule_expr_set(nle, NFT_EXPR_BITWISE_XOR, &zero.value, zero.len);
 		nft_rule_add_expr(ctx->nlr, nle);
+
+		right = expr->right->prefix;
 	} else {
 		right = expr->right;
 	}
