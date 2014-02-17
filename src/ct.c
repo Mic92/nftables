@@ -61,7 +61,7 @@ static const struct datatype ct_dir_type = {
 	.desc		= "conntrack direction",
 	.byteorder	= BYTEORDER_INVALID,
 	.size		= BITS_PER_BYTE,
-	.basetype	= &bitmask_type,
+	.basetype	= &integer_type,
 	.sym_tbl	= &ct_dir_tbl,
 };
 
