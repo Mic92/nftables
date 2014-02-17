@@ -676,7 +676,6 @@ int netlink_list_tables(struct netlink_ctx *ctx, const struct handle *h,
 			const struct location *loc)
 {
 	struct nft_table_list *table_cache;
-	struct nft_table *nlt;
 
 	table_cache = mnl_nft_table_dump(nf_sock, h->family);
 	if (table_cache == NULL)
@@ -684,9 +683,7 @@ int netlink_list_tables(struct netlink_ctx *ctx, const struct handle *h,
 					"Could not receive tables from kernel: %s",
 					strerror(errno));
 
-	nlt = alloc_nft_table(h);
 	nft_table_list_foreach(table_cache, list_table_cb, ctx);
-	nft_table_free(nlt);
 	nft_table_list_free(table_cache);
 	return 0;
 }
