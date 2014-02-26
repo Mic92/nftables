@@ -351,12 +351,13 @@ static void location_update(struct location *loc, struct location *rhs, int n)
 %token OPTIONS			"options"
 
 %token POSITION			"position"
+%token COMMENT			"comment"
 
 %token XML			"xml"
 %token JSON			"json"
 
-%type <string>			identifier string
-%destructor { xfree($$); }	identifier string
+%type <string>			identifier string comment_spec
+%destructor { xfree($$); }	identifier string comment_spec
 
 %type <cmd>			line
 %destructor { cmd_free($$); }	line
@@ -1020,11 +1021,22 @@ ruleid_spec		:	chain_spec	handle_spec	position_spec
 			}
 			;
 
-rule			:	stmt_list
+comment_spec		:	/* empty */
+			{
+				$$ = NULL;
+			}
+			|	COMMENT		string
+			{
+				$$ = $2;
+			}
+			;
+
+rule			:	stmt_list	comment_spec
 			{
 				struct stmt *i;
 
 				$$ = rule_alloc(&@$, NULL);
+				$$->handle.comment = $2;
 				list_for_each_entry(i, $1, list)
 					$$->num_stmts++;
 				list_splice_tail($1, &$$->stmts);

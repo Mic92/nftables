@@ -120,6 +120,10 @@ struct nft_rule *alloc_nft_rule(const struct handle *h)
 		nft_rule_attr_set_u64(nlr, NFT_RULE_ATTR_HANDLE, h->handle);
 	if (h->position)
 		nft_rule_attr_set_u64(nlr, NFT_RULE_ATTR_POSITION, h->position);
+	if (h->comment) {
+		nft_rule_attr_set_data(nlr, NFT_RULE_ATTR_USERDATA,
+				       h->comment, strlen(h->comment) + 1);
+	}
 	return nlr;
 }
 

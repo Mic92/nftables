@@ -884,8 +884,19 @@ struct rule *netlink_delinearize_rule(struct netlink_ctx *ctx,
 	h.table  = xstrdup(nft_rule_attr_get_str(nlr, NFT_RULE_ATTR_TABLE));
 	h.chain  = xstrdup(nft_rule_attr_get_str(nlr, NFT_RULE_ATTR_CHAIN));
 	h.handle = nft_rule_attr_get_u64(nlr, NFT_RULE_ATTR_HANDLE);
+
 	if (nft_rule_attr_is_set(nlr, NFT_RULE_ATTR_POSITION))
 		h.position = nft_rule_attr_get_u64(nlr, NFT_RULE_ATTR_POSITION);
+
+	if (nft_rule_attr_is_set(nlr, NFT_RULE_ATTR_USERDATA)) {
+		uint32_t len;
+		const void *data;
+
+		data = nft_rule_attr_get_data(nlr, NFT_RULE_ATTR_USERDATA,
+					      &len);
+		h.comment = xmalloc(len);
+		memcpy((char *)h.comment, data, len);
+	}
 
 	pctx->rule = rule_alloc(&netlink_location, &h);
 	pctx->table = table_lookup(&h);

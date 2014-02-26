@@ -258,6 +258,7 @@ addrstring	({macaddr}|{ip4addr}|{ip6addr})
 "export"		{ return EXPORT; }
 
 "position"		{ return POSITION; }
+"comment"		{ return COMMENT; }
 
 "constant"		{ return CONSTANT; }
 "interval"		{ return INTERVAL; }

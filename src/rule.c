@@ -31,6 +31,7 @@ void handle_free(struct handle *h)
 	xfree(h->table);
 	xfree(h->chain);
 	xfree(h->set);
+	xfree(h->comment);
 }
 
 void handle_merge(struct handle *dst, const struct handle *src)
@@ -47,6 +48,8 @@ void handle_merge(struct handle *dst, const struct handle *src)
 		dst->handle = src->handle;
 	if (dst->position == 0)
 		dst->position = src->position;
+	if (dst->comment == NULL && src->comment != NULL)
+		dst->comment = xstrdup(src->comment);
 }
 
 struct set *set_alloc(const struct location *loc)
@@ -154,7 +157,6 @@ void rule_print(const struct rule *rule)
 	}
 	if (handle_output > 0)
 		printf(" # handle %" PRIu64, rule->handle.handle);
-	printf("\n");
 }
 
 struct scope *scope_init(struct scope *scope, const struct scope *parent)
@@ -351,6 +353,10 @@ static void chain_print(const struct chain *chain)
 	list_for_each_entry(rule, &chain->rules, list) {
 		printf("\t\t");
 		rule_print(rule);
+		if (rule->handle.comment)
+			printf(" comment \"%s\"\n", rule->handle.comment);
+		else
+			printf("\n");
 	}
 	printf("\t}\n");
 }
