@@ -350,6 +350,11 @@ static void meta_expr_print(const struct expr *expr)
 	}
 }
 
+static bool meta_expr_cmp(const struct expr *e1, const struct expr *e2)
+{
+	return e1->meta.key == e2->meta.key;
+}
+
 static void meta_expr_clone(struct expr *new, const struct expr *expr)
 {
 	new->meta.key = expr->meta.key;
@@ -407,6 +412,7 @@ static const struct expr_ops meta_expr_ops = {
 	.type		= EXPR_META,
 	.name		= "meta",
 	.print		= meta_expr_print,
+	.cmp		= meta_expr_cmp,
 	.clone		= meta_expr_clone,
 	.pctx_update	= meta_expr_pctx_update,
 };

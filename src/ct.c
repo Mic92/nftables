@@ -204,6 +204,11 @@ static void ct_expr_print(const struct expr *expr)
 	printf("ct %s", ct_templates[expr->ct.key].token);
 }
 
+static bool ct_expr_cmp(const struct expr *e1, const struct expr *e2)
+{
+	return e1->ct.key == e2->ct.key;
+}
+
 static void ct_expr_clone(struct expr *new, const struct expr *expr)
 {
 	new->ct.key = expr->ct.key;
@@ -233,6 +238,7 @@ static const struct expr_ops ct_expr_ops = {
 	.type		= EXPR_CT,
 	.name		= "ct",
 	.print		= ct_expr_print,
+	.cmp		= ct_expr_cmp,
 	.clone		= ct_expr_clone,
 	.pctx_update	= ct_expr_pctx_update,
 };

@@ -120,6 +120,7 @@ static inline void expr_set_context(struct expr_ctx *ctx,
  * @destroy:	destructor, must release inner expressions
  * @set_type:	function to promote type and byteorder of inner types
  * @print:	function to print the expression
+ * @cmp:	function to compare two expressions of the same types
  * @pctx_update:update protocol context
  */
 struct proto_ctx;
@@ -132,6 +133,8 @@ struct expr_ops {
 					    const struct datatype *dtype,
 					    enum byteorder byteorder);
 	void			(*print)(const struct expr *expr);
+	bool			(*cmp)(const struct expr *e1,
+				       const struct expr *e2);
 	void			(*pctx_update)(struct proto_ctx *ctx,
 					       const struct expr *expr);
 };
@@ -261,6 +264,7 @@ extern struct expr *expr_clone(const struct expr *expr);
 extern struct expr *expr_get(struct expr *expr);
 extern void expr_free(struct expr *expr);
 extern void expr_print(const struct expr *expr);
+extern bool expr_cmp(const struct expr *e1, const struct expr *e2);
 extern void expr_describe(const struct expr *expr);
 
 extern const struct datatype *expr_basetype(const struct expr *expr);

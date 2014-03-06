@@ -27,6 +27,12 @@ static void exthdr_expr_print(const struct expr *expr)
 	printf("%s %s", expr->exthdr.desc->name, expr->exthdr.tmpl->token);
 }
 
+static bool exthdr_expr_cmp(const struct expr *e1, const struct expr *e2)
+{
+	return e1->exthdr.desc == e2->exthdr.desc &&
+	       e1->exthdr.tmpl == e2->exthdr.tmpl;
+}
+
 static void exthdr_expr_clone(struct expr *new, const struct expr *expr)
 {
 	new->exthdr.desc = expr->exthdr.desc;
@@ -37,6 +43,7 @@ static const struct expr_ops exthdr_expr_ops = {
 	.type		= EXPR_EXTHDR,
 	.name		= "exthdr",
 	.print		= exthdr_expr_print,
+	.cmp		= exthdr_expr_cmp,
 	.clone		= exthdr_expr_clone,
 };
 

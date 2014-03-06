@@ -40,6 +40,14 @@ static void payload_expr_print(const struct expr *expr)
 		       expr->payload.offset, expr->len);
 }
 
+static bool payload_expr_cmp(const struct expr *e1, const struct expr *e2)
+{
+	return e1->payload.desc   == e2->payload.desc &&
+	       e1->payload.tmpl   == e2->payload.tmpl &&
+	       e1->payload.base   == e2->payload.base &&
+	       e1->payload.offset == e2->payload.offset;
+}
+
 static void payload_expr_clone(struct expr *new, const struct expr *expr)
 {
 	new->payload.desc   = expr->payload.desc;
@@ -76,6 +84,7 @@ static const struct expr_ops payload_expr_ops = {
 	.type		= EXPR_PAYLOAD,
 	.name		= "payload",
 	.print		= payload_expr_print,
+	.cmp		= payload_expr_cmp,
 	.clone		= payload_expr_clone,
 	.pctx_update	= payload_expr_pctx_update,
 };

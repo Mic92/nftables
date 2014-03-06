@@ -74,6 +74,17 @@ void expr_print(const struct expr *expr)
 	expr->ops->print(expr);
 }
 
+bool expr_cmp(const struct expr *e1, const struct expr *e2)
+{
+	assert(e1->flags & EXPR_F_SINGLETON);
+	assert(e2->flags & EXPR_F_SINGLETON);
+
+	if (e1->ops->type != e2->ops->type)
+		return false;
+
+	return e1->ops->cmp(e1, e2);
+}
+
 void expr_describe(const struct expr *expr)
 {
 	const struct datatype *dtype = expr->dtype;
@@ -148,6 +159,19 @@ static void verdict_expr_print(const struct expr *expr)
 	datatype_print(expr);
 }
 
+static bool verdict_expr_cmp(const struct expr *e1, const struct expr *e2)
+{
+	if (e1->verdict != e2->verdict)
+		return false;
+
+	if ((e1->verdict == NFT_JUMP ||
+	     e1->verdict == NFT_GOTO) &&
+	    strcmp(e1->chain, e2->chain))
+		return false;
+
+	return true;
+}
+
 static void verdict_expr_clone(struct expr *new, const struct expr *expr)
 {
 	new->verdict = expr->verdict;
@@ -164,6 +188,7 @@ static const struct expr_ops verdict_expr_ops = {
 	.type		= EXPR_VERDICT,
 	.name		= "verdict",
 	.print		= verdict_expr_print,
+	.cmp		= verdict_expr_cmp,
 	.clone		= verdict_expr_clone,
 	.destroy	= verdict_expr_destroy,
 };
@@ -226,6 +251,12 @@ static void constant_expr_print(const struct expr *expr)
 	datatype_print(expr);
 }
 
+static bool constant_expr_cmp(const struct expr *e1, const struct expr *e2)
+{
+	return expr_basetype(e1) == expr_basetype(e2) &&
+	       !mpz_cmp(e1->value, e2->value);
+}
+
 static void constant_expr_clone(struct expr *new, const struct expr *expr)
 {
 	mpz_init_set(new->value, expr->value);
@@ -240,6 +271,7 @@ static const struct expr_ops constant_expr_ops = {
 	.type		= EXPR_VALUE,
 	.name		= "value",
 	.print		= constant_expr_print,
+	.cmp		= constant_expr_cmp,
 	.clone		= constant_expr_clone,
 	.destroy	= constant_expr_destroy,
 };
