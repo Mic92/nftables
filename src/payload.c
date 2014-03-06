@@ -154,12 +154,12 @@ int payload_gen_dependency(struct eval_ctx *ctx, const struct expr *expr,
 
 	if (expr->payload.base < h->base) {
 		if (expr->payload.base < h->base - 1)
-			return expr_error(ctx, expr,
+			return expr_error(ctx->msgs, expr,
 					  "payload base is invalid for this "
 					  "family");
 
 		if (proto_dev_type(expr->payload.desc, &type) < 0)
-			return expr_error(ctx, expr,
+			return expr_error(ctx->msgs, expr,
 					  "protocol specification is invalid "
 					  "for this family");
 
@@ -181,14 +181,14 @@ int payload_gen_dependency(struct eval_ctx *ctx, const struct expr *expr,
 		desc = &proto_inet_service;
 
 	if (desc == NULL)
-		return expr_error(ctx, expr,
+		return expr_error(ctx->msgs, expr,
 				  "ambiguous payload specification: "
 				  "no %s protocol specified",
 				  proto_base_names[expr->payload.base - 1]);
 
 	protocol = proto_find_num(desc, expr->payload.desc);
 	if (protocol < 0)
-		return expr_error(ctx, expr,
+		return expr_error(ctx->msgs, expr,
 				  "conflicting protocols specified: %s vs. %s",
 				  desc->name, expr->payload.desc->name);
 

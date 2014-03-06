@@ -127,7 +127,7 @@ const struct datatype *expr_basetype(const struct expr *expr)
 	return type;
 }
 
-int __fmtstring(4, 5) expr_binary_error(struct eval_ctx *ctx,
+int __fmtstring(4, 5) expr_binary_error(struct list_head *msgs,
 					const struct expr *e1, const struct expr *e2,
 					const char *fmt, ...)
 {
@@ -139,7 +139,7 @@ int __fmtstring(4, 5) expr_binary_error(struct eval_ctx *ctx,
 	if (e2 != NULL)
 		erec_add_location(erec, &e2->location);
 	va_end(ap);
-	erec_queue(erec, ctx->msgs);
+	erec_queue(erec, msgs);
 	return -1;
 }
 
