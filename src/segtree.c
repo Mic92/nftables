@@ -516,23 +516,39 @@ static struct expr *expr_value(struct expr *expr)
 		return expr;
 }
 
+static int expr_value_cmp(const void *p1, const void *p2)
+{
+	struct expr *e1 = *(void * const *)p1;
+	struct expr *e2 = *(void * const *)p2;
+
+	return mpz_cmp(expr_value(e1)->value, expr_value(e2)->value);
+}
+
 void interval_map_decompose(struct expr *set)
 {
-	struct expr *ranges[set->size * 2];
+	struct expr *elements[set->size], *ranges[set->size * 2];
 	struct expr *i, *next, *low = NULL, *end;
-	unsigned int n, size;
+	unsigned int n, m, size;
 	mpz_t range, p;
 	bool interval;
 
 	mpz_init(range);
 	mpz_init(p);
 
-	size = set->size;
+	/* Sort elements */
 	n = 0;
-
-	interval = false;
-	list_for_each_entry_safe_reverse(i, next, &set->expressions, list) {
+	list_for_each_entry_safe(i, next, &set->expressions, list) {
 		compound_expr_remove(set, i);
+		elements[n++] = i;
+	}
+	qsort(elements, n, sizeof(elements[0]), expr_value_cmp);
+	size = n;
+
+	/* Transform points (single values) into half-closed intervals */
+	n = 0;
+	interval = false;
+	for (m = 0; m < size; m++) {
+		i = elements[m];
 
 		if (i->flags & EXPR_F_INTERVAL_END)
 			interval = false;
@@ -540,12 +556,12 @@ void interval_map_decompose(struct expr *set)
 			end = expr_clone(expr_value(i));
 			end->flags |= EXPR_F_INTERVAL_END;
 			ranges[n++] = end;
-			size++;
 		} else
 			interval = true;
 
 		ranges[n++] = i;
 	}
+	size = n;
 
 	for (n = 0; n < size; n++) {
 		i = ranges[n];
