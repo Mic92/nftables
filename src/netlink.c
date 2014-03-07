@@ -777,7 +777,7 @@ int netlink_add_set(struct netlink_ctx *ctx, const struct handle *h,
 
 	err = mnl_nft_set_add(nf_sock, nls, NLM_F_EXCL | NLM_F_ECHO);
 	if (err < 0)
-		netlink_io_error(ctx, NULL, "Could not add set: %s",
+		netlink_io_error(ctx, &set->location, "Could not add set: %s",
 				 strerror(errno));
 
 	set->handle.set =
