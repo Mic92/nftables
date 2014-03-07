@@ -683,6 +683,7 @@ static int expr_evaluate_set(struct eval_ctx *ctx, struct expr **expr)
 			/* Merge recursive set definitions */
 			list_splice_tail_init(&i->expressions, &i->list);
 			list_del(&i->list);
+			set->size      += i->size;
 			set->set_flags |= i->set_flags;
 			expr_free(i);
 		} else if (!expr_is_singleton(i))
