@@ -603,7 +603,7 @@ struct symbol_table *rt_symbol_table_init(const char *filename)
 		    sscanf(p, "%u %511s #", &val, namebuf) != 2) {
 			fprintf(stderr, "iproute database '%s' corrupted\n",
 				filename);
-			goto out;
+			break;
 		}
 
 		/* One element is reserved for list terminator */
