@@ -1170,6 +1170,15 @@ static int stmt_evaluate_nat(struct eval_ctx *ctx, struct stmt *stmt)
 	return 0;
 }
 
+static int stmt_evaluate_ct(struct eval_ctx *ctx, struct stmt *stmt)
+{
+	expr_set_context(&ctx->ectx, stmt->ct.tmpl->dtype,
+			 stmt->ct.tmpl->len);
+	if (expr_evaluate(ctx, &stmt->ct.expr) < 0)
+		return -1;
+	return 0;
+}
+
 static int stmt_evaluate(struct eval_ctx *ctx, struct stmt *stmt)
 {
 #ifdef DEBUG
@@ -1197,6 +1206,8 @@ static int stmt_evaluate(struct eval_ctx *ctx, struct stmt *stmt)
 		return stmt_evaluate_nat(ctx, stmt);
 	case STMT_QUEUE:
 		return 0;
+	case STMT_CT:
+		return stmt_evaluate_ct(ctx, stmt);
 	default:
 		BUG("unknown statement type %s\n", stmt->ops->name);
 	}

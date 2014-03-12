@@ -662,6 +662,22 @@ static void netlink_gen_queue_stmt(struct netlink_linearize_ctx *ctx,
 	nft_rule_add_expr(ctx->nlr, nle);
 }
 
+static void netlink_gen_ct_stmt(struct netlink_linearize_ctx *ctx,
+				  const struct stmt *stmt)
+{
+	struct nft_rule_expr *nle;
+	enum nft_registers sreg;
+
+	sreg = get_register(ctx);
+	netlink_gen_expr(ctx, stmt->ct.expr, sreg);
+	release_register(ctx);
+
+	nle = alloc_nft_expr("ct");
+	nft_rule_expr_set_u32(nle, NFT_EXPR_CT_SREG, sreg);
+	nft_rule_expr_set_u32(nle, NFT_EXPR_CT_KEY, stmt->ct.key);
+	nft_rule_add_expr(ctx->nlr, nle);
+}
+
 static void netlink_gen_stmt(struct netlink_linearize_ctx *ctx,
 			     const struct stmt *stmt)
 {
@@ -684,6 +700,8 @@ static void netlink_gen_stmt(struct netlink_linearize_ctx *ctx,
 		return netlink_gen_nat_stmt(ctx, stmt);
 	case STMT_QUEUE:
 		return netlink_gen_queue_stmt(ctx, stmt);
+	case STMT_CT:
+		return netlink_gen_ct_stmt(ctx, stmt);
 	default:
 		BUG("unknown statement type %s\n", stmt->ops->name);
 	}

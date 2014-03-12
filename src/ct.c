@@ -27,6 +27,7 @@
 #include <ct.h>
 #include <gmputil.h>
 #include <utils.h>
+#include <statement.h>
 
 static const struct symbol_table ct_state_tbl = {
 	.symbols	= {
@@ -288,6 +289,30 @@ void ct_expr_update_type(struct proto_ctx *ctx, struct expr *expr)
 	default:
 		break;
 	}
+}
+
+static void ct_stmt_print(const struct stmt *stmt)
+{
+	printf("ct %s set ", ct_templates[stmt->ct.key].token);
+	expr_print(stmt->ct.expr);
+}
+
+static const struct stmt_ops ct_stmt_ops = {
+	.type		= STMT_CT,
+	.name		= "ct",
+	.print		= ct_stmt_print,
+};
+
+struct stmt *ct_stmt_alloc(const struct location *loc, enum nft_ct_keys key,
+			     struct expr *expr)
+{
+	struct stmt *stmt;
+
+	stmt = stmt_alloc(loc, &ct_stmt_ops);
+	stmt->ct.key	= key;
+	stmt->ct.tmpl	= &ct_templates[key];
+	stmt->ct.expr	= expr;
+	return stmt;
 }
 
 static void __init ct_init(void)
