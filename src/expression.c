@@ -514,13 +514,21 @@ static void binop_arg_print(const struct expr *op, const struct expr *arg)
 		printf(")");
 }
 
+static bool must_print_eq_op(const struct expr *expr)
+{
+	if (expr->right->dtype->basetype != NULL &&
+	    expr->right->dtype->basetype->type == TYPE_BITMASK)
+		return true;
+
+	return expr->left->ops->type == EXPR_BINOP;
+}
+
 static void binop_expr_print(const struct expr *expr)
 {
 	binop_arg_print(expr, expr->left);
 
 	if (expr_op_symbols[expr->op] &&
-	    (expr->op != OP_EQ ||
-	     expr->left->ops->type == EXPR_BINOP))
+	    (expr->op != OP_EQ || must_print_eq_op(expr)))
 		printf(" %s ", expr_op_symbols[expr->op]);
 	else
 		printf(" ");
