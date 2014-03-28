@@ -668,8 +668,12 @@ static int do_command_list(struct netlink_ctx *ctx, struct cmd *cmd)
 	case CMD_OBJ_SETS:
 		if (netlink_list_sets(ctx, &cmd->handle, &cmd->location) < 0)
 			return -1;
-		list_for_each_entry_safe(set, nset, &ctx->list, list)
-			list_move_tail(&set->list, &table->sets);
+		list_for_each_entry(set, &ctx->list, list){
+			if (netlink_get_setelems(ctx, &set->handle,
+						 &cmd->location, set) < 0)
+				return -1;
+			set_print(set);
+		}
 		break;
 	case CMD_OBJ_SET:
 		if (netlink_get_set(ctx, &cmd->handle, &cmd->location) < 0)
