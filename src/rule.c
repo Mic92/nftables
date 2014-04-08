@@ -674,7 +674,7 @@ static int do_command_list(struct netlink_ctx *ctx, struct cmd *cmd)
 				return -1;
 			set_print(set);
 		}
-		break;
+		return 0;
 	case CMD_OBJ_SET:
 		if (netlink_get_set(ctx, &cmd->handle, &cmd->location) < 0)
 			return -1;
