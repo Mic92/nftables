@@ -44,7 +44,7 @@
 
 #define container_of(ptr, type, member) ({			\
 	typeof( ((type *)0)->member ) *__mptr = (ptr);		\
-	(type *)( (char *)__mptr - offsetof(type,member) );})
+	(type *)( (void *)__mptr - offsetof(type,member) );})
 
 #define field_sizeof(t, f)	(sizeof(((t *)NULL)->f))
 #define array_size(arr)		(sizeof(arr) / sizeof((arr)[0]) + __must_be_array(arr))
