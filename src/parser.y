@@ -1639,6 +1639,13 @@ eth_hdr_expr		:	ETHER	eth_hdr_field
 			{
 				$$ = payload_expr_alloc(&@$, &proto_eth, $2);
 			}
+			|	ETHER
+			{
+				uint16_t data = ARPHRD_ETHER;
+				$$ = constant_expr_alloc(&@$, &arphrd_type,
+							 BYTEORDER_BIG_ENDIAN,
+							 sizeof(data) * BITS_PER_BYTE, &data);
+			}
 			;
 
 eth_hdr_field		:	SADDR		{ $$ = ETHHDR_SADDR; }
