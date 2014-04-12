@@ -98,20 +98,23 @@ void *mpz_export_data(void *data, const mpz_t op,
 		      enum byteorder byteorder,
 		      unsigned int len)
 {
+	enum mpz_word_order order;
 	enum mpz_byte_order endian;
 
 	switch (byteorder) {
 	case BYTEORDER_BIG_ENDIAN:
 	default:
+		order = MPZ_MSWF;
 		endian = MPZ_BIG_ENDIAN;
 		break;
 	case BYTEORDER_HOST_ENDIAN:
+		order = MPZ_HWO;
 		endian = MPZ_HOST_ENDIAN;
 		break;
 	}
 
 	memset(data, 0, len);
-	mpz_export(data, NULL, MPZ_MSWF, len, endian, 0, op);
+	mpz_export(data, NULL, order, len, endian, 0, op);
 	return data;
 }
 
@@ -129,7 +132,7 @@ void mpz_import_data(mpz_t rop, const void *data,
 		endian = MPZ_BIG_ENDIAN;
 		break;
 	case BYTEORDER_HOST_ENDIAN:
-		order  = MPZ_LSWF;
+		order  = MPZ_HWO;
 		endian = MPZ_HOST_ENDIAN;
 		break;
 	}

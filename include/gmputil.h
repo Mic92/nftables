@@ -2,11 +2,20 @@
 #define NFTABLES_GMPUTIL_H
 
 #include <gmp.h>
+#include <asm/byteorder.h>
 
 enum mpz_word_order {
 	MPZ_MSWF		= 1,
 	MPZ_LSWF		= -1,
 };
+
+#ifdef __LITTLE_ENDIAN_BITFIELD
+#define MPZ_HWO	MPZ_LSWF
+#elif defined(__BIG_ENDIAN_BITFIELD)
+#define MPZ_HWO MPZ_MSWF
+#else
+#error "byteorder undefined"
+#endif
 
 enum mpz_byte_order {
 	MPZ_BIG_ENDIAN		= 1,
