@@ -124,7 +124,7 @@ struct error_record *symbolic_constant_parse(const struct expr *sym,
 
 	*res = constant_expr_alloc(&sym->location, dtype,
 				   dtype->byteorder, dtype->size,
-				   &s->value);
+				   constant_data_ptr(s->value, dtype->size));
 	return NULL;
 }
 

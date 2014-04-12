@@ -1,6 +1,7 @@
 #ifndef NFTABLES_UTILS_H
 #define NFTABLES_UTILS_H
 
+#include <asm/byteorder.h>
 #include <stdint.h>
 #include <stdbool.h>
 #include <stdarg.h>
@@ -45,6 +46,19 @@
 #define container_of(ptr, type, member) ({			\
 	typeof( ((type *)0)->member ) *__mptr = (ptr);		\
 	(type *)( (void *)__mptr - offsetof(type,member) );})
+
+/**
+ * Return a pointer to a constant variable of a size smaller than the variable.
+ */
+#ifdef __LITTLE_ENDIAN_BITFIELD
+#define constant_data_ptr(val, len) \
+	((void *)&(val))
+#elif defined(__BIG_ENDIAN_BITFIELD)
+#define constant_data_ptr(val, len) \
+	((void *)&(val) + sizeof(val) - (len) / BITS_PER_BYTE)
+#else
+#error "byteorder undefined"
+#endif
 
 #define field_sizeof(t, f)	(sizeof(((t *)NULL)->f))
 #define array_size(arr)		(sizeof(arr) / sizeof((arr)[0]) + __must_be_array(arr))
