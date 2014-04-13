@@ -160,8 +160,8 @@ static struct error_record *ifindex_type_parse(const struct expr *sym,
 
 static const struct datatype ifindex_type = {
 	.type		= TYPE_IFINDEX,
-	.name		= "ifindex",
-	.desc		= "interface index",
+	.name		= "iface_index",
+	.desc		= "network interface index",
 	.byteorder	= BYTEORDER_HOST_ENDIAN,
 	.size		= 4 * BITS_PER_BYTE,
 	.basetype	= &integer_type,
@@ -185,8 +185,8 @@ static const struct symbol_table arphrd_tbl = {
 
 const struct datatype arphrd_type = {
 	.type		= TYPE_ARPHRD,
-	.name		= "arphrd",
-	.desc		= "hardware type",
+	.name		= "iface_type",
+	.desc		= "network interface type",
 	.byteorder	= BYTEORDER_HOST_ENDIAN,
 	.size		= 2 * BITS_PER_BYTE,
 	.basetype	= &integer_type,

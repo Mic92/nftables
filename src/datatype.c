@@ -216,7 +216,7 @@ static const struct symbol_table nfproto_tbl = {
 
 const struct datatype nfproto_type = {
 	.type		= TYPE_NFPROTO,
-	.name		= "nfproto",
+	.name		= "nf_proto",
 	.desc		= "netfilter protocol",
 	.size		= 1 * BITS_PER_BYTE,
 	.basetype	= &integer_type,
@@ -338,7 +338,7 @@ static struct error_record *lladdr_type_parse(const struct expr *sym,
 
 const struct datatype lladdr_type = {
 	.type		= TYPE_LLADDR,
-	.name		= "lladdr",
+	.name		= "ll_addr",
 	.desc		= "link layer address",
 	.byteorder	= BYTEORDER_HOST_ENDIAN,
 	.basetype	= &integer_type,
@@ -392,7 +392,7 @@ static struct error_record *ipaddr_type_parse(const struct expr *sym,
 
 const struct datatype ipaddr_type = {
 	.type		= TYPE_IPADDR,
-	.name		= "ipv4_address",
+	.name		= "ipv4_addr",
 	.desc		= "IPv4 address",
 	.byteorder	= BYTEORDER_BIG_ENDIAN,
 	.size		= 4 * BITS_PER_BYTE,
@@ -450,7 +450,7 @@ static struct error_record *ip6addr_type_parse(const struct expr *sym,
 
 const struct datatype ip6addr_type = {
 	.type		= TYPE_IP6ADDR,
-	.name		= "ipv6_address",
+	.name		= "ipv6_addr",
 	.desc		= "IPv6 address",
 	.byteorder	= BYTEORDER_BIG_ENDIAN,
 	.size		= 16 * BITS_PER_BYTE,
@@ -505,7 +505,7 @@ static struct error_record *inet_protocol_type_parse(const struct expr *sym,
 
 const struct datatype inet_protocol_type = {
 	.type		= TYPE_INET_PROTOCOL,
-	.name		= "inet_protocol",
+	.name		= "inet_proto",
 	.desc		= "Internet protocol",
 	.size		= BITS_PER_BYTE,
 	.basetype	= &integer_type,

@@ -732,7 +732,7 @@ const struct proto_desc proto_vlan = {
 
 const struct datatype etheraddr_type = {
 	.type		= TYPE_ETHERADDR,
-	.name		= "etheraddr",
+	.name		= "ether_addr",
 	.desc		= "Ethernet address",
 	.byteorder	= BYTEORDER_HOST_ENDIAN,
 	.size		= ETH_ALEN * BITS_PER_BYTE,
@@ -769,7 +769,7 @@ static void ethertype_print(const struct expr *expr)
 
 const struct datatype ethertype_type = {
 	.type		= TYPE_ETHERTYPE,
-	.name		= "ethertype",
+	.name		= "ether_type",
 	.desc		= "Ethernet protocol",
 	.byteorder	= BYTEORDER_BIG_ENDIAN,
 	.size		= 2 * BITS_PER_BYTE,
