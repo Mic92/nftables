@@ -304,6 +304,8 @@ static void location_update(struct location *loc, struct location *rhs, int n)
 %token SKGID			"skgid"
 %token NFTRACE			"nftrace"
 %token RTCLASSID		"rtclassid"
+%token IBRIPORT			"ibriport"
+%token OBRIPORT			"obriport"
 
 %token CT			"ct"
 %token DIRECTION		"direction"
@@ -1563,6 +1565,8 @@ meta_key_unqualified	:	MARK		{ $$ = NFT_META_MARK; }
 			|	SKGID		{ $$ = NFT_META_SKGID; }
 			|	NFTRACE		{ $$ = NFT_META_NFTRACE; }
 			|	RTCLASSID	{ $$ = NFT_META_RTCLASSID; }
+			|	IBRIPORT	{ $$ = NFT_META_BRI_IIFNAME; }
+			|       OBRIPORT	{ $$ = NFT_META_BRI_OIFNAME; }
 			;
 
 meta_stmt		:	META	meta_key	SET	expr
