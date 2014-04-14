@@ -230,7 +230,7 @@ static void netlink_gen_concat_data(const struct expr *expr,
 		}
 
 		memcpy(nld->value, data, len / BITS_PER_BYTE);
-		nld->len = len;
+		nld->len = len / BITS_PER_BYTE;
 	}
 }
 
