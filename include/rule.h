@@ -128,6 +128,7 @@ extern struct chain *chain_lookup(const struct table *table,
 				  const struct handle *h);
 
 extern const char *family2str(unsigned int family);
+extern void chain_print_plain(const struct chain *chain);
 
 /**
  * struct rule - nftables rule

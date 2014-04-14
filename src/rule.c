@@ -401,6 +401,20 @@ static void chain_print(const struct chain *chain)
 	printf("\t}\n");
 }
 
+void chain_print_plain(const struct chain *chain)
+{
+	printf("chain %s %s %s", family2str(chain->handle.family),
+	       chain->handle.table, chain->handle.chain);
+
+	if (chain->flags & CHAIN_F_BASECHAIN) {
+		printf(" { type %s hook %s priority %u; }", chain->type,
+		       hooknum2str(chain->handle.family, chain->hooknum),
+		       chain->priority);
+	}
+
+	printf("\n");
+}
+
 struct table *table_alloc(void)
 {
 	struct table *table;
