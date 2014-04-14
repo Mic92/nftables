@@ -656,9 +656,9 @@ void netlink_dump_table(struct nft_table *nlt)
 #endif
 }
 
-static int list_table_cb(struct nft_table *nlt, void *arg)
+static struct table *netlink_delinearize_table(struct netlink_ctx *ctx,
+					       struct nft_table *nlt)
 {
-	struct netlink_ctx *ctx = arg;
 	struct table *table;
 
 	netlink_dump_table(nlt);
@@ -668,6 +668,15 @@ static int list_table_cb(struct nft_table *nlt, void *arg)
 	table->handle.table  =
 		xstrdup(nft_table_attr_get_str(nlt, NFT_TABLE_ATTR_NAME));
 	list_add_tail(&table->list, &ctx->list);
+
+	return table;
+}
+
+static int list_table_cb(struct nft_table *nlt, void *arg)
+{
+	struct netlink_ctx *ctx = arg;
+
+	netlink_delinearize_table(ctx, nlt);
 
 	return 0;
 }
