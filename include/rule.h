@@ -127,6 +127,8 @@ extern void chain_add_hash(struct chain *chain, struct table *table);
 extern struct chain *chain_lookup(const struct table *table,
 				  const struct handle *h);
 
+extern const char *family2str(unsigned int family);
+
 /**
  * struct rule - nftables rule
  *
@@ -195,6 +197,7 @@ extern void set_free(struct set *set);
 extern void set_add_hash(struct set *set, struct table *table);
 extern struct set *set_lookup(const struct table *table, const char *name);
 extern void set_print(const struct set *set);
+extern void set_print_plain(const struct set *s);
 
 /**
  * enum cmd_ops - command operations
