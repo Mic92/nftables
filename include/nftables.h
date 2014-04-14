@@ -39,6 +39,7 @@ enum nftables_exit_codes {
 	NFT_EXIT_SUCCESS	= 0,
 	NFT_EXIT_FAILURE	= 1,
 	NFT_EXIT_NOMEM		= 2,
+	NFT_EXIT_NONL		= 3,
 };
 
 struct input_descriptor;

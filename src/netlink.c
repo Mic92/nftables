@@ -15,6 +15,7 @@
 #include <libmnl/libmnl.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
+#include <stdlib.h>
 
 #include <libnftnl/table.h>
 #include <libnftnl/chain.h>
@@ -46,7 +47,7 @@ static void __init netlink_open_sock(void)
 {
 	nf_sock = mnl_socket_open(NETLINK_NETFILTER);
 	if (nf_sock == NULL)
-		memory_allocation_error();
+		netlink_open_error();
 
 	fcntl(mnl_socket_get_fd(nf_sock), F_SETFL, O_NONBLOCK);
 	mnl_batch_init();
@@ -71,6 +72,13 @@ int netlink_io_error(struct netlink_ctx *ctx, const struct location *loc,
 	va_end(ap);
 	erec_queue(erec, ctx->msgs);
 	return -1;
+}
+
+void __noreturn netlink_open_error(void)
+{
+	fprintf(stderr, "E: Unable to open Netlink socket: %s\n",
+		strerror(errno));
+	exit(NFT_EXIT_NONL);
 }
 
 struct nft_table *alloc_nft_table(const struct handle *h)
