@@ -953,11 +953,10 @@ int netlink_delete_setelems(struct netlink_ctx *ctx, const struct handle *h,
 	return err;
 }
 
-static int list_setelem_cb(struct nft_set_elem *nlse, void *arg)
+static int netlink_delinearize_setelem(struct nft_set_elem *nlse,
+				       struct set *set)
 {
 	struct nft_data_delinearize nld;
-	struct netlink_ctx *ctx = arg;
-	struct set *set = ctx->set;
 	struct expr *expr, *data;
 	uint32_t flags = 0;
 
@@ -999,6 +998,12 @@ static int list_setelem_cb(struct nft_set_elem *nlse, void *arg)
 out:
 	compound_expr_add(set->init, expr);
 	return 0;
+}
+
+static int list_setelem_cb(struct nft_set_elem *nlse, void *arg)
+{
+	struct netlink_ctx *ctx = arg;
+	return netlink_delinearize_setelem(nlse, ctx->set);
 }
 
 extern void interval_map_decompose(struct expr *set);
