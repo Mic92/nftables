@@ -500,19 +500,10 @@ int netlink_delete_chain(struct netlink_ctx *ctx, const struct handle *h,
 	return err;
 }
 
-static int list_chain_cb(struct nft_chain *nlc, void *arg)
+static struct chain *netlink_delinearize_chain(struct netlink_ctx *ctx,
+					       struct nft_chain *nlc)
 {
-	struct netlink_ctx *ctx = arg;
-	const struct handle *h = ctx->data;
 	struct chain *chain;
-
-	if ((h->family != nft_chain_attr_get_u32(nlc, NFT_CHAIN_ATTR_FAMILY)) ||
-	    strcmp(nft_chain_attr_get_str(nlc, NFT_CHAIN_ATTR_TABLE), h->table) != 0)
-		return 0;
-
-	if (h->chain &&
-	    strcmp(nft_chain_attr_get_str(nlc, NFT_CHAIN_ATTR_NAME), h->chain) != 0)
-		return 0;
 
 	chain = chain_alloc(nft_chain_attr_get_str(nlc, NFT_CHAIN_ATTR_NAME));
 	chain->handle.family =
@@ -535,6 +526,24 @@ static int list_chain_cb(struct nft_chain *nlc, void *arg)
 	}
 	list_add_tail(&chain->list, &ctx->list);
 
+	return chain;
+}
+
+static int list_chain_cb(struct nft_chain *nlc, void *arg)
+{
+	struct netlink_ctx *ctx = arg;
+	const struct handle *h = ctx->data;
+	const char *table = nft_chain_attr_get_str(nlc, NFT_CHAIN_ATTR_TABLE);
+	const char *name = nft_chain_attr_get_str(nlc, NFT_CHAIN_ATTR_NAME);
+
+	if ((h->family != nft_chain_attr_get_u32(nlc, NFT_CHAIN_ATTR_FAMILY)) ||
+	    strcmp(table, h->table) != 0)
+		return 0;
+
+	if (h->chain && strcmp(name, h->chain) != 0)
+		return 0;
+
+	netlink_delinearize_chain(ctx, nlc);
 	return 0;
 }
 
@@ -574,25 +583,12 @@ int netlink_get_chain(struct netlink_ctx *ctx, const struct handle *h,
 		      const struct location *loc)
 {
 	struct nft_chain *nlc;
-	struct chain *chain;
 	int err;
 
 	nlc = alloc_nft_chain(h);
 	err = mnl_nft_chain_get(nf_sock, nlc, 0);
 
-	chain = chain_alloc(nft_chain_attr_get_str(nlc, NFT_CHAIN_ATTR_NAME));
-	chain->handle.family = nft_chain_attr_get_u32(nlc, NFT_CHAIN_ATTR_FAMILY);
-	chain->handle.table  = xstrdup(nft_chain_attr_get_str(nlc, NFT_CHAIN_ATTR_TABLE));
-	chain->handle.handle = nft_chain_attr_get_u64(nlc, NFT_CHAIN_ATTR_HANDLE);
-	if (nft_chain_attr_is_set(nlc, NFT_CHAIN_ATTR_TYPE) &&
-	    nft_chain_attr_is_set(nlc, NFT_CHAIN_ATTR_HOOKNUM) &&
-	    nft_chain_attr_is_set(nlc, NFT_CHAIN_ATTR_PRIO)) {
-		chain->hooknum       = nft_chain_attr_get_u32(nlc, NFT_CHAIN_ATTR_HOOKNUM);
-		chain->priority      = nft_chain_attr_get_u32(nlc, NFT_CHAIN_ATTR_PRIO);
-		chain->type          = xstrdup(nft_chain_attr_get_str(nlc, NFT_CHAIN_ATTR_TYPE));
-	}
-	list_add_tail(&chain->list, &ctx->list);
-
+	netlink_delinearize_chain(ctx, nlc);
 	nft_chain_free(nlc);
 
 	if (err < 0)
