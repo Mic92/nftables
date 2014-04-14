@@ -37,11 +37,11 @@ configure:		configure.ac
 
 %.8:			%.xml	$(makedeps)
 			@echo -e "  MAN\t\t$@"
-			(cd $(SUBDIR); docbook2x-man ../$<)
+			(cd $(SUBDIR); $(DB2MAN) --xinclude ../$<)
 
 %.pdf:			%.xml	$(makedeps)
 			@echo -e "  PDF\t\t$@"
-			db2pdf -o $(SUBDIR) $<
+			dblatex -q -t pdf -o $@ $<
 
 archive:
 			git archive --prefix=nftables-@PACKAGE_VERSION@/ HEAD | \

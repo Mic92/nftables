@@ -25,16 +25,28 @@ AC_PROG_MKDIR_P
 AC_PROG_INSTALL
 AC_PROG_SED
 
-AC_CHECK_PROG(CONFIG_MAN, docbook2x-man, y, n)
-if test "$CONFIG_MAN" != "y"
+AC_CHECK_PROG(CONFIG_MAN1, [docbook2x-man], [y], [n])
+if test "$CONFIG_MAN1" == "y"
 then
-	AC_MSG_WARN([docbookx2-man not found, no manpages will be built])
+	CONFIG_MAN=y
+	DB2MAN=docbook2x-man
+else
+	AC_CHECK_PROG(CONFIG_MAN2, [db2x_docbook2man], [y], [n])
+	if test "$CONFIG_MAN2" == "y"
+	then
+		CONFIG_MAN=y
+		DB2MAN=db2x_docbook2man
+	else
+		AC_MSG_WARN([docbookx2-man/db2x_docbook2man not found, no manpages will be built])
+	fi
 fi
+AC_SUBST(CONFIG_MAN)
+AC_SUBST(DB2MAN)
 
-AC_CHECK_PROG(CONFIG_PDF, db2pdf, y, n)
+AC_CHECK_PROG(CONFIG_PDF, dblatex, y, n)
 if test "$CONFIG_PDF" != "y"
 then
-	AC_MSG_WARN([db2pdf not found, no PDF manpages will be built])
+	AC_MSG_WARN([dblatex not found, no PDF manpages will be built])
 fi
 
 AC_PATH_PROG(LEX, [flex])
