@@ -1,5 +1,5 @@
-mandocs-@CONFIG_MAN@	+= doc/nftables.8
-pdfdocs-@CONFIG_PDF@	+= doc/nftables.pdf
+mandocs-@CONFIG_MAN@	+= doc/nft.8
+pdfdocs-@CONFIG_PDF@	+= doc/nft.pdf
 
 all:		$(mandocs-y) $(pdfdocs-y)
 clean:
