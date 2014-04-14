@@ -198,11 +198,11 @@ vi:ts=4 sw=4
 				<example>
 					<title>Using symbolic variables</title>
 					<programlisting>
-						define int_if1 = eth0
-						define int_if2 = eth1
-						define int_ifs = { $int_if1, $int_if2 }
+define int_if1 = eth0
+define int_if2 = eth1
+define int_ifs = { $int_if1, $int_if2 }
 
-						filter input iif $int_ifs accept
+filter input iif $int_ifs accept
 					</programlisting>
 				</example>
 			</para>
@@ -622,18 +622,18 @@ vi:ts=4 sw=4
 			<example>
 				<title>The <command>describe</command> command</title>
 				<programlisting>
-					$ nft describe tcp flags
-					payload expression, datatype tcp_flag (TCP flag) (basetype bitmask, integer), 8 bits
+$ nft describe tcp flags
+payload expression, datatype tcp_flag (TCP flag) (basetype bitmask, integer), 8 bits
 
-					pre-defined symbolic constants:
-					fin                           	0x01
-					syn                           	0x02
-					rst                           	0x04
-					psh                           	0x08
-					ack                           	0x10
-					urg                           	0x20
-					ecn                           	0x40
-					cwr                           	0x80
+pre-defined symbolic constants:
+fin                           	0x01
+syn                           	0x02
+rst                           	0x04
+psh                           	0x08
+ack                           	0x10
+urg                           	0x20
+ecn                           	0x40
+cwr                           	0x80
 				</programlisting>
 			</example>
 		</refsect2>
@@ -761,11 +761,11 @@ vi:ts=4 sw=4
 			<example>
 				<title>String specification</title>
 				<programlisting>
-					# Interface name
-					filter input iifname eth0
+# Interface name
+filter input iifname eth0
 
-					# Weird interface name
-					filter input iifname "(eth0)"
+# Weird interface name
+filter input iifname "(eth0)"
 				</programlisting>
 			</example>
 		</refsect2>
@@ -805,8 +805,8 @@ vi:ts=4 sw=4
 			<example>
 				<title>Link layer address specification</title>
 				<programlisting>
-					# Ethernet destination MAC address
-					filter input ether daddr 20:c9:d0:43:12:d9
+# Ethernet destination MAC address
+filter input ether daddr 20:c9:d0:43:12:d9
 				</programlisting>
 			</example>
 		</refsect2>
@@ -847,11 +847,11 @@ vi:ts=4 sw=4
 			<example>
 				<title>IPv4 address specification</title>
 				<programlisting>
-					# dotted decimal notation
-					filter output ip daddr 127.0.0.1
+# dotted decimal notation
+filter output ip daddr 127.0.0.1
 
-					# host name
-					filter output ip daddr localhost
+# host name
+filter output ip daddr localhost
 				</programlisting>
 			</example>
 		</refsect2>
@@ -890,8 +890,8 @@ vi:ts=4 sw=4
 			<example>
 				<title>IPv6 address specification</title>
 				<programlisting>
-					# abbreviated loopback address
-					filter output ip6 daddr ::1
+# abbreviated loopback address
+filter output ip6 daddr ::1
 				</programlisting>
 			</example>
 		</refsect2>
@@ -1087,11 +1087,11 @@ vi:ts=4 sw=4
 				<example>
 					<title>Using meta expressions</title>
 					<programlisting>
-						# qualified meta expression
-						filter output meta oif eth0
+# qualified meta expression
+filter output meta oif eth0
 
-						# unqualified meta expression
-						filter output oif eth0
+# unqualified meta expression
+filter output oif eth0
 					</programlisting>
 				</example>
 			</para>
@@ -2033,10 +2033,11 @@ vi:ts=4 sw=4
 				<example>
 					<title>Verdict statements</title>
 					<programlisting>
-						# process packets from eth0 and the internal network in from_lan
-						# chain, drop all packets from eth0 with different source addresses.
-						filter input iif eth0 ip saddr 192.168.0.0/24 jump from_lan
-						filter input iif eth0 drop
+# process packets from eth0 and the internal network in from_lan
+# chain, drop all packets from eth0 with different source addresses.
+
+filter input iif eth0 ip saddr 192.168.0.0/24 jump from_lan
+filter input iif eth0 drop
 					</programlisting>
 				</example>
 			</para>
@@ -2094,26 +2095,26 @@ vi:ts=4 sw=4
 		<example>
 			<title>Error caused by single incorrect expression</title>
 			<programlisting>
-				&lt;cmdline&gt;:1:19-22: Error: Interface does not exist
-				filter output oif eth0
-				^^^
+&lt;cmdline&gt;:1:19-22: Error: Interface does not exist
+filter output oif eth0
+^^^
 			</programlisting>
 		</example>
 		<example>
 			<title>Error caused by invalid combination of two expressions</title>
 			<programlisting>
-				&lt;cmdline&gt;:1:28-36: Error: Right hand side of relational expression (==) must be constant
-				filter output tcp dport == tcp dport
-				~~ ^^^^^^^^^
+&lt;cmdline&gt;:1:28-36: Error: Right hand side of relational expression (==) must be constant
+filter output tcp dport == tcp dport
+~~ ^^^^^^^^^
 			</programlisting>
 		</example>
 
 		<example>
 			<title>Error returned by the kernel</title>
 			<programlisting>
-				&lt;cmdline&gt;:0:0-23: Error: Could not process rule: Operation not permitted
-				filter output oif wlan0
-				^^^^^^^^^^^^^^^^^^^^^^^
+&lt;cmdline&gt;:0:0-23: Error: Could not process rule: Operation not permitted
+filter output oif wlan0
+^^^^^^^^^^^^^^^^^^^^^^^
 			</programlisting>
 		</example>
 	</refsect1>
