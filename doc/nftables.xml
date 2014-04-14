@@ -2155,9 +2155,14 @@ filter output oif wlan0
 			Copyright &copy; 2008-2014 Patrick McHardy <email>kaber@trash.net</email>
 		</para>
 		<para>
-			This program is free software; you can redistribute it and/or modify
+			nftables is free software; you can redistribute it and/or modify
 			it under the terms of the GNU General Public License version 2 as
 			published by the Free Software Foundation.
+		</para>
+		<para>
+			This documentation is licenced under the terms of the Creative
+			Commons Attribution-ShareAlike 4.0 license,
+			<ulink url="http://creativecommons.org/licenses/by-sa/4.0/">CC BY-SA 4.0</ulink>.
 		</para>
 	</refsect1>
 </refentry>
