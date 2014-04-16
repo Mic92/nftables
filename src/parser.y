@@ -163,12 +163,16 @@ static void location_update(struct location *loc, struct location *rhs, int n)
 %token TABLE			"table"
 %token TABLES			"tables"
 %token CHAIN			"chain"
+%token CHAINS			"chains"
 %token RULE			"rule"
+%token RULES			"rules"
 %token SETS			"sets"
 %token SET			"set"
 %token ELEMENT			"element"
 %token MAP			"map"
 %token HANDLE			"handle"
+%token NEW			"new"
+%token DESTROY			"destroy"
 
 %token INET			"inet"
 
@@ -181,6 +185,7 @@ static void location_update(struct location *loc, struct location *rhs, int n)
 %token RENAME			"rename"
 %token DESCRIBE			"describe"
 %token EXPORT			"export"
+%token MONITOR			"monitor"
 
 %token ACCEPT			"accept"
 %token DROP			"drop"
@@ -364,8 +369,8 @@ static void location_update(struct location *loc, struct location *rhs, int n)
 %type <cmd>			line
 %destructor { cmd_free($$); }	line
 
-%type <cmd>			base_cmd add_cmd create_cmd insert_cmd delete_cmd list_cmd flush_cmd rename_cmd export_cmd
-%destructor { cmd_free($$); }	base_cmd add_cmd create_cmd insert_cmd delete_cmd list_cmd flush_cmd rename_cmd export_cmd
+%type <cmd>			base_cmd add_cmd create_cmd insert_cmd delete_cmd list_cmd flush_cmd rename_cmd export_cmd monitor_cmd
+%destructor { cmd_free($$); }	base_cmd add_cmd create_cmd insert_cmd delete_cmd list_cmd flush_cmd rename_cmd export_cmd monitor_cmd
 
 %type <handle>			table_spec tables_spec chain_spec chain_identifier ruleid_spec
 %destructor { handle_free(&$$); } table_spec tables_spec chain_spec chain_identifier ruleid_spec
@@ -493,7 +498,7 @@ static void location_update(struct location *loc, struct location *rhs, int n)
 %destructor { expr_free($$); }	ct_expr
 %type <val>			ct_key
 
-%type <val>			export_format
+%type <val>			export_format	output_format	monitor_flags
 
 %%
 
@@ -593,6 +598,7 @@ base_cmd		:	/* empty */	add_cmd		{ $$ = $1; }
 			|	FLUSH		flush_cmd	{ $$ = $2; }
 			|	RENAME		rename_cmd	{ $$ = $2; }
 			|	EXPORT		export_cmd	{ $$ = $2; }
+			|	MONITOR		monitor_cmd	{ $$ = $2; }
 			|	DESCRIBE	primary_expr
 			{
 				expr_describe($2);
@@ -758,6 +764,84 @@ export_cmd		:	export_format
 				$$ = cmd_alloc(CMD_EXPORT, CMD_OBJ_RULESET, &h, &@$, NULL);
 				$$->format = $1;
 			}
+			;
+
+monitor_cmd		:	monitor_flags	output_format
+			{
+				struct handle h = { .family = NFPROTO_UNSPEC };
+				$$ = cmd_alloc(CMD_MONITOR, CMD_OBJ_RULESET, &h, &@$, NULL);
+				$$->monitor_flags = $1;
+				$$->format = $2;
+			}
+			;
+
+monitor_flags		:	/* empty */
+			{
+				$$ |= (1 << NFT_MSG_NEWRULE);
+				$$ |= (1 << NFT_MSG_DELRULE);
+				$$ |= (1 << NFT_MSG_NEWSET);
+				$$ |= (1 << NFT_MSG_DELSET);
+				$$ |= (1 << NFT_MSG_NEWSETELEM);
+				$$ |= (1 << NFT_MSG_DELSETELEM);
+				$$ |= (1 << NFT_MSG_NEWCHAIN);
+				$$ |= (1 << NFT_MSG_DELCHAIN);
+				$$ |= (1 << NFT_MSG_NEWTABLE);
+				$$ |= (1 << NFT_MSG_DELTABLE);
+			}
+			|	NEW
+			{
+				$$ |= (1 << NFT_MSG_NEWRULE);
+				$$ |= (1 << NFT_MSG_NEWSET);
+				$$ |= (1 << NFT_MSG_NEWSETELEM);
+				$$ |= (1 << NFT_MSG_NEWCHAIN);
+				$$ |= (1 << NFT_MSG_NEWTABLE);
+			}
+			|	DESTROY
+			{
+				$$ |= (1 << NFT_MSG_DELRULE);
+				$$ |= (1 << NFT_MSG_DELSET);
+				$$ |= (1 << NFT_MSG_DELSETELEM);
+				$$ |= (1 << NFT_MSG_DELCHAIN);
+				$$ |= (1 << NFT_MSG_DELTABLE);
+			}
+			|	TABLES
+			{
+				$$ |= (1 << NFT_MSG_NEWTABLE);	$$ |= (1 << NFT_MSG_DELTABLE);
+			}
+			|	NEW 	TABLES 	{	$$ |= (1 << NFT_MSG_NEWTABLE); }
+			|	DESTROY	TABLES	{	$$ |= (1 << NFT_MSG_DELTABLE); }
+			|	CHAIN
+			{
+				$$ |= (1 << NFT_MSG_NEWCHAIN);	$$ |= (1 << NFT_MSG_DELCHAIN);
+			}
+			|	NEW	CHAINS	{	$$ |= (1 << NFT_MSG_NEWCHAIN); }
+			|	DESTROY	CHAINS	{	$$ |= (1 << NFT_MSG_DELCHAIN); }
+			|	SETS
+			{
+				$$ |= (1 << NFT_MSG_NEWSET);	$$ |= (1 << NFT_MSG_DELSET);
+			}
+			|	NEW	SETS 	{ 	$$ |= (1 << NFT_MSG_NEWSET); }
+			|	DESTROY SETS	{	$$ |= (1 << NFT_MSG_DELSET); }
+			|	RULE
+			{
+				$$ |= (1 << NFT_MSG_NEWRULE);	$$ |= (1 << NFT_MSG_DELRULE);
+			}
+			|	NEW 	RULES	{	$$ |= (1 << NFT_MSG_NEWRULE); }
+			|	DESTROY RULES	{	$$ |= (1 << NFT_MSG_DELRULE); }
+			|	ELEMENTS
+			{
+				$$ |= (1 << NFT_MSG_NEWSETELEM);
+				$$ |= (1 << NFT_MSG_DELSETELEM);
+			}
+			|	NEW	ELEMENTS	{	$$ |= (1 << NFT_MSG_NEWSETELEM); }
+			|	DESTROY ELEMENTS	{	$$ |= (1 << NFT_MSG_DELSETELEM); }
+			;
+
+output_format		:	/* empty */
+			{
+				$$ = NFT_OUTPUT_DEFAULT;
+			}
+			|	export_format
 			;
 
 table_block_alloc	:	/* empty */

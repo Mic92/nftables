@@ -67,4 +67,7 @@ int mnl_nft_setelem_get(struct mnl_socket *nf_sock, struct nft_set *nls);
 
 struct nft_ruleset *mnl_nft_ruleset_dump(struct mnl_socket *nf_sock,
 					 uint32_t family);
+int mnl_nft_event_listener(struct mnl_socket *nf_sock,
+			   int (*cb)(const struct nlmsghdr *nlh, void *data),
+			   void *cb_data);
 #endif /* _NFTABLES_MNL_H_ */

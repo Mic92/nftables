@@ -136,6 +136,7 @@ extern void netlink_dump_expr(struct nft_rule_expr *nle);
 extern void netlink_dump_set(struct nft_set *nls);
 
 extern int netlink_batch_send(struct list_head *err_list);
+extern void netlink_abi_error(void) __noreturn;
 extern int netlink_io_error(struct netlink_ctx *ctx,
 			    const struct location *loc, const char *fmt, ...);
 extern void netlink_open_error(void) __noreturn;
@@ -143,4 +144,13 @@ extern void netlink_open_error(void) __noreturn;
 extern struct nft_ruleset *netlink_dump_ruleset(struct netlink_ctx *ctx,
 						const struct handle *h,
 						const struct location *loc);
+struct netlink_mon_handler {
+	uint32_t		monitor_flags;
+	uint32_t		format;
+	struct netlink_ctx	*ctx;
+	const struct location	*loc;
+	bool			cache_needed;
+};
+
+extern int netlink_monitor(struct netlink_mon_handler *monhandler);
 #endif /* NFTABLES_NETLINK_H */

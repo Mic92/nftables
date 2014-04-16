@@ -232,12 +232,16 @@ addrstring	({macaddr}|{ip4addr}|{ip6addr})
 "table"			{ return TABLE; }
 "tables"		{ return TABLES; }
 "chain"			{ return CHAIN; }
+"chains"		{ return CHAINS; }
 "rule"			{ return RULE; }
+"rules"			{ return RULES; }
 "sets"			{ return SETS; }
 "set"			{ return SET; }
 "element"		{ return ELEMENT; }
 "map"			{ return MAP; }
 "handle"		{ return HANDLE; }
+"new"			{ return NEW; }
+"destroy"		{ return DESTROY; }
 
 "accept"		{ return ACCEPT; }
 "drop"			{ return DROP; }
@@ -256,6 +260,7 @@ addrstring	({macaddr}|{ip4addr}|{ip6addr})
 "flush"			{ return FLUSH; }
 "rename"		{ return RENAME; }
 "export"		{ return EXPORT; }
+"monitor"		{ return MONITOR; }
 
 "position"		{ return POSITION; }
 "comment"		{ return COMMENT; }

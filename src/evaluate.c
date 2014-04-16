@@ -1428,6 +1428,7 @@ int cmd_evaluate(struct eval_ctx *ctx, struct cmd *cmd)
 	case CMD_FLUSH:
 	case CMD_RENAME:
 	case CMD_EXPORT:
+	case CMD_MONITOR:
 		return 0;
 	default:
 		BUG("invalid command operation %u\n", cmd->op);

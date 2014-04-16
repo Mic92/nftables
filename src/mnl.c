@@ -805,3 +805,13 @@ out:
 	nft_ruleset_free(rs);
 	return NULL;
 }
+
+/*
+ * events
+ */
+int mnl_nft_event_listener(struct mnl_socket *nf_sock,
+			   int (*cb)(const struct nlmsghdr *nlh, void *data),
+			   void *cb_data)
+{
+	return nft_mnl_recv(nf_sock, 0, 0, cb, cb_data);
+}
