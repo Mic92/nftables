@@ -35,8 +35,12 @@ struct nft_rule_list *mnl_nft_rule_dump(struct mnl_socket *nf_sock,
 
 int mnl_nft_chain_add(struct mnl_socket *nf_sock, struct nft_chain *nlc,
 		      unsigned int flags);
+int mnl_nft_chain_batch_add(struct mnl_socket *nf_sock, struct nft_chain *nlc,
+			    unsigned int flags, uint32_t seq);
 int mnl_nft_chain_delete(struct mnl_socket *nf_sock, struct nft_chain *nlc,
                          unsigned int flags);
+int mnl_nft_chain_batch_del(struct mnl_socket *nf_sock, struct nft_chain *nlc,
+			    unsigned int flags, uint32_t seq);
 struct nft_chain_list *mnl_nft_chain_dump(struct mnl_socket *nf_sock,
 					  int family);
 int mnl_nft_chain_get(struct mnl_socket *nf_sock, struct nft_chain *nlc,

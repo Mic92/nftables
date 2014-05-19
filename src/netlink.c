@@ -472,9 +472,10 @@ void netlink_dump_chain(struct nft_chain *nlc)
 #endif
 }
 
-int netlink_add_chain(struct netlink_ctx *ctx, const struct handle *h,
-		      const struct location *loc, const struct chain *chain,
-		      bool excl)
+static int netlink_add_chain_compat(struct netlink_ctx *ctx,
+				    const struct handle *h,
+				    const struct location *loc,
+				    const struct chain *chain, bool excl)
 {
 	struct nft_chain *nlc;
 	int err;
@@ -498,8 +499,53 @@ int netlink_add_chain(struct netlink_ctx *ctx, const struct handle *h,
 	return err;
 }
 
-int netlink_rename_chain(struct netlink_ctx *ctx, const struct handle *h,
-			 const struct location *loc, const char *name)
+static int netlink_add_chain_batch(struct netlink_ctx *ctx,
+				   const struct handle *h,
+				   const struct location *loc,
+				   const struct chain *chain, bool excl)
+{
+	struct nft_chain *nlc;
+	int err;
+
+	nlc = alloc_nft_chain(h);
+	if (chain != NULL && chain->flags & CHAIN_F_BASECHAIN) {
+		nft_chain_attr_set_u32(nlc, NFT_CHAIN_ATTR_HOOKNUM,
+				       chain->hooknum);
+		nft_chain_attr_set_u32(nlc, NFT_CHAIN_ATTR_PRIO,
+				       chain->priority);
+		nft_chain_attr_set_str(nlc, NFT_CHAIN_ATTR_TYPE,
+				       chain->type);
+	}
+	netlink_dump_chain(nlc);
+	err = mnl_nft_chain_batch_add(nf_sock, nlc, excl ? NLM_F_EXCL : 0,
+				      ctx->seqnum);
+	nft_chain_free(nlc);
+
+	if (err < 0) {
+		netlink_io_error(ctx, loc, "Could not add chain: %s",
+				 strerror(errno));
+	}
+	return err;
+}
+
+int netlink_add_chain(struct netlink_ctx *ctx, const struct handle *h,
+		      const struct location *loc, const struct chain *chain,
+		      bool excl)
+{
+	int ret;
+
+	if (ctx->batch_supported)
+		ret = netlink_add_chain_batch(ctx, h, loc, chain, excl);
+	else
+		ret = netlink_add_chain_compat(ctx, h, loc, chain, excl);
+
+	return ret;
+}
+
+static int netlink_rename_chain_compat(struct netlink_ctx *ctx,
+				       const struct handle *h,
+				       const struct location *loc,
+				       const char *name)
 {
 	struct nft_chain *nlc;
 	int err;
@@ -516,8 +562,43 @@ int netlink_rename_chain(struct netlink_ctx *ctx, const struct handle *h,
 	return err;
 }
 
-int netlink_delete_chain(struct netlink_ctx *ctx, const struct handle *h,
-			 const struct location *loc)
+static int netlink_rename_chain_batch(struct netlink_ctx *ctx,
+				      const struct handle *h,
+				      const struct location *loc,
+				      const char *name)
+{
+	struct nft_chain *nlc;
+	int err;
+
+	nlc = alloc_nft_chain(h);
+	nft_chain_attr_set_str(nlc, NFT_CHAIN_ATTR_NAME, name);
+	netlink_dump_chain(nlc);
+	err = mnl_nft_chain_batch_add(nf_sock, nlc, 0, ctx->seqnum);
+	nft_chain_free(nlc);
+
+	if (err < 0) {
+		netlink_io_error(ctx, loc, "Could not rename chain: %s",
+				 strerror(errno));
+	}
+	return err;
+}
+
+int netlink_rename_chain(struct netlink_ctx *ctx, const struct handle *h,
+			 const struct location *loc, const char *name)
+{
+	int ret;
+
+	if (ctx->batch_supported)
+		ret = netlink_rename_chain_batch(ctx, h, loc, name);
+	else
+		ret = netlink_rename_chain_compat(ctx, h, loc, name);
+
+	return ret;
+}
+
+static int netlink_del_chain_compat(struct netlink_ctx *ctx,
+				    const struct handle *h,
+				    const struct location *loc)
 {
 	struct nft_chain *nlc;
 	int err;
@@ -527,10 +608,43 @@ int netlink_delete_chain(struct netlink_ctx *ctx, const struct handle *h,
 	err = mnl_nft_chain_delete(nf_sock, nlc, 0);
 	nft_chain_free(nlc);
 
-	if (err < 0)
+	if (err < 0) {
 		netlink_io_error(ctx, loc, "Could not delete chain: %s",
 				 strerror(errno));
+	}
 	return err;
+}
+
+static int netlink_del_chain_batch(struct netlink_ctx *ctx,
+				   const struct handle *h,
+				   const struct location *loc)
+{
+	struct nft_chain *nlc;
+	int err;
+
+	nlc = alloc_nft_chain(h);
+	netlink_dump_chain(nlc);
+	err = mnl_nft_chain_batch_del(nf_sock, nlc, 0, ctx->seqnum);
+	nft_chain_free(nlc);
+
+	if (err < 0) {
+		netlink_io_error(ctx, loc, "Could not delete chain: %s",
+				 strerror(errno));
+	}
+	return err;
+}
+
+int netlink_delete_chain(struct netlink_ctx *ctx, const struct handle *h,
+			 const struct location *loc)
+{
+	int ret;
+
+	if (ctx->batch_supported)
+		ret = netlink_del_chain_batch(ctx, h, loc);
+	else
+		ret = netlink_del_chain_compat(ctx, h, loc);
+
+	return ret;
 }
 
 static struct chain *netlink_delinearize_chain(struct netlink_ctx *ctx,
