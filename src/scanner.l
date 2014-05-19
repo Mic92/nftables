@@ -240,8 +240,6 @@ addrstring	({macaddr}|{ip4addr}|{ip6addr})
 "element"		{ return ELEMENT; }
 "map"			{ return MAP; }
 "handle"		{ return HANDLE; }
-"new"			{ return NEW; }
-"destroy"		{ return DESTROY; }
 
 "accept"		{ return ACCEPT; }
 "drop"			{ return DROP; }
