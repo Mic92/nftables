@@ -48,8 +48,12 @@ int mnl_nft_chain_get(struct mnl_socket *nf_sock, struct nft_chain *nlc,
 
 int mnl_nft_table_add(struct mnl_socket *nf_sock, struct nft_table *nlt,
 		      unsigned int flags);
+int mnl_nft_table_batch_add(struct mnl_socket *nf_sock, struct nft_table *nlt,
+			    unsigned int flags, uint32_t seq);
 int mnl_nft_table_delete(struct mnl_socket *nf_sock, struct nft_table *nlt,
-		      unsigned int flags);
+			 unsigned int flags);
+int mnl_nft_table_batch_del(struct mnl_socket *nf_sock, struct nft_table *nlt,
+			    unsigned int flags, uint32_t seq);
 struct nft_table_list *mnl_nft_table_dump(struct mnl_socket *nf_sock,
 					  int family);
 int mnl_nft_table_get(struct mnl_socket *nf_sock, struct nft_table *nlt,

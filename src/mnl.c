@@ -550,6 +550,23 @@ int mnl_nft_table_add(struct mnl_socket *nf_sock, struct nft_table *nlt,
 	return nft_mnl_talk(nf_sock, nlh, nlh->nlmsg_len, NULL, NULL);
 }
 
+int mnl_nft_table_batch_add(struct mnl_socket *nf_sock, struct nft_table *nlt,
+			    unsigned int flags, uint32_t seqnum)
+{
+	struct nlmsghdr *nlh;
+
+	nlh = nft_table_nlmsg_build_hdr(mnl_nlmsg_batch_current(batch),
+			NFT_MSG_NEWTABLE,
+			nft_table_attr_get_u32(nlt, NFT_TABLE_ATTR_FAMILY),
+			flags, seqnum);
+	nft_table_nlmsg_build_payload(nlh, nlt);
+
+	if (!mnl_nlmsg_batch_next(batch))
+		mnl_batch_page_add();
+
+	return 0;
+}
+
 int mnl_nft_table_delete(struct mnl_socket *nf_sock, struct nft_table *nlt,
 		      unsigned int flags)
 {
@@ -562,6 +579,23 @@ int mnl_nft_table_delete(struct mnl_socket *nf_sock, struct nft_table *nlt,
 	nft_table_nlmsg_build_payload(nlh, nlt);
 
 	return nft_mnl_talk(nf_sock, nlh, nlh->nlmsg_len, NULL, NULL);
+}
+
+int mnl_nft_table_batch_del(struct mnl_socket *nf_sock, struct nft_table *nlt,
+			    unsigned int flags, uint32_t seqnum)
+{
+	struct nlmsghdr *nlh;
+
+	nlh = nft_table_nlmsg_build_hdr(mnl_nlmsg_batch_current(batch),
+			NFT_MSG_DELTABLE,
+			nft_table_attr_get_u32(nlt, NFT_TABLE_ATTR_FAMILY),
+			NLM_F_ACK, seqnum);
+	nft_table_nlmsg_build_payload(nlh, nlt);
+
+	if (!mnl_nlmsg_batch_next(batch))
+		mnl_batch_page_add();
+
+	return 0;
 }
 
 static int table_cb(const struct nlmsghdr *nlh, void *data)

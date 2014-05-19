@@ -757,9 +757,10 @@ int netlink_flush_chain(struct netlink_ctx *ctx, const struct handle *h,
 	return netlink_del_rule_batch(ctx, h, loc);
 }
 
-int netlink_add_table(struct netlink_ctx *ctx, const struct handle *h,
-		      const struct location *loc, const struct table *table,
-		      bool excl)
+static int netlink_add_table_compat(struct netlink_ctx *ctx,
+				    const struct handle *h,
+				    const struct location *loc,
+				    const struct table *table, bool excl)
 {
 	struct nft_table *nlt;
 	int err;
@@ -774,8 +775,43 @@ int netlink_add_table(struct netlink_ctx *ctx, const struct handle *h,
 	return err;
 }
 
-int netlink_delete_table(struct netlink_ctx *ctx, const struct handle *h,
-			 const struct location *loc)
+static int netlink_add_table_batch(struct netlink_ctx *ctx,
+				   const struct handle *h,
+				   const struct location *loc,
+				   const struct table *table, bool excl)
+{
+	struct nft_table *nlt;
+	int err;
+
+	nlt = alloc_nft_table(h);
+	err = mnl_nft_table_batch_add(nf_sock, nlt, excl ? NLM_F_EXCL : 0,
+				      ctx->seqnum);
+	nft_table_free(nlt);
+
+	if (err < 0) {
+		netlink_io_error(ctx, loc, "Could not add table: %s",
+				 strerror(errno));
+	}
+	return err;
+}
+
+int netlink_add_table(struct netlink_ctx *ctx, const struct handle *h,
+		      const struct location *loc,
+		      const struct table *table, bool excl)
+{
+	int ret;
+
+	if (ctx->batch_supported)
+		ret = netlink_add_table_batch(ctx, h, loc, table, excl);
+	else
+		ret = netlink_add_table_compat(ctx, h, loc, table, excl);
+
+	return ret;
+}
+
+static int netlink_del_table_compat(struct netlink_ctx *ctx,
+				    const struct handle *h,
+				    const struct location *loc)
 {
 	struct nft_table *nlt;
 	int err;
@@ -788,6 +824,37 @@ int netlink_delete_table(struct netlink_ctx *ctx, const struct handle *h,
 		netlink_io_error(ctx, loc, "Could not delete table: %s",
 				 strerror(errno));
 	return err;
+}
+
+static int netlink_del_table_batch(struct netlink_ctx *ctx,
+				   const struct handle *h,
+				   const struct location *loc)
+{
+	struct nft_table *nlt;
+	int err;
+
+	nlt = alloc_nft_table(h);
+	err = mnl_nft_table_batch_del(nf_sock, nlt, 0, ctx->seqnum);
+	nft_table_free(nlt);
+
+	if (err < 0) {
+		netlink_io_error(ctx, loc, "Could not delete table: %s",
+				 strerror(errno));
+	}
+	return err;
+}
+
+int netlink_delete_table(struct netlink_ctx *ctx, const struct handle *h,
+			 const struct location *loc)
+{
+	int ret;
+
+	if (ctx->batch_supported)
+		ret = netlink_del_table_batch(ctx, h, loc);
+	else
+		ret = netlink_del_table_compat(ctx, h, loc);
+
+	return ret;
 }
 
 void netlink_dump_table(struct nft_table *nlt)
