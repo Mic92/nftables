@@ -14,6 +14,7 @@
  * @set:	set name (sets only)
  * @handle:	rule handle (rules only)
  * @position:	rule position (rules only)
+ * @set_id:	set ID (sets only)
  * @comment:	human-readable comment (rules only)
  */
 struct handle {
@@ -23,6 +24,7 @@ struct handle {
 	const char		*set;
 	uint64_t		handle;
 	uint64_t		position;
+	uint32_t		set_id;
 	const char		*comment;
 };
 

@@ -630,6 +630,38 @@ int mnl_nft_set_delete(struct mnl_socket *nf_sock, struct nft_set *nls,
 	return nft_mnl_talk(nf_sock, nlh, nlh->nlmsg_len, NULL, NULL);
 }
 
+int mnl_nft_set_batch_add(struct mnl_socket *nf_sock, struct nft_set *nls,
+			  unsigned int flags, uint32_t seqnum)
+{
+	struct nlmsghdr *nlh;
+
+	nlh = nft_set_nlmsg_build_hdr(mnl_nlmsg_batch_current(batch),
+			NFT_MSG_NEWSET,
+			nft_set_attr_get_u32(nls, NFT_SET_ATTR_FAMILY),
+			NLM_F_CREATE | flags, seqnum);
+	nft_set_nlmsg_build_payload(nlh, nls);
+	if (!mnl_nlmsg_batch_next(batch))
+		mnl_batch_page_add();
+
+	return 0;
+}
+
+int mnl_nft_set_batch_del(struct mnl_socket *nf_sock, struct nft_set *nls,
+			  unsigned int flags, uint32_t seqnum)
+{
+	struct nlmsghdr *nlh;
+
+	nlh = nft_set_nlmsg_build_hdr(mnl_nlmsg_batch_current(batch),
+			NFT_MSG_DELSET,
+			nft_set_attr_get_u32(nls, NFT_SET_ATTR_FAMILY),
+			flags, seqnum);
+	nft_set_nlmsg_build_payload(nlh, nls);
+	if (!mnl_nlmsg_batch_next(batch))
+		mnl_batch_page_add();
+
+	return 0;
+}
+
 static int set_cb(const struct nlmsghdr *nlh, void *data)
 {
 	struct nft_set_list *nls_list = data;
@@ -742,6 +774,38 @@ static int set_elem_cb(const struct nlmsghdr *nlh, void *data)
 	return MNL_CB_OK;
 }
 
+int mnl_nft_setelem_batch_add(struct mnl_socket *nf_sock, struct nft_set *nls,
+			      unsigned int flags, uint32_t seqnum)
+{
+	struct nlmsghdr *nlh;
+
+	nlh = nft_set_elem_nlmsg_build_hdr(mnl_nlmsg_batch_current(batch),
+			NFT_MSG_NEWSETELEM,
+			nft_set_attr_get_u32(nls, NFT_SET_ATTR_FAMILY),
+			NLM_F_CREATE | flags, seqnum);
+	nft_set_elems_nlmsg_build_payload(nlh, nls);
+	if (!mnl_nlmsg_batch_next(batch))
+		mnl_batch_page_add();
+
+	return 0;
+}
+
+int mnl_nft_setelem_batch_del(struct mnl_socket *nf_sock, struct nft_set *nls,
+			      unsigned int flags, uint32_t seqnum)
+{
+	struct nlmsghdr *nlh;
+
+	nlh = nft_set_elem_nlmsg_build_hdr(mnl_nlmsg_batch_current(batch),
+			NFT_MSG_DELSETELEM,
+			nft_set_attr_get_u32(nls, NFT_SET_ATTR_FAMILY),
+			0, seqnum);
+	nft_set_elems_nlmsg_build_payload(nlh, nls);
+	if (!mnl_nlmsg_batch_next(batch))
+		mnl_batch_page_add();
+
+	return 0;
+}
+
 int mnl_nft_setelem_get(struct mnl_socket *nf_sock, struct nft_set *nls)
 {
 	char buf[MNL_SOCKET_BUFFER_SIZE];
@@ -822,4 +886,69 @@ int mnl_nft_event_listener(struct mnl_socket *nf_sock,
 			   void *cb_data)
 {
 	return nft_mnl_recv(nf_sock, 0, 0, cb, cb_data);
+}
+
+static void nft_mnl_batch_put(char *buf, uint16_t type, uint32_t seq)
+{
+	struct nlmsghdr *nlh;
+	struct nfgenmsg *nfg;
+
+	nlh = mnl_nlmsg_put_header(buf);
+	nlh->nlmsg_type = type;
+	nlh->nlmsg_flags = NLM_F_REQUEST;
+	nlh->nlmsg_seq = seq;
+
+	nfg = mnl_nlmsg_put_extra_header(nlh, sizeof(*nfg));
+	nfg->nfgen_family = AF_INET;
+	nfg->version = NFNETLINK_V0;
+	nfg->res_id = NFNL_SUBSYS_NFTABLES;
+}
+
+bool mnl_batch_supported(struct mnl_socket *nf_sock)
+{
+	struct mnl_nlmsg_batch *b;
+	char buf[MNL_SOCKET_BUFFER_SIZE];
+	int ret;
+
+	b = mnl_nlmsg_batch_start(buf, sizeof(buf));
+
+	nft_mnl_batch_put(mnl_nlmsg_batch_current(b), NFNL_MSG_BATCH_BEGIN,
+			  seq++);
+	mnl_nlmsg_batch_next(b);
+
+	nft_set_nlmsg_build_hdr(mnl_nlmsg_batch_current(b),
+				NFT_MSG_NEWSET, AF_INET,
+				NLM_F_ACK, seq++);
+	mnl_nlmsg_batch_next(b);
+
+	nft_mnl_batch_put(mnl_nlmsg_batch_current(b), NFNL_MSG_BATCH_END,
+			  seq++);
+	mnl_nlmsg_batch_next(b);
+
+	ret = mnl_socket_sendto(nf_sock, mnl_nlmsg_batch_head(b),
+				mnl_nlmsg_batch_size(b));
+	if (ret < 0)
+		goto err;
+
+	mnl_nlmsg_batch_stop(b);
+
+	ret = mnl_socket_recvfrom(nf_sock, buf, sizeof(buf));
+	while (ret > 0) {
+		ret = mnl_cb_run(buf, ret, 0, mnl_socket_get_portid(nf_sock),
+				 NULL, NULL);
+		if (ret <= 0)
+			break;
+
+		ret = mnl_socket_recvfrom(nf_sock, buf, sizeof(buf));
+	}
+
+	/* We're sending an incomplete message to see if the kernel supports
+	 * set messages in batches. EINVAL means that we sent an incomplete
+	 * message with missing attributes. The kernel just ignores messages
+	 * that we cannot include in the batch.
+	 */
+	return (ret == -1 && errno == EINVAL) ? true : false;
+err:
+	mnl_nlmsg_batch_stop(b);
+	return ret;
 }

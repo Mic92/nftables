@@ -180,6 +180,8 @@ struct nft_set *alloc_nft_set(const struct handle *h)
 	nft_set_attr_set_str(nls, NFT_SET_ATTR_TABLE, h->table);
 	if (h->set != NULL)
 		nft_set_attr_set_str(nls, NFT_SET_ATTR_NAME, h->set);
+	if (h->set_id)
+		nft_set_attr_set_u32(nls, NFT_SET_ATTR_ID, h->set_id);
 
 	return nls;
 }
@@ -842,8 +844,8 @@ static struct set *netlink_delinearize_set(struct netlink_ctx *ctx,
 	return set;
 }
 
-int netlink_add_set(struct netlink_ctx *ctx, const struct handle *h,
-		    struct set *set)
+static int netlink_add_set_compat(struct netlink_ctx *ctx,
+				  const struct handle *h, struct set *set)
 {
 	struct nft_set *nls;
 	int err;
@@ -874,8 +876,57 @@ int netlink_add_set(struct netlink_ctx *ctx, const struct handle *h,
 	return err;
 }
 
-int netlink_delete_set(struct netlink_ctx *ctx, const struct handle *h,
-		       const struct location *loc)
+/* internal ID to uniquely identify a set in the batch */
+static uint32_t set_id;
+
+static int netlink_add_set_batch(struct netlink_ctx *ctx,
+				 const struct handle *h, struct set *set)
+{
+	struct nft_set *nls;
+	int err;
+
+	nls = alloc_nft_set(h);
+	nft_set_attr_set_u32(nls, NFT_SET_ATTR_FLAGS, set->flags);
+	nft_set_attr_set_u32(nls, NFT_SET_ATTR_KEY_TYPE,
+			     dtype_map_to_kernel(set->keytype));
+	nft_set_attr_set_u32(nls, NFT_SET_ATTR_KEY_LEN,
+			     set->keylen / BITS_PER_BYTE);
+	if (set->flags & NFT_SET_MAP) {
+		nft_set_attr_set_u32(nls, NFT_SET_ATTR_DATA_TYPE,
+				     dtype_map_to_kernel(set->datatype));
+		nft_set_attr_set_u32(nls, NFT_SET_ATTR_DATA_LEN,
+				     set->datalen / BITS_PER_BYTE);
+	}
+	set->handle.set_id = ++set_id;
+	nft_set_attr_set_u32(nls, NFT_SET_ATTR_ID, set->handle.set_id);
+	netlink_dump_set(nls);
+
+	err = mnl_nft_set_batch_add(nf_sock, nls, NLM_F_EXCL, ctx->seqnum);
+	if (err < 0) {
+		netlink_io_error(ctx, &set->location, "Could not add set: %s",
+				 strerror(errno));
+	}
+	nft_set_free(nls);
+
+	return err;
+}
+
+int netlink_add_set(struct netlink_ctx *ctx, const struct handle *h,
+		    struct set *set)
+{
+	int ret;
+
+	if (ctx->batch_supported)
+		ret = netlink_add_set_batch(ctx, h, set);
+	else
+		ret = netlink_add_set_compat(ctx, h, set);
+
+	return ret;
+}
+
+static int netlink_del_set_compat(struct netlink_ctx *ctx,
+				  const struct handle *h,
+				  const struct location *loc)
 {
 	struct nft_set *nls;
 	int err;
@@ -888,6 +939,36 @@ int netlink_delete_set(struct netlink_ctx *ctx, const struct handle *h,
 		netlink_io_error(ctx, loc, "Could not delete set: %s",
 				 strerror(errno));
 	return err;
+}
+
+static int netlink_del_set_batch(struct netlink_ctx *ctx,
+				 const struct handle *h,
+				 const struct location *loc)
+{
+	struct nft_set *nls;
+	int err;
+
+	nls = alloc_nft_set(h);
+	err = mnl_nft_set_batch_del(nf_sock, nls, 0, ctx->seqnum);
+	nft_set_free(nls);
+
+	if (err < 0)
+		netlink_io_error(ctx, loc, "Could not delete set: %s",
+				 strerror(errno));
+	return err;
+}
+
+int netlink_delete_set(struct netlink_ctx *ctx, const struct handle *h,
+		       const struct location *loc)
+{
+	int ret;
+
+	if (ctx->batch_supported)
+		ret = netlink_del_set_batch(ctx, h, loc);
+	else
+		ret = netlink_del_set_compat(ctx, h, loc);
+
+	return ret;
 }
 
 static int list_set_cb(struct nft_set *nls, void *arg)
@@ -946,8 +1027,29 @@ static void alloc_setelem_cache(const struct expr *set, struct nft_set *nls)
 	}
 }
 
-int netlink_add_setelems(struct netlink_ctx *ctx, const struct handle *h,
-			 const struct expr *expr)
+static int netlink_add_setelems_batch(struct netlink_ctx *ctx,
+				      const struct handle *h,
+				      const struct expr *expr)
+{
+	struct nft_set *nls;
+	int err;
+
+	nls = alloc_nft_set(h);
+	alloc_setelem_cache(expr, nls);
+	netlink_dump_set(nls);
+
+	err = mnl_nft_setelem_batch_add(nf_sock, nls, 0, ctx->seqnum);
+	nft_set_free(nls);
+	if (err < 0)
+		netlink_io_error(ctx, &expr->location,
+				 "Could not add set elements: %s",
+				 strerror(errno));
+	return err;
+}
+
+static int netlink_add_setelems_compat(struct netlink_ctx *ctx,
+				       const struct handle *h,
+				       const struct expr *expr)
 {
 	struct nft_set *nls;
 	int err;
@@ -965,8 +1067,42 @@ int netlink_add_setelems(struct netlink_ctx *ctx, const struct handle *h,
 	return err;
 }
 
-int netlink_delete_setelems(struct netlink_ctx *ctx, const struct handle *h,
-			    const struct expr *expr)
+int netlink_add_setelems(struct netlink_ctx *ctx, const struct handle *h,
+			 const struct expr *expr)
+{
+	int ret;
+
+	if (ctx->batch_supported)
+		ret = netlink_add_setelems_batch(ctx, h, expr);
+	else
+		ret = netlink_add_setelems_compat(ctx, h, expr);
+
+	return ret;
+}
+
+static int netlink_del_setelems_batch(struct netlink_ctx *ctx,
+				      const struct handle *h,
+				      const struct expr *expr)
+{
+	struct nft_set *nls;
+	int err;
+
+	nls = alloc_nft_set(h);
+	alloc_setelem_cache(expr, nls);
+	netlink_dump_set(nls);
+
+	err = mnl_nft_setelem_batch_del(nf_sock, nls, 0, ctx->seqnum);
+	nft_set_free(nls);
+	if (err < 0)
+		netlink_io_error(ctx, &expr->location,
+				 "Could not delete set elements: %s",
+				 strerror(errno));
+	return err;
+}
+
+static int netlink_del_setelems_compat(struct netlink_ctx *ctx,
+				       const struct handle *h,
+				       const struct expr *expr)
 {
 	struct nft_set *nls;
 	int err;
@@ -1029,6 +1165,19 @@ static int netlink_delinearize_setelem(struct nft_set_elem *nlse,
 out:
 	compound_expr_add(set->init, expr);
 	return 0;
+}
+
+int netlink_delete_setelems(struct netlink_ctx *ctx, const struct handle *h,
+			    const struct expr *expr)
+{
+	int ret;
+
+	if (ctx->batch_supported)
+		ret = netlink_del_setelems_batch(ctx, h, expr);
+	else
+		ret = netlink_del_setelems_compat(ctx, h, expr);
+
+	return ret;
 }
 
 static int list_setelem_cb(struct nft_set_elem *nlse, void *arg)
@@ -1602,4 +1751,9 @@ int netlink_monitor(struct netlink_mon_handler *monhandler)
 
 	return mnl_nft_event_listener(nf_mon_sock, netlink_events_cb,
 				      monhandler);
+}
+
+bool netlink_batch_supported(void)
+{
+	return mnl_batch_supported(nf_sock);
 }

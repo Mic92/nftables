@@ -30,6 +30,7 @@ struct netlink_ctx {
 	struct set		*set;
 	const void		*data;
 	uint32_t		seqnum;
+	bool			batch_supported;
 };
 
 extern struct nft_table *alloc_nft_table(const struct handle *h);
@@ -153,4 +154,6 @@ struct netlink_mon_handler {
 };
 
 extern int netlink_monitor(struct netlink_mon_handler *monhandler);
+bool netlink_batch_supported(void);
+
 #endif /* NFTABLES_NETLINK_H */

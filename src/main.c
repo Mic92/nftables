@@ -170,6 +170,7 @@ static int nft_netlink(struct parser_state *state, struct list_head *msgs)
 	struct mnl_err *err, *tmp;
 	LIST_HEAD(err_list);
 	uint32_t batch_seqnum;
+	bool batch_supported = netlink_batch_supported();
 	int ret = 0;
 
 	batch_seqnum = mnl_batch_begin();
@@ -177,6 +178,7 @@ static int nft_netlink(struct parser_state *state, struct list_head *msgs)
 		memset(&ctx, 0, sizeof(ctx));
 		ctx.msgs = msgs;
 		ctx.seqnum = cmd->seqnum = mnl_seqnum_alloc();
+		ctx.batch_supported = batch_supported;
 		init_list_head(&ctx.list);
 		ret = do_command(&ctx, cmd);
 		if (ret < 0)

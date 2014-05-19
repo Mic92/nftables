@@ -129,6 +129,8 @@ static void netlink_gen_map(struct netlink_linearize_ctx *ctx,
 	nft_rule_expr_set_u32(nle, NFT_EXPR_LOOKUP_DREG, dreg);
 	nft_rule_expr_set_str(nle, NFT_EXPR_LOOKUP_SET,
 			      expr->mappings->set->handle.set);
+	nft_rule_expr_set_u32(nle, NFT_EXPR_LOOKUP_SET_ID,
+			      expr->mappings->set->handle.set_id);
 
 	if (dreg == NFT_REG_VERDICT)
 		release_register(ctx);
@@ -153,6 +155,8 @@ static void netlink_gen_lookup(struct netlink_linearize_ctx *ctx,
 	nft_rule_expr_set_u32(nle, NFT_EXPR_LOOKUP_SREG, sreg);
 	nft_rule_expr_set_str(nle, NFT_EXPR_LOOKUP_SET,
 			      expr->right->set->handle.set);
+	nft_rule_expr_set_u32(nle, NFT_EXPR_LOOKUP_SET_ID,
+			      expr->right->set->handle.set_id);
 
 	release_register(ctx);
 	nft_rule_add_expr(ctx->nlr, nle);
