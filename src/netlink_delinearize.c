@@ -743,7 +743,6 @@ static void relational_binop_postprocess(struct expr *expr)
 		 * Split the flags into a list of flag values and convert the
 		 * op to OP_FLAGCMP.
 		 */
-		expr_free(expr->right);
 		expr_free(value);
 
 		expr->left  = expr_get(binop->left);
