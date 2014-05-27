@@ -361,6 +361,7 @@ addrstring	({macaddr}|{ip4addr}|{ip6addr})
 "cpi"			{ return CPI; }
 
 "udp"			{ return UDP; }
+"udplite"		{ return UDPLITE; }
 "sport"			{ return SPORT; }
 "dport"			{ return DPORT; }
 
