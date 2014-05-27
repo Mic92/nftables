@@ -1848,10 +1848,9 @@ eth_hdr_expr		:	ETHER	eth_hdr_field
 			}
 			|	ETHER
 			{
-				uint16_t data = ARPHRD_ETHER;
-				$$ = constant_expr_alloc(&@$, &arphrd_type,
-							 BYTEORDER_BIG_ENDIAN,
-							 sizeof(data) * BITS_PER_BYTE, &data);
+				$$ = symbol_expr_alloc(&@$, SYMBOL_VALUE,
+						       current_scope(state),
+						       "ether");
 			}
 			;
 
