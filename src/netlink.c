@@ -64,7 +64,8 @@ static void __init netlink_open_sock(void)
 
 static void __exit netlink_close_sock(void)
 {
-	mnl_socket_close(nf_sock);
+	if (nf_sock)
+		mnl_socket_close(nf_sock);
 	if (nf_mon_sock)
 		mnl_socket_close(nf_mon_sock);
 }
