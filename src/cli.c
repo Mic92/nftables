@@ -66,6 +66,7 @@ static char *cli_append_multiline(char *line)
 		multiline = line;
 		rl_save_prompt();
 		rl_clear_message();
+		rl_set_prompt(".... ");
 	} else {
 		len += strlen(multiline);
 		s = xmalloc(len + 1);
@@ -89,12 +90,15 @@ static void cli_complete(char *line)
 	const char *c;
 	LIST_HEAD(msgs);
 
-	line = cli_append_multiline(line);
 	if (line == NULL) {
 		printf("\n");
 		cli_exit();
-		return;
+		exit(0);
 	}
+
+	line = cli_append_multiline(line);
+	if (line == NULL)
+		return;
 
 	for (c = line; *c != '\0'; c++)
 		if (!isspace(*c))
