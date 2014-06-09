@@ -115,7 +115,7 @@ struct chain {
 	uint32_t		flags;
 	const char		*hookstr;
 	unsigned int		hooknum;
-	unsigned int		priority;
+	int			priority;
 	const char		*type;
 	struct scope		scope;
 	struct list_head	rules;

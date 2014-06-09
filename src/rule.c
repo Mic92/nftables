@@ -418,7 +418,7 @@ static void chain_print(const struct chain *chain)
 
 	printf("\tchain %s {\n", chain->handle.chain);
 	if (chain->flags & CHAIN_F_BASECHAIN) {
-		printf("\t\t type %s hook %s priority %u;\n", chain->type,
+		printf("\t\t type %s hook %s priority %d;\n", chain->type,
 		       hooknum2str(chain->handle.family, chain->hooknum),
 		       chain->priority);
 	}
@@ -439,7 +439,7 @@ void chain_print_plain(const struct chain *chain)
 	       chain->handle.table, chain->handle.chain);
 
 	if (chain->flags & CHAIN_F_BASECHAIN) {
-		printf(" { type %s hook %s priority %u; }", chain->type,
+		printf(" { type %s hook %s priority %d; }", chain->type,
 		       hooknum2str(chain->handle.family, chain->hooknum),
 		       chain->priority);
 	}

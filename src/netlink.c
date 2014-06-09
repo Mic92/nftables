@@ -485,7 +485,7 @@ static int netlink_add_chain_compat(struct netlink_ctx *ctx,
 	if (chain != NULL && chain->flags & CHAIN_F_BASECHAIN) {
 		nft_chain_attr_set_u32(nlc, NFT_CHAIN_ATTR_HOOKNUM,
 				       chain->hooknum);
-		nft_chain_attr_set_u32(nlc, NFT_CHAIN_ATTR_PRIO,
+		nft_chain_attr_set_s32(nlc, NFT_CHAIN_ATTR_PRIO,
 				       chain->priority);
 		nft_chain_attr_set_str(nlc, NFT_CHAIN_ATTR_TYPE,
 				       chain->type);
@@ -512,7 +512,7 @@ static int netlink_add_chain_batch(struct netlink_ctx *ctx,
 	if (chain != NULL && chain->flags & CHAIN_F_BASECHAIN) {
 		nft_chain_attr_set_u32(nlc, NFT_CHAIN_ATTR_HOOKNUM,
 				       chain->hooknum);
-		nft_chain_attr_set_u32(nlc, NFT_CHAIN_ATTR_PRIO,
+		nft_chain_attr_set_s32(nlc, NFT_CHAIN_ATTR_PRIO,
 				       chain->priority);
 		nft_chain_attr_set_str(nlc, NFT_CHAIN_ATTR_TYPE,
 				       chain->type);
@@ -667,7 +667,7 @@ static struct chain *netlink_delinearize_chain(struct netlink_ctx *ctx,
 		chain->hooknum       =
 			nft_chain_attr_get_u32(nlc, NFT_CHAIN_ATTR_HOOKNUM);
 		chain->priority      =
-			nft_chain_attr_get_u32(nlc, NFT_CHAIN_ATTR_PRIO);
+			nft_chain_attr_get_s32(nlc, NFT_CHAIN_ATTR_PRIO);
 		chain->type          =
 			xstrdup(nft_chain_attr_get_str(nlc, NFT_CHAIN_ATTR_TYPE));
 		chain->flags        |= CHAIN_F_BASECHAIN;
