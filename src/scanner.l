@@ -279,10 +279,8 @@ addrstring	({macaddr}|{ip4addr}|{ip6addr})
 
 "queue"			{ return QUEUE;}
 "num"			{ return QUEUENUM;}
-"total"			{ return QUEUETOTAL;}
 "bypass"		{ return QUEUEBYPASS;}
 "fanout"		{ return QUEUECPUFANOUT;}
-"options"		{ return OPTIONS;}
 
 "limit"			{ return LIMIT; }
 "rate"			{ return RATE; }

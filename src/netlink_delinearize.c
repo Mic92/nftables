@@ -541,11 +541,14 @@ static void netlink_parse_queue(struct netlink_parse_ctx *ctx,
 			      const struct nft_rule_expr *nle)
 {
 	struct stmt *stmt;
+	uint16_t range_to;
 
 	stmt = queue_stmt_alloc(loc);
-	stmt->queue.queuenum = nft_rule_expr_get_u16(nle, NFT_EXPR_QUEUE_NUM);
-	stmt->queue.queues_total =
-		nft_rule_expr_get_u16(nle, NFT_EXPR_QUEUE_TOTAL);
+	stmt->queue.from = nft_rule_expr_get_u16(nle, NFT_EXPR_QUEUE_NUM);
+	range_to = nft_rule_expr_get_u16(nle, NFT_EXPR_QUEUE_TOTAL);
+	range_to += stmt->queue.from - 1;
+	stmt->queue.to = range_to;
+
 	stmt->queue.flags = nft_rule_expr_get_u16(nle, NFT_EXPR_QUEUE_FLAGS);
 	list_add_tail(&stmt->list, &ctx->rule->stmts);
 }

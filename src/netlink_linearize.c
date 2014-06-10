@@ -683,15 +683,17 @@ static void netlink_gen_queue_stmt(struct netlink_linearize_ctx *ctx,
 				 const struct stmt *stmt)
 {
 	struct nft_rule_expr *nle;
+	uint16_t total_queues;
 
 	nle = alloc_nft_expr("queue");
 
 	nft_rule_expr_set_u16(nle, NFT_EXPR_QUEUE_NUM,
-			      stmt->queue.queuenum);
-	if (stmt->queue.queues_total) {
-		nft_rule_expr_set_u16(nle, NFT_EXPR_QUEUE_TOTAL,
-				      stmt->queue.queues_total);
-	}
+			      stmt->queue.from);
+
+	total_queues = stmt->queue.to - stmt->queue.from;
+	nft_rule_expr_set_u16(nle, NFT_EXPR_QUEUE_TOTAL,
+			      total_queues + 1);
+
 	if (stmt->queue.flags) {
 		nft_rule_expr_set_u16(nle, NFT_EXPR_QUEUE_FLAGS,
 				      stmt->queue.flags);

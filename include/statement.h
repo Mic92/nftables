@@ -60,8 +60,8 @@ struct nat_stmt {
 extern struct stmt *nat_stmt_alloc(const struct location *loc);
 
 struct queue_stmt {
-	uint16_t		queuenum;
-	uint16_t		queues_total;
+	uint16_t		from;
+	uint16_t		to;
 	uint16_t		flags;
 };
 

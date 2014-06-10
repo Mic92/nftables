@@ -365,10 +365,8 @@ static int monitor_lookup_event(const char *event)
 
 %token QUEUE			"queue"
 %token QUEUENUM			"num"
-%token QUEUETOTAL		"total"
 %token QUEUEBYPASS		"bypass"
 %token QUEUECPUFANOUT		"fanout"
-%token OPTIONS			"options"
 
 %token POSITION			"position"
 %token COMMENT			"comment"
@@ -425,7 +423,7 @@ static int monitor_lookup_event(const char *event)
 %destructor { stmt_free($$); }	reject_stmt
 %type <stmt>			nat_stmt nat_stmt_alloc
 %destructor { stmt_free($$); }	nat_stmt nat_stmt_alloc
-%type <stmt>			queue_stmt queue_stmt_alloc
+%type <stmt>			queue_stmt queue_stmt_alloc queue_range
 %destructor { stmt_free($$); }	queue_stmt queue_stmt_alloc
 %type <val>			queue_flags queue_flag
 
@@ -1438,30 +1436,46 @@ queue_stmt		:	queue_stmt_alloc
 			|	queue_stmt_alloc		queue_args
 			;
 
-queue_stmt_alloc		:	QUEUE
+queue_stmt_alloc	:	QUEUE
 			{
 				$$ = queue_stmt_alloc(&@$);
 			}
 			;
 
-queue_args		:	queue_arg
+queue_args		:	QUEUENUM	queue_range	queue_flags
 			{
-				$<stmt>$	= $<stmt>0;
+				$<stmt>0->queue.from = $2->queue.from;
+				$<stmt>0->queue.to = $2->queue.to;
+				$<stmt>0->queue.flags = $3;
 			}
-			|	queue_args	queue_arg
+			|	QUEUENUM	queue_range
+			{
+				$<stmt>0->queue.from = $2->queue.from;
+				$<stmt>0->queue.to = $2->queue.to;
+			}
+			|	queue_flags
+			{
+				$<stmt>0->queue.flags = $1;
+			}
 			;
 
-queue_arg		:	QUEUENUM		NUM
+queue_range		:	NUM
 			{
-				$<stmt>0->queue.queuenum	 = $2;
+				$<stmt>0->queue.from = $1;
+				$<stmt>0->queue.to = $1;
+				$$ = $<stmt>0;
 			}
-			|	QUEUETOTAL		NUM
+			|	NUM	DASH	NUM
 			{
-				$<stmt>0->queue.queues_total	 = $2;
-			}
-			|	OPTIONS		queue_flags
-			{
-				$<stmt>0->queue.flags		 = $2;
+				if ($3 < $1) {
+					erec_queue(error(&@1,
+							 "invalid range %d-%d",
+							 $1, $3), state->msgs);
+					YYERROR;
+				}
+				$<stmt>0->queue.from = $1;
+				$<stmt>0->queue.to = $3;
+				$$ = $<stmt>0;
 			}
 			;
 
@@ -1469,9 +1483,9 @@ queue_flags		:	queue_flag
 			{
 				$$ = $1;
 			}
-			|	queue_flags	COMMA	queue_flag
+			|	queue_flags	queue_flag
 			{
-				$$ |= $1 | $3;
+				$$ |= $1 | $2;
 			}
 			;
 

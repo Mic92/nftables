@@ -174,21 +174,14 @@ struct stmt *limit_stmt_alloc(const struct location *loc)
 
 static void queue_stmt_print(const struct stmt *stmt)
 {
-	int one = 0;
-
-	printf("queue num %u total %u",
-		stmt->queue.queuenum, stmt->queue.queues_total);
-	if (stmt->queue.flags)
-		printf(" options ");
-	if (stmt->queue.flags & NFT_QUEUE_FLAG_BYPASS) {
-		printf("bypass");
-		one = 1;
-	}
-	if (stmt->queue.flags & NFT_QUEUE_FLAG_CPU_FANOUT) {
-		if (one)
-			printf (",");
-		printf("fanout");
-	}
+	printf("queue num %u",
+		stmt->queue.from);
+	if (stmt->queue.to && stmt->queue.to != stmt->queue.from)
+		printf("-%u", stmt->queue.to);
+	if (stmt->queue.flags & NFT_QUEUE_FLAG_BYPASS)
+		printf(" bypass");
+	if (stmt->queue.flags & NFT_QUEUE_FLAG_CPU_FANOUT)
+		printf(" fanout");
 
 }
 
