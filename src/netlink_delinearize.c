@@ -457,6 +457,8 @@ static void netlink_parse_reject(struct netlink_parse_ctx *ctx,
 
 	stmt = reject_stmt_alloc(loc);
 	stmt->reject.type = nft_rule_expr_get_u32(expr, NFT_EXPR_REJECT_TYPE);
+	stmt->reject.icmp_code =
+		nft_rule_expr_get_u8(expr, NFT_EXPR_REJECT_CODE);
 	list_add_tail(&stmt->list, &ctx->rule->stmts);
 }
 

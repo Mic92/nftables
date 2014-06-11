@@ -609,7 +609,7 @@ static void netlink_gen_reject_stmt(struct netlink_linearize_ctx *ctx,
 
 	nle = alloc_nft_expr("reject");
 	nft_rule_expr_set_u32(nle, NFT_EXPR_REJECT_TYPE, stmt->reject.type);
-	nft_rule_expr_set_u8(nle, NFT_EXPR_REJECT_CODE, 0);
+	nft_rule_expr_set_u8(nle, NFT_EXPR_REJECT_CODE, stmt->reject.icmp_code);
 	nft_rule_add_expr(ctx->nlr, nle);
 }
 
