@@ -1132,6 +1132,18 @@ static int stmt_evaluate_meta(struct eval_ctx *ctx, struct stmt *stmt)
 
 static int stmt_evaluate_reject(struct eval_ctx *ctx, struct stmt *stmt)
 {
+	struct proto_ctx *pctx = &ctx->pctx;
+	const struct proto_desc *base;
+
+	base = pctx->protocol[PROTO_BASE_TRANSPORT_HDR].desc;
+	if (base == NULL)
+		return -1;
+
+	if (strcmp(base->name, "tcp") == 0)
+		stmt->reject.type = NFT_REJECT_TCP_RST;
+	else
+		stmt->reject.type = NFT_REJECT_ICMP_UNREACH;
+
 	stmt->flags |= STMT_F_TERMINAL;
 	return 0;
 }
