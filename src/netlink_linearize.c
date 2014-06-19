@@ -545,7 +545,7 @@ static void netlink_gen_counter_stmt(struct netlink_linearize_ctx *ctx,
 	}
 	if (stmt->counter.bytes) {
 		nft_rule_expr_set_u64(nle, NFT_EXPR_CTR_BYTES,
-				      stmt->counter.packets);
+				      stmt->counter.bytes);
 	}
 	nft_rule_add_expr(ctx->nlr, nle);
 }
