@@ -18,7 +18,6 @@
 #include <linux/netfilter.h>
 #include <linux/netfilter/nf_tables.h>
 #include <linux/netfilter/nf_conntrack_tuple_common.h>
-#include <linux/icmp.h>
 #include <libnftnl/common.h>
 
 #include <rule.h>
@@ -360,7 +359,6 @@ static int monitor_lookup_event(const char *event)
 %token WEEK			"week"
 
 %token _REJECT			"reject"
-%token WITH			"with"
 
 %token SNAT			"snat"
 %token DNAT			"dnat"
@@ -421,8 +419,8 @@ static int monitor_lookup_event(const char *event)
 %type <stmt>			limit_stmt
 %destructor { stmt_free($$); }	limit_stmt
 %type <val>			time_unit
-%type <stmt>			reject_stmt reject_stmt_alloc
-%destructor { stmt_free($$); }	reject_stmt reject_stmt_alloc
+%type <stmt>			reject_stmt
+%destructor { stmt_free($$); }	reject_stmt
 %type <stmt>			nat_stmt nat_stmt_alloc
 %destructor { stmt_free($$); }	nat_stmt nat_stmt_alloc
 %type <stmt>			queue_stmt queue_stmt_alloc queue_range
@@ -1398,35 +1396,9 @@ time_unit		:	SECOND		{ $$ = 1ULL; }
 			|	WEEK		{ $$ = 1ULL * 60 * 60 * 24 * 7; }
 			;
 
-
-reject_stmt		:	reject_stmt_alloc	reject_opts
-
-reject_stmt_alloc	:	_REJECT
+reject_stmt		:	_REJECT
 			{
 				$$ = reject_stmt_alloc(&@$);
-			}
-			;
-
-reject_opts		:       /* empty */
-			{
-				$<stmt>0->reject.icmp_code = -1;
-			}
-			|	WITH	STRING
-			{
-				if (strcmp($2, "net-unreach") == 0)
-					$<stmt>0->reject.icmp_code = ICMP_NET_UNREACH;
-				else if (strcmp($2, "host-unreach") == 0)
-					$<stmt>0->reject.icmp_code = ICMP_HOST_UNREACH;
-				else if (strcmp($2, "prot-unreach") == 0)
-					$<stmt>0->reject.icmp_code = ICMP_PROT_UNREACH;
-				else if (strcmp($2, "port-unreach") == 0)
-					$<stmt>0->reject.icmp_code = ICMP_PORT_UNREACH;
-				else if (strcmp($2, "net-prohibited") == 0)
-					$<stmt>0->reject.icmp_code = ICMP_NET_ANO;
-				else if (strcmp($2, "host-prohibited") == 0)
-					$<stmt>0->reject.icmp_code = ICMP_HOST_ANO;
-				else if (strcmp($2, "admin-prohibited") == 0)
-					$<stmt>0->reject.icmp_code = ICMP_PKT_FILTERED;
 			}
 			;
 

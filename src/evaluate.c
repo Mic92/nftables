@@ -17,7 +17,6 @@
 #include <linux/netfilter.h>
 #include <linux/netfilter_arp.h>
 #include <linux/netfilter/nf_tables.h>
-#include <linux/icmp.h>
 
 #include <expression.h>
 #include <statement.h>
@@ -1133,22 +1132,6 @@ static int stmt_evaluate_meta(struct eval_ctx *ctx, struct stmt *stmt)
 
 static int stmt_evaluate_reject(struct eval_ctx *ctx, struct stmt *stmt)
 {
-	struct proto_ctx *pctx = &ctx->pctx;
-	const struct proto_desc *base;
-
-	base = pctx->protocol[PROTO_BASE_TRANSPORT_HDR].desc;
-	if (base == NULL)
-		return -1;
-
-	if (strcmp(base->name, "tcp") == 0 && stmt->reject.icmp_code == -1) {
-		stmt->reject.type = NFT_REJECT_TCP_RST;
-		stmt->reject.icmp_code = ICMP_NET_UNREACH;
-	} else {
-		stmt->reject.type = NFT_REJECT_ICMP_UNREACH;
-		if (stmt->reject.icmp_code < 0)
-			stmt->reject.icmp_code = ICMP_NET_UNREACH;
-	}
-
 	stmt->flags |= STMT_F_TERMINAL;
 	return 0;
 }

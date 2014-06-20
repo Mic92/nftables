@@ -47,7 +47,6 @@ extern struct stmt *limit_stmt_alloc(const struct location *loc);
 
 struct reject_stmt {
 	enum nft_reject_types	type;
-	int8_t			icmp_code;
 };
 
 extern struct stmt *reject_stmt_alloc(const struct location *loc);

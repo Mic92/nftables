@@ -18,7 +18,6 @@
 #include <statement.h>
 #include <utils.h>
 #include <list.h>
-#include <linux/icmp.h>
 
 struct stmt *stmt_alloc(const struct location *loc,
 			const struct stmt_ops *ops)
@@ -199,37 +198,7 @@ struct stmt *queue_stmt_alloc(const struct location *loc)
 
 static void reject_stmt_print(const struct stmt *stmt)
 {
-	const char *icmp_code_name = NULL;
-
 	printf("reject");
-	if (stmt->reject.type != NFT_REJECT_TCP_RST) {
-		switch (stmt->reject.icmp_code) {
-		case ICMP_NET_UNREACH:
-			icmp_code_name = "net-unreach";
-			break;
-		case ICMP_HOST_UNREACH:
-			icmp_code_name = "host-unreach";
-			break;
-		case ICMP_PROT_UNREACH:
-			icmp_code_name = "prot-unreach";
-			break;
-		case ICMP_PORT_UNREACH:
-			icmp_code_name = "port-unreach";
-			break;
-		case ICMP_NET_ANO:
-			icmp_code_name = "net-prohibited";
-			break;
-		case ICMP_HOST_ANO:
-			icmp_code_name = "host-prohibited";
-			break;
-		case ICMP_PKT_FILTERED:
-			icmp_code_name = "admin-prohibited";
-			break;
-		default:
-			icmp_code_name = "Unknown icmp code";
-		}
-		printf(" with %s", icmp_code_name);
-	}
 }
 
 static const struct stmt_ops reject_stmt_ops = {
