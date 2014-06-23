@@ -576,17 +576,17 @@ static void netlink_gen_log_stmt(struct netlink_linearize_ctx *ctx,
 		nft_rule_expr_set_str(nle, NFT_EXPR_LOG_PREFIX,
 				      stmt->log.prefix);
 	}
-	if (stmt->log.group) {
+	if (stmt->log.flags & STMT_LOG_GROUP) {
 		nft_rule_expr_set_u16(nle, NFT_EXPR_LOG_GROUP,
 				      stmt->log.group);
-	}
-	if (stmt->log.snaplen) {
-		nft_rule_expr_set_u32(nle, NFT_EXPR_LOG_SNAPLEN,
-				      stmt->log.snaplen);
-	}
-	if (stmt->log.qthreshold) {
-		nft_rule_expr_set_u16(nle, NFT_EXPR_LOG_QTHRESHOLD,
-				      stmt->log.qthreshold);
+		if (stmt->log.flags & STMT_LOG_SNAPLEN)
+			nft_rule_expr_set_u32(nle, NFT_EXPR_LOG_SNAPLEN,
+					      stmt->log.snaplen);
+		if (stmt->log.flags & STMT_LOG_QTHRESHOLD)
+			nft_rule_expr_set_u16(nle, NFT_EXPR_LOG_QTHRESHOLD,
+					      stmt->log.qthreshold);
+	} else {
+		nft_rule_expr_set_u32(nle, NFT_EXPR_LOG_LEVEL, stmt->log.level);
 	}
 	nft_rule_add_expr(ctx->nlr, nle);
 }

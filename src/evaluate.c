@@ -1180,6 +1180,18 @@ static int stmt_evaluate_ct(struct eval_ctx *ctx, struct stmt *stmt)
 	return 0;
 }
 
+static int stmt_evaluate_log(struct eval_ctx *ctx, struct stmt *stmt)
+{
+	if (stmt->log.flags & STMT_LOG_LEVEL &&
+	    (stmt->log.flags & STMT_LOG_GROUP	||
+	     stmt->log.flags & STMT_LOG_SNAPLEN	||
+	     stmt->log.flags & STMT_LOG_QTHRESHOLD)) {
+		return stmt_error(ctx, stmt,
+				  "level and group are mutually exclusive");
+	}
+	return 0;
+}
+
 static int stmt_evaluate(struct eval_ctx *ctx, struct stmt *stmt)
 {
 #ifdef DEBUG
@@ -1193,7 +1205,6 @@ static int stmt_evaluate(struct eval_ctx *ctx, struct stmt *stmt)
 	switch (stmt->ops->type) {
 	case STMT_COUNTER:
 	case STMT_LIMIT:
-	case STMT_LOG:
 		return 0;
 	case STMT_EXPRESSION:
 		return stmt_evaluate_expr(ctx, stmt);
@@ -1201,6 +1212,8 @@ static int stmt_evaluate(struct eval_ctx *ctx, struct stmt *stmt)
 		return stmt_evaluate_verdict(ctx, stmt);
 	case STMT_META:
 		return stmt_evaluate_meta(ctx, stmt);
+	case STMT_LOG:
+		return stmt_evaluate_log(ctx, stmt);
 	case STMT_REJECT:
 		return stmt_evaluate_reject(ctx, stmt);
 	case STMT_NAT:

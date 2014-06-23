@@ -14,6 +14,7 @@
 #include <stdint.h>
 #include <inttypes.h>
 #include <string.h>
+#include <syslog.h>
 
 #include <statement.h>
 #include <utils.h>
@@ -112,17 +113,39 @@ struct stmt *counter_stmt_alloc(const struct location *loc)
 	return stmt_alloc(loc, &counter_stmt_ops);
 }
 
+static const char *syslog_level[LOG_DEBUG + 1] = {
+	[LOG_EMERG]	= "emerg",
+	[LOG_ALERT]	= "alert",
+	[LOG_CRIT]	= "crit",
+	[LOG_ERR]       = "err",
+	[LOG_WARNING]	= "warn",
+	[LOG_NOTICE]	= "notice",
+	[LOG_INFO]	= "info",
+	[LOG_DEBUG]	= "debug",
+};
+
+static const char *log_level(uint32_t level)
+{
+	if (level > LOG_DEBUG)
+		return "unknown";
+
+	return syslog_level[level];
+}
+
 static void log_stmt_print(const struct stmt *stmt)
 {
 	printf("log");
-	if (stmt->log.prefix != NULL)
+	if (stmt->log.flags & STMT_LOG_PREFIX)
 		printf(" prefix \"%s\"", stmt->log.prefix);
-	if (stmt->log.group)
+	if (stmt->log.flags & STMT_LOG_GROUP)
 		printf(" group %u", stmt->log.group);
-	if (stmt->log.snaplen)
+	if (stmt->log.flags & STMT_LOG_SNAPLEN)
 		printf(" snaplen %u", stmt->log.snaplen);
-	if (stmt->log.qthreshold)
+	if (stmt->log.flags & STMT_LOG_QTHRESHOLD)
 		printf(" queue-threshold %u", stmt->log.qthreshold);
+	if ((stmt->log.flags & STMT_LOG_LEVEL) &&
+	    stmt->log.level != LOG_WARNING)
+		printf(" level %s", log_level(stmt->log.level));
 }
 
 static void log_stmt_destroy(struct stmt *stmt)

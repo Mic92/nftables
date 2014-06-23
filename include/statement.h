@@ -28,11 +28,21 @@ extern struct stmt *meta_stmt_alloc(const struct location *loc,
 				    enum nft_meta_keys key,
 				    struct expr *expr);
 
+enum {
+	STMT_LOG_PREFIX		= (1 << 0),
+	STMT_LOG_SNAPLEN	= (1 << 1),
+	STMT_LOG_GROUP		= (1 << 2),
+	STMT_LOG_QTHRESHOLD	= (1 << 3),
+	STMT_LOG_LEVEL		= (1 << 4),
+};
+
 struct log_stmt {
 	const char		*prefix;
 	unsigned int		snaplen;
 	uint16_t		group;
 	uint16_t		qthreshold;
+	uint32_t		level;
+	uint32_t		flags;
 };
 
 extern struct stmt *log_stmt_alloc(const struct location *loc);

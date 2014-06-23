@@ -13,6 +13,7 @@
 #include <stddef.h>
 #include <stdio.h>
 #include <inttypes.h>
+#include <syslog.h>
 #include <netinet/ip.h>
 #include <netinet/if_ether.h>
 #include <linux/netfilter.h>
@@ -345,6 +346,15 @@ static int monitor_lookup_event(const char *event)
 %token GROUP			"group"
 %token SNAPLEN			"snaplen"
 %token QUEUE_THRESHOLD		"queue-threshold"
+%token LEVEL			"level"
+%token LEVEL_EMERG		"emerg"
+%token LEVEL_ALERT		"alert"
+%token LEVEL_CRIT		"crit"
+%token LEVEL_ERR		"err"
+%token LEVEL_WARN		"warn"
+%token LEVEL_NOTICE		"notice"
+%token LEVEL_INFO		"info"
+%token LEVEL_DEBUG		"debug"
 
 %token LIMIT			"limit"
 %token RATE			"rate"
@@ -416,6 +426,7 @@ static int monitor_lookup_event(const char *event)
 %destructor { stmt_free($$); }	meta_stmt
 %type <stmt>			log_stmt log_stmt_alloc
 %destructor { stmt_free($$); }	log_stmt log_stmt_alloc
+%type <val>			level_type
 %type <stmt>			limit_stmt
 %destructor { stmt_free($$); }	limit_stmt
 %type <val>			time_unit
@@ -1366,18 +1377,61 @@ log_args		:	log_arg
 log_arg			:	PREFIX			string
 			{
 				$<stmt>0->log.prefix	 = $2;
+				$<stmt>0->log.flags 	|= STMT_LOG_PREFIX;
 			}
 			|	GROUP			NUM
 			{
 				$<stmt>0->log.group	 = $2;
+				$<stmt>0->log.flags 	|= STMT_LOG_GROUP;
 			}
 			|	SNAPLEN			NUM
 			{
 				$<stmt>0->log.snaplen	 = $2;
+				$<stmt>0->log.flags 	|= STMT_LOG_SNAPLEN;
 			}
 			|	QUEUE_THRESHOLD		NUM
 			{
 				$<stmt>0->log.qthreshold = $2;
+				$<stmt>0->log.flags 	|= STMT_LOG_QTHRESHOLD;
+			}
+			|	LEVEL			level_type
+			{
+				$<stmt>0->log.level	= $2;
+				$<stmt>0->log.flags 	|= STMT_LOG_LEVEL;
+			}
+			;
+
+level_type		:	LEVEL_EMERG
+			{
+				$$ = LOG_EMERG;
+			}
+			|	LEVEL_ALERT
+			{
+				$$ = LOG_ALERT;
+			}
+			|	LEVEL_CRIT
+			{
+				$$ = LOG_CRIT;
+			}
+			|	LEVEL_ERR
+			{
+				$$ = LOG_ERR;
+			}
+			|	LEVEL_WARN
+			{
+				$$ = LOG_WARNING;
+			}
+			|	LEVEL_NOTICE
+			{
+				$$ = LOG_NOTICE;
+			}
+			|	LEVEL_INFO
+			{
+				$$ = LOG_INFO;
+			}
+			|	LEVEL_DEBUG
+			{
+				$$ = LOG_DEBUG;
 			}
 			;
 

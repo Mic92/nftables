@@ -428,12 +428,30 @@ static void netlink_parse_log(struct netlink_parse_ctx *ctx,
 
 	stmt = log_stmt_alloc(loc);
 	prefix = nft_rule_expr_get_str(nle, NFT_EXPR_LOG_PREFIX);
-	if (prefix != NULL)
+	if (nft_rule_expr_is_set(nle, NFT_EXPR_LOG_PREFIX)) {
 		stmt->log.prefix = xstrdup(prefix);
-	stmt->log.group = nft_rule_expr_get_u16(nle, NFT_EXPR_LOG_GROUP);
-	stmt->log.snaplen = nft_rule_expr_get_u32(nle, NFT_EXPR_LOG_SNAPLEN);
-	stmt->log.qthreshold =
-		nft_rule_expr_get_u16(nle, NFT_EXPR_LOG_QTHRESHOLD);
+		stmt->log.flags |= STMT_LOG_PREFIX;
+	}
+	if (nft_rule_expr_is_set(nle, NFT_EXPR_LOG_GROUP)) {
+		stmt->log.group =
+			nft_rule_expr_get_u16(nle, NFT_EXPR_LOG_GROUP);
+		stmt->log.flags |= STMT_LOG_GROUP;
+	}
+	if (nft_rule_expr_is_set(nle, NFT_EXPR_LOG_SNAPLEN)) {
+		stmt->log.snaplen =
+			nft_rule_expr_get_u32(nle, NFT_EXPR_LOG_SNAPLEN);
+		stmt->log.flags |= STMT_LOG_SNAPLEN;
+	}
+	if (nft_rule_expr_is_set(nle, NFT_EXPR_LOG_QTHRESHOLD)) {
+		stmt->log.qthreshold =
+			nft_rule_expr_get_u16(nle, NFT_EXPR_LOG_QTHRESHOLD);
+		stmt->log.flags |= STMT_LOG_QTHRESHOLD;
+	}
+	if (nft_rule_expr_is_set(nle, NFT_EXPR_LOG_LEVEL)) {
+		stmt->log.level =
+			nft_rule_expr_get_u32(nle, NFT_EXPR_LOG_LEVEL);
+		stmt->log.flags |= STMT_LOG_LEVEL;
+	}
 	list_add_tail(&stmt->list, &ctx->rule->stmts);
 }
 
