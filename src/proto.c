@@ -754,6 +754,7 @@ static struct error_record *ethertype_parse(const struct expr *sym,
 {
 	struct error_record *erec;
 
+	*res = NULL;
 	erec = sym->dtype->basetype->parse(sym, res);
 	if (erec != NULL)
 		return erec;
