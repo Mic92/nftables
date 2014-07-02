@@ -703,6 +703,7 @@ static int expr_evaluate_map(struct eval_ctx *ctx, struct expr **expr)
 	struct expr_ctx ectx = ctx->ectx;
 	struct expr *map = *expr, *mappings;
 
+	expr_set_context(&ctx->ectx, NULL, 0);
 	if (expr_evaluate(ctx, &map->map) < 0)
 		return -1;
 	if (expr_is_constant(map->map))
