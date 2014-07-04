@@ -14,6 +14,7 @@
 #include <stdint.h>
 #include <string.h>
 #include <inttypes.h>
+#include <errno.h>
 
 #include <statement.h>
 #include <rule.h>
@@ -701,12 +702,28 @@ static int do_command_export(struct netlink_ctx *ctx, struct cmd *cmd)
 	return 0;
 }
 
+static void do_command_list_cleanup(struct table *table)
+{
+	struct chain *chain, *nchain;
+	struct set *set, *nset;
+
+	list_for_each_entry_safe(chain, nchain, &table->chains, list) {
+		list_del(&chain->list);
+		chain_free(chain);
+	}
+
+	list_for_each_entry_safe(set, nset, &table->sets, list) {
+		list_del(&set->list);
+		set_free(set);
+	}
+}
+
 static int do_command_list(struct netlink_ctx *ctx, struct cmd *cmd)
 {
 	struct table *table = NULL;
-	struct chain *chain, *nchain;
+	struct chain *chain;
 	struct rule *rule, *nrule;
-	struct set *set, *nset;
+	struct set *set;
 
 	/* No need to allocate the table object when listing all tables */
 	if (cmd->handle.table != NULL) {
@@ -726,7 +743,7 @@ static int do_command_list(struct netlink_ctx *ctx, struct cmd *cmd)
 
 			if (netlink_list_tables(ctx, &cmd->handle,
 						&cmd->location) < 0)
-				return -1;
+				goto err;
 
 			list_for_each_entry(table, &ctx->list, list) {
 				printf("table %s\n", table->handle.table);
@@ -735,39 +752,41 @@ static int do_command_list(struct netlink_ctx *ctx, struct cmd *cmd)
 		}
 		/* List content of this table */
 		if (do_list_sets(ctx, &cmd->location, table) < 0)
-			return -1;
+			goto err;
 		if (netlink_list_chains(ctx, &cmd->handle, &cmd->location) < 0)
-			return -1;
+			goto err;
 		list_splice_tail_init(&ctx->list, &table->chains);
 		if (netlink_list_table(ctx, &cmd->handle, &cmd->location) < 0)
-			return -1;
+			goto err;
 		break;
 	case CMD_OBJ_CHAIN:
 		if (do_list_sets(ctx, &cmd->location, table) < 0)
-			return -1;
+			goto err;
 		if (netlink_list_chains(ctx, &cmd->handle, &cmd->location) < 0)
-			return -1;
+			goto err;
 		list_splice_tail_init(&ctx->list, &table->chains);
 		if (netlink_list_table(ctx, &cmd->handle, &cmd->location) < 0)
-			return -1;
+			goto err;
 		break;
 	case CMD_OBJ_SETS:
 		if (netlink_list_sets(ctx, &cmd->handle, &cmd->location) < 0)
-			return -1;
+			goto err;
 		list_for_each_entry(set, &ctx->list, list){
 			if (netlink_get_setelems(ctx, &set->handle,
-						 &cmd->location, set) < 0)
-				return -1;
+						 &cmd->location, set) < 0) {
+				goto err;
+			}
 			set_print(set);
 		}
 		return 0;
 	case CMD_OBJ_SET:
 		if (netlink_get_set(ctx, &cmd->handle, &cmd->location) < 0)
-			return -1;
+			goto err;
 		list_for_each_entry(set, &ctx->list, list) {
 			if (netlink_get_setelems(ctx, &cmd->handle,
-						 &cmd->location, set) < 0)
-				return -1;
+						 &cmd->location, set) < 0) {
+				goto err;
+			}
 			set_print(set);
 		}
 		return 0;
@@ -787,18 +806,11 @@ static int do_command_list(struct netlink_ctx *ctx, struct cmd *cmd)
 	}
 
 	table_print(table);
-
-	list_for_each_entry_safe(chain, nchain, &table->chains, list) {
-		list_del(&chain->list);
-		chain_free(chain);
-	}
-
-	list_for_each_entry_safe(set, nset, &table->sets, list) {
-		list_del(&set->list);
-		set_free(set);
-	}
-
+	do_command_list_cleanup(table);
 	return 0;
+err:
+	do_command_list_cleanup(table);
+	return -1;
 }
 
 static int do_command_flush(struct netlink_ctx *ctx, struct cmd *cmd)

@@ -70,6 +70,12 @@ static void __exit netlink_close_sock(void)
 		mnl_socket_close(nf_mon_sock);
 }
 
+void netlink_restart(void)
+{
+	netlink_close_sock();
+	netlink_open_sock();
+}
+
 static void netlink_open_mon_sock(void)
 {
 	nf_mon_sock = nfsock_open();
@@ -443,10 +449,14 @@ static int netlink_list_rules(struct netlink_ctx *ctx, const struct handle *h,
 	struct nft_rule_list *rule_cache;
 
 	rule_cache = mnl_nft_rule_dump(nf_sock, h->family);
-	if (rule_cache == NULL)
+	if (rule_cache == NULL) {
+		if (errno == EINTR)
+			return -1;
+
 		return netlink_io_error(ctx, loc,
 					"Could not receive rules from kernel: %s",
 					strerror(errno));
+	}
 
 	ctx->data = h;
 	nft_rule_list_foreach(rule_cache, list_rule_cb, ctx);
@@ -704,10 +714,14 @@ int netlink_list_chains(struct netlink_ctx *ctx, const struct handle *h,
 	struct chain *chain;
 
 	chain_cache = mnl_nft_chain_dump(nf_sock, h->family);
-	if (chain_cache == NULL)
+	if (chain_cache == NULL) {
+		if (errno == EINTR)
+			return -1;
+
 		return netlink_io_error(ctx, loc,
 					"Could not receive chains from kernel: %s",
 					strerror(errno));
+	}
 
 	ctx->data = h;
 	nft_chain_list_foreach(chain_cache, list_chain_cb, ctx);
@@ -907,10 +921,14 @@ int netlink_list_tables(struct netlink_ctx *ctx, const struct handle *h,
 	struct nft_table_list *table_cache;
 
 	table_cache = mnl_nft_table_dump(nf_sock, h->family);
-	if (table_cache == NULL)
+	if (table_cache == NULL) {
+		if (errno == EINTR)
+			return -1;
+
 		return netlink_io_error(ctx, loc,
 					"Could not receive tables from kernel: %s",
 					strerror(errno));
+	}
 
 	nft_table_list_foreach(table_cache, list_table_cb, ctx);
 	nft_table_list_free(table_cache);
@@ -1177,10 +1195,14 @@ int netlink_list_sets(struct netlink_ctx *ctx, const struct handle *h,
 	int err;
 
 	set_cache = mnl_nft_set_dump(nf_sock, h->family, h->table);
-	if (set_cache == NULL)
+	if (set_cache == NULL) {
+		if (errno == EINTR)
+			return -1;
+
 		return netlink_io_error(ctx, loc,
 					"Could not receive sets from kernel: %s",
 					strerror(errno));
+	}
 
 	err = nft_set_list_foreach(set_cache, list_set_cb, ctx);
 	nft_set_list_free(set_cache);
@@ -1393,8 +1415,12 @@ int netlink_get_setelems(struct netlink_ctx *ctx, const struct handle *h,
 	netlink_dump_set(nls);
 
 	err = mnl_nft_setelem_get(nf_sock, nls);
-	if (err < 0)
+	if (err < 0) {
+		if (errno == EINTR)
+			return -1;
+
 		goto out;
+	}
 
 	ctx->set = set;
 	set->init = set_expr_alloc(loc);
@@ -1423,9 +1449,13 @@ struct nft_ruleset *netlink_dump_ruleset(struct netlink_ctx *ctx,
 	struct nft_ruleset *rs;
 
 	rs = mnl_nft_ruleset_dump(nf_sock, h->family);
-	if (rs == NULL)
+	if (rs == NULL) {
+		if (errno == EINTR)
+			return NULL;
+
 		netlink_io_error(ctx, loc, "Could not receive ruleset: %s",
 				 strerror(errno));
+	}
 
 	return rs;
 }
