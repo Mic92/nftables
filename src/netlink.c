@@ -1164,6 +1164,8 @@ static int list_set_cb(struct nft_set *nls, void *arg)
 
 	netlink_dump_set(nls);
 	set = netlink_delinearize_set(ctx, nls);
+	if (set == NULL)
+		return -1;
 	list_add_tail(&set->list, &ctx->list);
 	return 0;
 }
@@ -1172,6 +1174,7 @@ int netlink_list_sets(struct netlink_ctx *ctx, const struct handle *h,
 		      const struct location *loc)
 {
 	struct nft_set_list *set_cache;
+	int err;
 
 	set_cache = mnl_nft_set_dump(nf_sock, h->family, h->table);
 	if (set_cache == NULL)
@@ -1179,9 +1182,9 @@ int netlink_list_sets(struct netlink_ctx *ctx, const struct handle *h,
 					"Could not receive sets from kernel: %s",
 					strerror(errno));
 
-	nft_set_list_foreach(set_cache, list_set_cb, ctx);
+	err = nft_set_list_foreach(set_cache, list_set_cb, ctx);
 	nft_set_list_free(set_cache);
-	return 0;
+	return err;
 }
 
 int netlink_get_set(struct netlink_ctx *ctx, const struct handle *h,
@@ -1200,6 +1203,8 @@ int netlink_get_set(struct netlink_ctx *ctx, const struct handle *h,
 					strerror(errno));
 
 	set = netlink_delinearize_set(ctx, nls);
+	if (set == NULL)
+		return -1;
 	list_add_tail(&set->list, &ctx->list);
 	nft_set_free(nls);
 
@@ -1586,6 +1591,8 @@ static int netlink_events_set_cb(const struct nlmsghdr *nlh, int type,
 		if (type == NFT_MSG_NEWSET) {
 			printf("add ");
 			set = netlink_delinearize_set(monh->ctx, nls);
+			if (set == NULL)
+				return MNL_CB_ERROR;
 			set_print_plain(set);
 			set_free(set);
 		} else {
@@ -1770,6 +1777,8 @@ static void netlink_events_cache_addset(struct netlink_mon_handler *monh,
 	set_tmpctx.msgs = &msgs;
 
 	s = netlink_delinearize_set(&set_tmpctx, nls);
+	if (s == NULL)
+		return;
 	s->init = set_expr_alloc(monh->loc);
 
 	t = table_lookup(&s->handle);
