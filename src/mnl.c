@@ -908,41 +908,42 @@ struct nft_ruleset *mnl_nft_ruleset_dump(struct mnl_socket *nf_sock,
 		memory_allocation_error();
 
 	t = mnl_nft_table_dump(nf_sock, family);
-	if (t != NULL)
-		nft_ruleset_attr_set(rs, NFT_RULESET_ATTR_TABLELIST, t);
+	if (t == NULL)
+		goto err;
+
+	nft_ruleset_attr_set(rs, NFT_RULESET_ATTR_TABLELIST, t);
 
 	c = mnl_nft_chain_dump(nf_sock, family);
-	if (c != NULL)
-		nft_ruleset_attr_set(rs, NFT_RULESET_ATTR_CHAINLIST, c);
+	if (c == NULL)
+		goto err;
+
+	nft_ruleset_attr_set(rs, NFT_RULESET_ATTR_CHAINLIST, c);
 
 	sl = mnl_nft_set_dump(nf_sock, family, NULL);
-	if (sl != NULL) {
-		i = nft_set_list_iter_create(sl);
+	if (sl == NULL)
+		goto err;
+
+	i = nft_set_list_iter_create(sl);
+	s = nft_set_list_iter_next(i);
+	while (s != NULL) {
+		ret = mnl_nft_setelem_get(nf_sock, s);
+		if (ret < 0)
+			goto err;
+
 		s = nft_set_list_iter_next(i);
-		while (s != NULL) {
-			ret = mnl_nft_setelem_get(nf_sock, s);
-			if (ret != 0)
-				goto out;
-
-			s = nft_set_list_iter_next(i);
-		}
-		nft_set_list_iter_destroy(i);
-
-		nft_ruleset_attr_set(rs, NFT_RULESET_ATTR_SETLIST, sl);
 	}
+	nft_set_list_iter_destroy(i);
+
+	nft_ruleset_attr_set(rs, NFT_RULESET_ATTR_SETLIST, sl);
 
 	r = mnl_nft_rule_dump(nf_sock, family);
-	if (r != NULL)
-		nft_ruleset_attr_set(rs, NFT_RULESET_ATTR_RULELIST, r);
+	if (r == NULL)
+		goto err;
 
-	if (!(nft_ruleset_attr_is_set(rs, NFT_RULESET_ATTR_TABLELIST)) &&
-	    !(nft_ruleset_attr_is_set(rs, NFT_RULESET_ATTR_CHAINLIST)) &&
-	    !(nft_ruleset_attr_is_set(rs, NFT_RULESET_ATTR_SETLIST)) &&
-	    !(nft_ruleset_attr_is_set(rs, NFT_RULESET_ATTR_RULELIST)))
-		goto out;
+	nft_ruleset_attr_set(rs, NFT_RULESET_ATTR_RULELIST, r);
 
 	return rs;
-out:
+err:
 	nft_ruleset_free(rs);
 	return NULL;
 }
