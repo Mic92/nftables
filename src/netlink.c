@@ -1753,6 +1753,12 @@ out:
 	return MNL_CB_OK;
 }
 
+static void rule_map_decompose_cb(struct set *s, void *data)
+{
+	if (s->flags & NFT_SET_INTERVAL)
+		interval_map_decompose(s->init);
+}
+
 static int netlink_events_rule_cb(const struct nlmsghdr *nlh, int type,
 				  struct netlink_mon_handler *monh)
 {
@@ -1773,6 +1779,7 @@ static int netlink_events_rule_cb(const struct nlmsghdr *nlh, int type,
 
 		if (type == NFT_MSG_NEWRULE) {
 			r = netlink_delinearize_rule(monh->ctx, nlr);
+			nlr_for_each_set(nlr, rule_map_decompose_cb, NULL);
 
 			printf("add rule %s %s %s", family, table, chain);
 			rule_print(r);
