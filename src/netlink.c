@@ -59,7 +59,6 @@ static void __init netlink_open_sock(void)
 {
 	nf_sock = nfsock_open();
 	fcntl(mnl_socket_get_fd(nf_sock), F_SETFL, O_NONBLOCK);
-	mnl_batch_init();
 }
 
 static void __exit netlink_close_sock(void)

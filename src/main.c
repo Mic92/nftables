@@ -166,12 +166,14 @@ static const struct input_descriptor indesc_cmdline = {
 static int nft_netlink(struct parser_state *state, struct list_head *msgs)
 {
 	struct netlink_ctx ctx;
-	struct cmd *cmd, *next;
+	struct cmd *cmd;
 	struct mnl_err *err, *tmp;
 	LIST_HEAD(err_list);
 	uint32_t batch_seqnum;
 	bool batch_supported = netlink_batch_supported();
 	int ret = 0;
+
+	mnl_batch_init();
 
 	batch_seqnum = mnl_batch_begin();
 	list_for_each_entry(cmd, &state->cmds, list) {
@@ -182,16 +184,14 @@ static int nft_netlink(struct parser_state *state, struct list_head *msgs)
 		init_list_head(&ctx.list);
 		ret = do_command(&ctx, cmd);
 		if (ret < 0)
-			return ret;
+			goto out;
 	}
 	mnl_batch_end();
 
-	if (mnl_batch_ready())
-		ret = netlink_batch_send(&err_list);
-	else {
-		mnl_batch_reset();
+	if (!mnl_batch_ready())
 		goto out;
-	}
+
+	ret = netlink_batch_send(&err_list);
 
 	list_for_each_entry_safe(err, tmp, &err_list, head) {
 		list_for_each_entry(cmd, &state->cmds, list) {
@@ -208,16 +208,13 @@ static int nft_netlink(struct parser_state *state, struct list_head *msgs)
 		}
 	}
 out:
-	list_for_each_entry_safe(cmd, next, &state->cmds, list) {
-		list_del(&cmd->list);
-		cmd_free(cmd);
-	}
-
+	mnl_batch_reset();
 	return ret;
 }
 
 int nft_run(void *scanner, struct parser_state *state, struct list_head *msgs)
 {
+	struct cmd *cmd, *next;
 	int ret;
 
 	ret = nft_parse(scanner, state);
@@ -228,6 +225,11 @@ retry:
 	if (ret < 0 && errno == EINTR) {
 		netlink_restart();
 		goto retry;
+	}
+
+	list_for_each_entry_safe(cmd, next, &state->cmds, list) {
+		list_del(&cmd->list);
+		cmd_free(cmd);
 	}
 
 	return ret;
