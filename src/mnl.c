@@ -33,11 +33,19 @@ uint32_t mnl_seqnum_alloc(void)
 	return seq++;
 }
 
+/* The largest nf_tables netlink message is the set element message, which
+ * contains the NFTA_SET_ELEM_LIST_ELEMENTS attribute. This attribute is
+ * a nest that describes the set elements. Given that the netlink attribute
+ * length (nla_len) is 16 bits, the largest message is a bit larger than
+ * 64 KBytes.
+ */
+#define NFT_NLMSG_MAXSIZE (UINT16_MAX + getpagesize())
+
 static int
 nft_mnl_recv(struct mnl_socket *nf_sock, uint32_t seqnum, uint32_t portid,
 	     int (*cb)(const struct nlmsghdr *nlh, void *data), void *cb_data)
 {
-	char buf[MNL_SOCKET_BUFFER_SIZE];
+	char buf[NFT_NLMSG_MAXSIZE];
 	int ret;
 
 	ret = mnl_socket_recvfrom(nf_sock, buf, sizeof(buf));
@@ -86,8 +94,8 @@ static struct mnl_nlmsg_batch *mnl_batch_alloc(void)
 {
 	static char *buf;
 
-	/* libmnl needs higher buffer to handle batch overflows */
-	buf = xmalloc(BATCH_PAGE_SIZE + getpagesize());
+	/* libmnl needs higher buffer to handle batch overflows. */
+	buf = xmalloc(BATCH_PAGE_SIZE + NFT_NLMSG_MAXSIZE);
 	return mnl_nlmsg_batch_start(buf, BATCH_PAGE_SIZE);
 }
 
@@ -818,7 +826,7 @@ int mnl_nft_set_get(struct mnl_socket *nf_sock, struct nft_set *nls)
 int mnl_nft_setelem_add(struct mnl_socket *nf_sock, struct nft_set *nls,
 			unsigned int flags)
 {
-	char buf[MNL_SOCKET_BUFFER_SIZE];
+	char buf[NFT_NLMSG_MAXSIZE];
 	struct nlmsghdr *nlh;
 
 	nlh = nft_set_elem_nlmsg_build_hdr(buf, NFT_MSG_NEWSETELEM,
@@ -832,7 +840,7 @@ int mnl_nft_setelem_add(struct mnl_socket *nf_sock, struct nft_set *nls,
 int mnl_nft_setelem_delete(struct mnl_socket *nf_sock, struct nft_set *nls,
 			   unsigned int flags)
 {
-	char buf[MNL_SOCKET_BUFFER_SIZE];
+	char buf[NFT_NLMSG_MAXSIZE];
 	struct nlmsghdr *nlh;
 
 	nlh = nft_set_elem_nlmsg_build_hdr(buf, NFT_MSG_DELSETELEM,
