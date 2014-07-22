@@ -200,6 +200,8 @@ static int nft_netlink(struct parser_state *state, struct list_head *msgs)
 				netlink_io_error(&ctx, &cmd->location,
 						 "Could not process rule: %s",
 						 strerror(err->err));
+				ret = -1;
+				errno = err->err;
 				if (err->seqnum == cmd->seqnum) {
 					mnl_err_list_free(err);
 					break;
