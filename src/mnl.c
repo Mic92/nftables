@@ -828,13 +828,24 @@ int mnl_nft_setelem_add(struct mnl_socket *nf_sock, struct nft_set *nls,
 {
 	char buf[NFT_NLMSG_MAXSIZE];
 	struct nlmsghdr *nlh;
+	struct nft_set_elems_iter *iter;
+	int ret, err;
 
-	nlh = nft_set_elem_nlmsg_build_hdr(buf, NFT_MSG_NEWSETELEM,
-			nft_set_attr_get_u32(nls, NFT_SET_ATTR_FAMILY),
-			NLM_F_CREATE | NLM_F_ACK | flags, seq);
-	nft_set_elems_nlmsg_build_payload(nlh, nls);
+	iter = nft_set_elems_iter_create(nls);
+	if (iter == NULL)
+		memory_allocation_error();
 
-	return nft_mnl_talk(nf_sock, nlh, nlh->nlmsg_len, NULL, NULL);
+	do {
+		nlh = nft_set_elem_nlmsg_build_hdr(buf, NFT_MSG_NEWSETELEM,
+				nft_set_attr_get_u32(nls, NFT_SET_ATTR_FAMILY),
+				NLM_F_CREATE | NLM_F_ACK | flags, seq);
+		ret = nft_set_elems_nlmsg_build_payload_iter(nlh, iter);
+		err = nft_mnl_talk(nf_sock, nlh, nlh->nlmsg_len, NULL, NULL);
+	} while (ret > 0 && err >= 0);
+
+	nft_set_elems_iter_destroy(iter);
+
+	return err;
 }
 
 int mnl_nft_setelem_delete(struct mnl_socket *nf_sock, struct nft_set *nls,
@@ -861,13 +872,23 @@ int mnl_nft_setelem_batch_add(struct mnl_socket *nf_sock, struct nft_set *nls,
 			      unsigned int flags, uint32_t seqnum)
 {
 	struct nlmsghdr *nlh;
+	struct nft_set_elems_iter *iter;
+	int ret;
 
-	nlh = nft_set_elem_nlmsg_build_hdr(nft_nlmsg_batch_current(),
-			NFT_MSG_NEWSETELEM,
-			nft_set_attr_get_u32(nls, NFT_SET_ATTR_FAMILY),
-			NLM_F_CREATE | flags, seqnum);
-	nft_set_elems_nlmsg_build_payload(nlh, nls);
-	nft_batch_continue();
+	iter = nft_set_elems_iter_create(nls);
+	if (iter == NULL)
+		memory_allocation_error();
+
+	do {
+		nlh = nft_set_elem_nlmsg_build_hdr(nft_nlmsg_batch_current(),
+				NFT_MSG_NEWSETELEM,
+				nft_set_attr_get_u32(nls, NFT_SET_ATTR_FAMILY),
+				NLM_F_CREATE | flags, seqnum);
+		ret = nft_set_elems_nlmsg_build_payload_iter(nlh, iter);
+		nft_batch_continue();
+	} while (ret > 0);
+
+	nft_set_elems_iter_destroy(iter);
 
 	return 0;
 }
