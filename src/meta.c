@@ -20,6 +20,7 @@
 #include <pwd.h>
 #include <grp.h>
 #include <linux/pkt_sched.h>
+#include <linux/if_packet.h>
 
 #include <nftables.h>
 #include <expression.h>
@@ -297,6 +298,57 @@ static const struct datatype gid_type = {
 	.parse		= gid_type_parse,
 };
 
+static const struct symbol_table pkttype_type_tbl = {
+	.symbols	= {
+		SYMBOL("unicast", PACKET_HOST),
+		SYMBOL("broadcast", PACKET_BROADCAST),
+		SYMBOL("multicast", PACKET_MULTICAST),
+		SYMBOL_LIST_END,
+	},
+};
+
+static void pkttype_type_print(const struct expr *expr)
+{
+	return symbolic_constant_print(&pkttype_type_tbl, expr);
+}
+
+static struct error_record *pkttype_type_parse(const struct expr *sym,
+					       struct expr **res)
+{
+	struct error_record *erec;
+	const struct symbolic_constant *s;
+
+	for (s = pkttype_type_tbl.symbols; s->identifier != NULL; s++) {
+		if (!strcmp(sym->identifier, s->identifier)) {
+			*res = constant_expr_alloc(&sym->location, sym->dtype,
+						   sym->dtype->byteorder,
+						   sym->dtype->size,
+						   &s->value);
+			return NULL;
+		}
+	}
+
+	*res = NULL;
+	erec = sym->dtype->basetype->parse(sym, res);
+	if (erec != NULL)
+		return erec;
+	if (*res)
+		return NULL;
+
+	return symbolic_constant_parse(sym, &pkttype_type_tbl, res);
+}
+
+static const struct datatype pkttype_type = {
+	.type		= TYPE_PKTTYPE,
+	.name		= "pkt_type",
+	.desc		= "packet type",
+	.byteorder	= BYTEORDER_HOST_ENDIAN,
+	.size		= BITS_PER_BYTE,
+	.basetype	= &integer_type,
+	.print		= pkttype_type_print,
+	.parse		= pkttype_type_parse,
+};
+
 static const struct meta_template meta_templates[] = {
 	[NFT_META_LEN]		= META_TEMPLATE("length",    &integer_type,
 						4 * 8, BYTEORDER_HOST_ENDIAN),
@@ -337,6 +389,9 @@ static const struct meta_template meta_templates[] = {
 						BYTEORDER_HOST_ENDIAN),
 	[NFT_META_BRI_OIFNAME]	= META_TEMPLATE("obriport",  &string_type,
 						IFNAMSIZ * BITS_PER_BYTE,
+						BYTEORDER_HOST_ENDIAN),
+	[NFT_META_PKTTYPE]	= META_TEMPLATE("pkttype",  &pkttype_type,
+						BITS_PER_BYTE,
 						BYTEORDER_HOST_ENDIAN),
 };
 

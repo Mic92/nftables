@@ -415,6 +415,7 @@ addrstring	({macaddr}|{ip4addr}|{ip6addr})
 "rtclassid"		{ return RTCLASSID; }
 "ibriport"		{ return IBRIPORT; }
 "obriport"		{ return OBRIPORT; }
+"pkttype"		{ return PKTTYPE; }
 
 "ct"			{ return CT; }
 "direction"		{ return DIRECTION; }
