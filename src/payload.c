@@ -113,6 +113,7 @@ struct expr *payload_expr_alloc(const struct location *loc,
 	} else {
 		tmpl = &proto_unknown_template;
 		base = PROTO_BASE_INVALID;
+		desc = &proto_unknown;
 	}
 
 	expr = expr_alloc(loc, &payload_expr_ops, tmpl->dtype,
