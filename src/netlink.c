@@ -751,15 +751,17 @@ int netlink_get_chain(struct netlink_ctx *ctx, const struct handle *h,
 
 	nlc = alloc_nft_chain(h);
 	err = mnl_nft_chain_get(nf_sock, nlc, 0);
+	if (err < 0) {
+		nft_chain_free(nlc);
+		return netlink_io_error(ctx, loc,
+					"Could not receive chain from kernel: %s",
+					strerror(errno));
+	}
 
 	chain = netlink_delinearize_chain(ctx, nlc);
 	list_add_tail(&chain->list, &ctx->list);
 	nft_chain_free(nlc);
 
-	if (err < 0)
-		return netlink_io_error(ctx, loc,
-					"Could not receive chain from kernel: %s",
-					strerror(errno));
 	return err;
 }
 
@@ -1218,16 +1220,18 @@ int netlink_get_set(struct netlink_ctx *ctx, const struct handle *h,
 	nls = alloc_nft_set(h);
 	netlink_dump_set(nls);
 	err = mnl_nft_set_get(nf_sock, nls);
-	if (err < 0)
+	if (err < 0) {
+		nft_set_free(nls);
 		return netlink_io_error(ctx, loc,
 					"Could not receive set from kernel: %s",
 					strerror(errno));
+	}
 
 	set = netlink_delinearize_set(ctx, nls);
+	nft_set_free(nls);
 	if (set == NULL)
 		return -1;
 	list_add_tail(&set->list, &ctx->list);
-	nft_set_free(nls);
 
 	return err;
 }
@@ -1415,6 +1419,7 @@ int netlink_get_setelems(struct netlink_ctx *ctx, const struct handle *h,
 
 	err = mnl_nft_setelem_get(nf_sock, nls);
 	if (err < 0) {
+		nft_set_free(nls);
 		if (errno == EINTR)
 			return -1;
 
