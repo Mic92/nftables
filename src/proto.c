@@ -712,10 +712,10 @@ const struct proto_desc proto_vlan = {
 	.base		= PROTO_BASE_LL_HDR,
 	.protocol_key	= VLANHDR_TYPE,
 	.protocols	= {
-		PROTO_LINK(ETH_P_IP,		&proto_ip),
-		PROTO_LINK(ETH_P_ARP,		&proto_arp),
-		PROTO_LINK(ETH_P_IPV6,		&proto_ip6),
-		PROTO_LINK(ETH_P_8021Q,		&proto_vlan),
+		PROTO_LINK(__constant_htons(ETH_P_IP),		&proto_ip),
+		PROTO_LINK(__constant_htons(ETH_P_ARP),		&proto_arp),
+		PROTO_LINK(__constant_htons(ETH_P_IPV6),	&proto_ip6),
+		PROTO_LINK(__constant_htons(ETH_P_8021Q),	&proto_vlan),
 
 	},
 	.templates	= {
@@ -741,10 +741,10 @@ const struct datatype etheraddr_type = {
 
 static const struct symbol_table ethertype_tbl = {
 	.symbols	= {
-		SYMBOL("ip",		ETH_P_IP),
-		SYMBOL("arp",		ETH_P_ARP),
-		SYMBOL("ip6",		ETH_P_IPV6),
-		SYMBOL("vlan",		ETH_P_8021Q),
+		SYMBOL("ip",		__constant_htons(ETH_P_IP)),
+		SYMBOL("arp",		__constant_htons(ETH_P_ARP)),
+		SYMBOL("ip6",		__constant_htons(ETH_P_IPV6)),
+		SYMBOL("vlan",		__constant_htons(ETH_P_8021Q)),
 		SYMBOL_LIST_END
 	},
 };
@@ -792,10 +792,10 @@ const struct proto_desc proto_eth = {
 	.base		= PROTO_BASE_LL_HDR,
 	.protocol_key	= ETHHDR_TYPE,
 	.protocols	= {
-		PROTO_LINK(ETH_P_IP,		&proto_ip),
-		PROTO_LINK(ETH_P_ARP,		&proto_arp),
-		PROTO_LINK(ETH_P_IPV6,		&proto_ip6),
-		PROTO_LINK(ETH_P_8021Q,		&proto_vlan),
+		PROTO_LINK(__constant_htons(ETH_P_IP),		&proto_ip),
+		PROTO_LINK(__constant_htons(ETH_P_ARP),		&proto_arp),
+		PROTO_LINK(__constant_htons(ETH_P_IPV6),	&proto_ip6),
+		PROTO_LINK(__constant_htons(ETH_P_8021Q),	&proto_vlan),
 	},
 	.templates	= {
 		[ETHHDR_DADDR]		= ETHHDR_ADDR("daddr", ether_dhost),
