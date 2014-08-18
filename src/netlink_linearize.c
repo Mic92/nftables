@@ -442,7 +442,7 @@ static enum nft_byteorder_ops netlink_gen_unary_op(enum ops op)
 	case OP_HTON:
 		return NFT_BYTEORDER_HTON;
 	case OP_NTOH:
-		return NFT_BYTEORDER_HTON;
+		return NFT_BYTEORDER_NTOH;
 	default:
 		BUG("invalid unary operation %u\n", op);
 	}
