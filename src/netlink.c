@@ -354,16 +354,14 @@ int netlink_add_rule_batch(struct netlink_ctx *ctx,
 	int err;
 
 	nlr = alloc_nft_rule(&rule->handle);
-	err = netlink_linearize_rule(ctx, nlr, rule);
-	if (err == 0) {
-		err = mnl_nft_rule_batch_add(nlr, flags | NLM_F_EXCL,
-					     ctx->seqnum);
-		if (err < 0)
-			netlink_io_error(ctx, &rule->location,
-					 "Could not add rule to batch: %s",
-					 strerror(errno));
-	}
+	netlink_linearize_rule(ctx, nlr, rule);
+	err = mnl_nft_rule_batch_add(nlr, flags | NLM_F_EXCL, ctx->seqnum);
 	nft_rule_free(nlr);
+	if (err < 0) {
+		netlink_io_error(ctx, &rule->location,
+				 "Could not add rule to batch: %s",
+				 strerror(errno));
+	}
 	return err;
 }
 

@@ -65,9 +65,9 @@ extern struct expr *netlink_alloc_data(const struct location *loc,
 				       const struct nft_data_delinearize *nld,
 				       enum nft_registers dreg);
 
-extern int netlink_linearize_rule(struct netlink_ctx *ctx,
-				  struct nft_rule *nlr,
-				  const struct rule *rule);
+extern void netlink_linearize_rule(struct netlink_ctx *ctx,
+				   struct nft_rule *nlr,
+				   const struct rule *rule);
 extern struct rule *netlink_delinearize_rule(struct netlink_ctx *ctx,
 					     const struct nft_rule *r);
 

@@ -746,8 +746,8 @@ static void netlink_gen_stmt(struct netlink_linearize_ctx *ctx,
 	}
 }
 
-int netlink_linearize_rule(struct netlink_ctx *ctx, struct nft_rule *nlr,
-			   const struct rule *rule)
+void netlink_linearize_rule(struct netlink_ctx *ctx, struct nft_rule *nlr,
+			    const struct rule *rule)
 {
 	struct netlink_linearize_ctx lctx;
 	const struct stmt *stmt;
@@ -760,5 +760,4 @@ int netlink_linearize_rule(struct netlink_ctx *ctx, struct nft_rule *nlr,
 		netlink_gen_stmt(&lctx, stmt);
 
 	netlink_dump_rule(nlr);
-	return 0;
 }
