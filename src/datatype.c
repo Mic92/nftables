@@ -176,15 +176,6 @@ const struct datatype invalid_type = {
 static void verdict_type_print(const struct expr *expr)
 {
 	switch (expr->verdict) {
-	case NF_ACCEPT:
-		printf("accept");
-		break;
-	case NF_DROP:
-		printf("drop");
-		break;
-	case NF_QUEUE:
-		printf("queue");
-		break;
 	case NFT_CONTINUE:
 		printf("continue");
 		break;
@@ -201,7 +192,19 @@ static void verdict_type_print(const struct expr *expr)
 		printf("return");
 		break;
 	default:
-		BUG("invalid verdict value %u\n", expr->verdict);
+		switch (expr->verdict & NF_VERDICT_MASK) {
+		case NF_ACCEPT:
+			printf("accept");
+			break;
+		case NF_DROP:
+			printf("drop");
+			break;
+		case NF_QUEUE:
+			printf("queue");
+			break;
+		default:
+			BUG("invalid verdict value %u\n", expr->verdict);
+		}
 	}
 }
 
