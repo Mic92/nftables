@@ -69,13 +69,20 @@ static void payload_expr_pctx_update(struct proto_ctx *ctx,
 {
 	const struct expr *left = expr->left, *right = expr->right;
 	const struct proto_desc *base, *desc;
+	unsigned int proto = 0;
 
 	if (!(left->flags & EXPR_F_PROTOCOL))
 		return;
 
 	assert(expr->op == OP_EQ);
+
+	/* Export the data in the correct byte order */
+	assert(right->len / BITS_PER_BYTE <= sizeof(proto));
+	mpz_export_data(&proto, right->value, right->byteorder,
+			right->len / BITS_PER_BYTE);
+
 	base = ctx->protocol[left->payload.base].desc;
-	desc = proto_find_upper(base, mpz_get_uint32(right->value));
+	desc = proto_find_upper(base, proto);
 
 	proto_ctx_update(ctx, left->payload.base + 1, &expr->location, desc);
 }
