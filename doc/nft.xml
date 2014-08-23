@@ -508,7 +508,7 @@ filter input iif $int_ifs accept
 				</listitem>
 			</varlistentry>
 			<varlistentry>
-				<term><option>flush</option></term>
+				<term><option>rename</option></term>
 				<listitem>
 					<para>
 						Rename the specified chain.
