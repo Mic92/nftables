@@ -393,6 +393,9 @@ static const struct meta_template meta_templates[] = {
 	[NFT_META_PKTTYPE]	= META_TEMPLATE("pkttype",  &pkttype_type,
 						BITS_PER_BYTE,
 						BYTEORDER_HOST_ENDIAN),
+	[NFT_META_CPU]		= META_TEMPLATE("cpu",  &integer_type,
+						BITS_PER_BYTE,
+						BYTEORDER_HOST_ENDIAN),
 };
 
 static void meta_expr_print(const struct expr *expr)

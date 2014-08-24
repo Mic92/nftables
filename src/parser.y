@@ -326,6 +326,7 @@ static int monitor_lookup_event(const char *event)
 %token IBRIPORT			"ibriport"
 %token OBRIPORT			"obriport"
 %token PKTTYPE			"pkttype"
+%token CPU			"cpu"
 
 %token CT			"ct"
 %token DIRECTION		"direction"
@@ -1840,6 +1841,7 @@ meta_key_unqualified	:	MARK		{ $$ = NFT_META_MARK; }
 			|	IBRIPORT	{ $$ = NFT_META_BRI_IIFNAME; }
 			|       OBRIPORT	{ $$ = NFT_META_BRI_OIFNAME; }
 			|       PKTTYPE		{ $$ = NFT_META_PKTTYPE; }
+			|       CPU		{ $$ = NFT_META_CPU; }
 			;
 
 meta_stmt		:	META	meta_key	SET	expr

@@ -416,6 +416,7 @@ addrstring	({macaddr}|{ip4addr}|{ip6addr})
 "ibriport"		{ return IBRIPORT; }
 "obriport"		{ return OBRIPORT; }
 "pkttype"		{ return PKTTYPE; }
+"cpu"			{ return CPU; }
 
 "ct"			{ return CT; }
 "direction"		{ return DIRECTION; }
