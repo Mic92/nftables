@@ -394,7 +394,7 @@ static const struct meta_template meta_templates[] = {
 						BITS_PER_BYTE,
 						BYTEORDER_HOST_ENDIAN),
 	[NFT_META_CPU]		= META_TEMPLATE("cpu",  &integer_type,
-						BITS_PER_BYTE,
+						4 * BITS_PER_BYTE,
 						BYTEORDER_HOST_ENDIAN),
 };
 
