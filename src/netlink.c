@@ -1444,6 +1444,28 @@ int netlink_batch_send(struct list_head *err_list)
 	return mnl_batch_talk(nf_sock, err_list);
 }
 
+int netlink_flush_ruleset(struct netlink_ctx *ctx, const struct handle *h,
+			  const struct location *loc)
+{
+	int err;
+	struct nft_table *nlt;
+
+	if (!ctx->batch_supported) {
+		netlink_io_error(ctx, loc, "Operation not supported.");
+		return -1;
+	}
+
+	nlt = alloc_nft_table(h);
+	err = mnl_nft_table_batch_del(nf_sock, nlt, 0, ctx->seqnum);
+	nft_table_free(nlt);
+
+	if (err < 0)
+		netlink_io_error(ctx, loc, "Could not flush the ruleset: %s",
+				 strerror(errno));
+
+	return err;
+}
+
 struct nft_ruleset *netlink_dump_ruleset(struct netlink_ctx *ctx,
 					 const struct handle *h,
 					 const struct location *loc)

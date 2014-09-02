@@ -187,6 +187,7 @@ static int monitor_lookup_event(const char *event)
 %token ELEMENT			"element"
 %token MAP			"map"
 %token HANDLE			"handle"
+%token RULESET			"ruleset"
 
 %token INET			"inet"
 
@@ -397,11 +398,11 @@ static int monitor_lookup_event(const char *event)
 %type <cmd>			base_cmd add_cmd create_cmd insert_cmd delete_cmd list_cmd flush_cmd rename_cmd export_cmd monitor_cmd
 %destructor { cmd_free($$); }	base_cmd add_cmd create_cmd insert_cmd delete_cmd list_cmd flush_cmd rename_cmd export_cmd monitor_cmd
 
-%type <handle>			table_spec tables_spec chain_spec chain_identifier ruleid_spec
-%destructor { handle_free(&$$); } table_spec tables_spec chain_spec chain_identifier ruleid_spec
+%type <handle>			table_spec tables_spec chain_spec chain_identifier ruleid_spec ruleset_spec
+%destructor { handle_free(&$$); } table_spec tables_spec chain_spec chain_identifier ruleid_spec ruleset_spec
 %type <handle>			set_spec set_identifier
 %destructor { handle_free(&$$); } set_spec set_identifier
-%type <val>			handle_spec family_spec position_spec
+%type <val>			handle_spec family_spec family_spec_explicit position_spec
 
 %type <table>			table_block_alloc table_block
 %destructor { close_scope(state); table_free($$); }	table_block_alloc
@@ -774,6 +775,10 @@ flush_cmd		:	TABLE		table_spec
 			|	SET		set_spec
 			{
 				$$ = cmd_alloc(CMD_FLUSH, CMD_OBJ_SET, &$2, &@$, NULL);
+			}
+			|	RULESET		ruleset_spec
+			{
+				$$ = cmd_alloc(CMD_FLUSH, CMD_OBJ_RULESET, &$2, &@$, NULL);
 			}
 			;
 
@@ -1164,8 +1169,11 @@ string			:	STRING
 			|	QUOTED_STRING
 			;
 
-family_spec		:	/* empty */	{ $$ = NFPROTO_IPV4; }
-			|	IP		{ $$ = NFPROTO_IPV4; }
+family_spec		:	/* empty */		{ $$ = NFPROTO_IPV4; }
+			|	family_spec_explicit
+			;
+
+family_spec_explicit	:	IP		{ $$ = NFPROTO_IPV4; }
 			|	IP6		{ $$ = NFPROTO_IPV6; }
 			|	INET		{ $$ = NFPROTO_INET; }
 			|	ARP		{ $$ = NFPROTO_ARP; }
@@ -1251,6 +1259,18 @@ comment_spec		:	/* empty */
 			|	COMMENT		string
 			{
 				$$ = $2;
+			}
+			;
+
+ruleset_spec		:	/* empty */
+			{
+				memset(&$$, 0, sizeof($$));
+				$$.family	= NFPROTO_UNSPEC;
+			}
+			|	family_spec_explicit
+			{
+				memset(&$$, 0, sizeof($$));
+				$$.family	= $1;
 			}
 			;
 
