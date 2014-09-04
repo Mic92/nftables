@@ -1131,7 +1131,7 @@ hook_spec		:	TYPE		STRING		HOOK		STRING		PRIORITY	NUM
 				}
 				$<chain>0->hookstr	= chain_hookname_lookup($4);
 				if ($<chain>0->hookstr == NULL) {
-					erec_queue(error(&@4, "unknown chain type %s", $4),
+					erec_queue(error(&@4, "unknown chain hook %s", $4),
 						   state->msgs);
 					YYERROR;
 				}
