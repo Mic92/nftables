@@ -1896,7 +1896,7 @@ ct_key			:	STATE		{ $$ = NFT_CT_STATE; }
 			|	PROTOCOL	{ $$ = NFT_CT_PROTOCOL; }
 			|	PROTO_SRC	{ $$ = NFT_CT_PROTO_SRC; }
 			|	PROTO_DST	{ $$ = NFT_CT_PROTO_DST; }
-			|	LABEL		{ $$ = NFT_CT_LABEL; }
+			|	LABEL		{ $$ = NFT_CT_LABELS; }
 			;
 
 ct_stmt			:	CT	ct_key		SET	expr

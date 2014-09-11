@@ -195,7 +195,7 @@ static const struct ct_template ct_templates[] = {
 	[NFT_CT_PROTO_DST]	= CT_TEMPLATE("proto-dst",  &invalid_type,
 					      BYTEORDER_BIG_ENDIAN,
 					      2 * BITS_PER_BYTE),
-	[NFT_CT_LABEL]		= CT_TEMPLATE("label", &ct_label_type,
+	[NFT_CT_LABELS]		= CT_TEMPLATE("label", &ct_label_type,
 					      BYTEORDER_HOST_ENDIAN,
 					      CT_LABEL_BIT_SIZE),
 };
