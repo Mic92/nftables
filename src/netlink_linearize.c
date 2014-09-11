@@ -586,7 +586,10 @@ static void netlink_gen_log_stmt(struct netlink_linearize_ctx *ctx,
 			nft_rule_expr_set_u16(nle, NFT_EXPR_LOG_QTHRESHOLD,
 					      stmt->log.qthreshold);
 	} else {
-		nft_rule_expr_set_u32(nle, NFT_EXPR_LOG_LEVEL, stmt->log.level);
+		if (stmt->log.flags & STMT_LOG_LEVEL) {
+			nft_rule_expr_set_u32(nle, NFT_EXPR_LOG_LEVEL,
+					      stmt->log.level);
+		}
 	}
 	nft_rule_add_expr(ctx->nlr, nle);
 }
