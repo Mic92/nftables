@@ -950,6 +950,8 @@ const struct datatype *concat_type_alloc(const struct expr *expr)
 
 void concat_type_destroy(const struct datatype *dtype)
 {
-	if (dtype->flags & DTYPE_F_ALLOC)
+	if (dtype->flags & DTYPE_F_ALLOC) {
+		xfree(dtype->desc);
 		xfree(dtype);
+	}
 }
