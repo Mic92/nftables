@@ -80,10 +80,11 @@ static void netlink_open_mon_sock(void)
 	nf_mon_sock = nfsock_open();
 }
 
-void __noreturn netlink_abi_error(void)
+void __noreturn __netlink_abi_error(const char *file, int line,
+				    const char *reason)
 {
 	fprintf(stderr, "E: Contact urgently your Linux kernel vendor. "
-		"Netlink ABI is broken: %s\n", strerror(errno));
+		"Netlink ABI is broken: %s:%d %s\n", file, line, reason);
 	exit(NFT_EXIT_FAILURE);
 }
 
