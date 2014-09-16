@@ -218,6 +218,7 @@ extern void set_print_plain(const struct set *s);
  * @CMD_RENAME:		rename object
  * @CMD_EXPORT:		export the ruleset in a given format
  * @CMD_MONITOR:	event listener
+ * @CMD_DESCRIBE:	describe an expression
  */
 enum cmd_ops {
 	CMD_INVALID,
@@ -230,6 +231,7 @@ enum cmd_ops {
 	CMD_RENAME,
 	CMD_EXPORT,
 	CMD_MONITOR,
+	CMD_DESCRIBE,
 };
 
 /**
@@ -243,6 +245,7 @@ enum cmd_ops {
  * @CMD_OBJ_CHAIN:	chain
  * @CMD_OBJ_TABLE:	table
  * @CMD_OBJ_RULESET:	ruleset
+ * @CMD_OBJ_EXPR:	expression
  */
 enum cmd_obj {
 	CMD_OBJ_INVALID,
@@ -253,6 +256,7 @@ enum cmd_obj {
 	CMD_OBJ_CHAIN,
 	CMD_OBJ_TABLE,
 	CMD_OBJ_RULESET,
+	CMD_OBJ_EXPR,
 };
 
 /**

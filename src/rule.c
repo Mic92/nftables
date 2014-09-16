@@ -548,6 +548,9 @@ void cmd_free(struct cmd *cmd)
 		case CMD_OBJ_TABLE:
 			table_free(cmd->table);
 			break;
+		case CMD_OBJ_EXPR:
+			expr_free(cmd->expr);
+			break;
 		default:
 			BUG("invalid command object type %u\n", cmd->obj);
 		}
@@ -909,6 +912,12 @@ static int do_command_monitor(struct netlink_ctx *ctx, struct cmd *cmd)
 	return netlink_monitor(&monhandler);
 }
 
+static int do_command_describe(struct netlink_ctx *ctx, struct cmd *cmd)
+{
+	expr_describe(cmd->expr);
+	return 0;
+}
+
 int do_command(struct netlink_ctx *ctx, struct cmd *cmd)
 {
 	switch (cmd->op) {
@@ -930,6 +939,8 @@ int do_command(struct netlink_ctx *ctx, struct cmd *cmd)
 		return do_command_export(ctx, cmd);
 	case CMD_MONITOR:
 		return do_command_monitor(ctx, cmd);
+	case CMD_DESCRIBE:
+		return do_command_describe(ctx, cmd);
 	default:
 		BUG("invalid command object type %u\n", cmd->obj);
 	}
