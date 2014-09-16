@@ -22,6 +22,7 @@
 
 #include <mnl.h>
 #include <string.h>
+#include <arpa/inet.h>
 #include <errno.h>
 #include <utils.h>
 #include <nftables.h>
@@ -78,6 +79,41 @@ nft_mnl_talk(struct mnl_socket *nf_sock, const void *data, unsigned int len,
 		return -1;
 
 	return nft_mnl_recv(nf_sock, seq, portid, cb, cb_data);
+}
+
+/*
+ * Rule-set consistency check across several netlink dumps
+ */
+static uint16_t nft_genid;
+
+static int genid_cb(const struct nlmsghdr *nlh, void *data)
+{
+	struct nfgenmsg *nfh = mnl_nlmsg_get_payload(nlh);
+
+	nft_genid = ntohs(nfh->res_id);
+
+	return MNL_CB_OK;
+}
+
+void mnl_genid_get(struct mnl_socket *nf_sock)
+{
+	char buf[MNL_SOCKET_BUFFER_SIZE];
+	struct nlmsghdr *nlh;
+
+	nlh = nft_nlmsg_build_hdr(buf, NFT_MSG_GETGEN, AF_UNSPEC, 0, seq);
+	/* Skip error checking, old kernels sets res_id field to zero. */
+	nft_mnl_talk(nf_sock, nlh, nlh->nlmsg_len, genid_cb, NULL);
+}
+
+static int check_genid(const struct nlmsghdr *nlh)
+{
+	struct nfgenmsg *nfh = mnl_nlmsg_get_payload(nlh);
+
+	if (nft_genid != ntohs(nfh->res_id)) {
+		errno = EINTR;
+		return -1;
+	}
+	return 0;
 }
 
 /*
@@ -387,6 +423,9 @@ static int rule_cb(const struct nlmsghdr *nlh, void *data)
 	struct nft_rule_list *nlr_list = data;
 	struct nft_rule *r;
 
+	if (check_genid(nlh) < 0)
+		return MNL_CB_ERROR;
+
 	r = nft_rule_alloc();
 	if (r == NULL)
 		memory_allocation_error();
@@ -493,6 +532,9 @@ static int chain_cb(const struct nlmsghdr *nlh, void *data)
 {
 	struct nft_chain_list *nlc_list = data;
 	struct nft_chain *c;
+
+	if (check_genid(nlh) < 0)
+		return MNL_CB_ERROR;
 
 	c = nft_chain_alloc();
 	if (c == NULL)
@@ -618,6 +660,9 @@ static int table_cb(const struct nlmsghdr *nlh, void *data)
 {
 	struct nft_table_list *nlt_list = data;
 	struct nft_table *t;
+
+	if (check_genid(nlh) < 0)
+		return MNL_CB_ERROR;
 
 	t = nft_table_alloc();
 	if (t == NULL)
@@ -750,6 +795,9 @@ static int set_cb(const struct nlmsghdr *nlh, void *data)
 	struct nft_set_list *nls_list = data;
 	struct nft_set *s;
 
+	if (check_genid(nlh) < 0)
+		return MNL_CB_ERROR;
+
 	s = nft_set_alloc();
 	if (s == NULL)
 		memory_allocation_error();
@@ -864,6 +912,9 @@ int mnl_nft_setelem_delete(struct mnl_socket *nf_sock, struct nft_set *nls,
 
 static int set_elem_cb(const struct nlmsghdr *nlh, void *data)
 {
+	if (check_genid(nlh) < 0)
+		return MNL_CB_ERROR;
+
 	nft_set_elems_nlmsg_parse(nlh, data);
 	return MNL_CB_OK;
 }

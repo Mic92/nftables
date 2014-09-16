@@ -138,6 +138,7 @@ extern void netlink_dump_set(struct nft_set *nls);
 
 extern int netlink_batch_send(struct list_head *err_list);
 
+extern void netlink_genid_get(void);
 extern void netlink_restart(void);
 #define netlink_abi_error()	\
 	__netlink_abi_error(__FILE__, __LINE__, strerror(errno));

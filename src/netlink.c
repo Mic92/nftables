@@ -75,6 +75,11 @@ void netlink_restart(void)
 	netlink_open_sock();
 }
 
+void netlink_genid_get(void)
+{
+	mnl_genid_get(nf_sock);
+}
+
 static void netlink_open_mon_sock(void)
 {
 	nf_mon_sock = nfsock_open();

@@ -6,6 +6,7 @@
 struct mnl_socket;
 
 uint32_t mnl_seqnum_alloc(void);
+void mnl_genid_get(struct mnl_socket *nf_sock);
 
 struct mnl_err {
 	struct list_head	head;
