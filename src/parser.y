@@ -1319,38 +1319,14 @@ log_arg			:	PREFIX			string
 			}
 			;
 
-level_type		:	LEVEL_EMERG
-			{
-				$$ = LOG_EMERG;
-			}
-			|	LEVEL_ALERT
-			{
-				$$ = LOG_ALERT;
-			}
-			|	LEVEL_CRIT
-			{
-				$$ = LOG_CRIT;
-			}
-			|	LEVEL_ERR
-			{
-				$$ = LOG_ERR;
-			}
-			|	LEVEL_WARN
-			{
-				$$ = LOG_WARNING;
-			}
-			|	LEVEL_NOTICE
-			{
-				$$ = LOG_NOTICE;
-			}
-			|	LEVEL_INFO
-			{
-				$$ = LOG_INFO;
-			}
-			|	LEVEL_DEBUG
-			{
-				$$ = LOG_DEBUG;
-			}
+level_type		:	LEVEL_EMERG	{ $$ = LOG_EMERG; }
+			|	LEVEL_ALERT	{ $$ = LOG_ALERT; }
+			|	LEVEL_CRIT	{ $$ = LOG_CRIT; }
+			|	LEVEL_ERR	{ $$ = LOG_ERR; }
+			|	LEVEL_WARN	{ $$ = LOG_WARNING; }
+			|	LEVEL_NOTICE	{ $$ = LOG_NOTICE; }
+			|	LEVEL_INFO	{ $$ = LOG_INFO; }
+			|	LEVEL_DEBUG	{ $$ = LOG_DEBUG; }
 			;
 
 limit_stmt		:	LIMIT	RATE	NUM	SLASH	time_unit
