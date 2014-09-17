@@ -261,6 +261,9 @@ addrstring	({macaddr}|{ip4addr}|{ip6addr})
 "export"		{ return EXPORT; }
 "monitor"		{ return MONITOR; }
 
+"new"			{ return NEW; }
+"destroy"		{ return DESTROY; }
+
 "position"		{ return POSITION; }
 "comment"		{ return COMMENT; }
 
