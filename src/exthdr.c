@@ -48,7 +48,7 @@ static const struct expr_ops exthdr_expr_ops = {
 };
 
 static const struct proto_hdr_template exthdr_unknown_template =
-	PROTO_HDR_TEMPLATE("unknown", &invalid_type, 0, 0);
+	PROTO_HDR_TEMPLATE("unknown", &invalid_type, BYTEORDER_INVALID, 0, 0);
 
 struct expr *exthdr_expr_alloc(const struct location *loc,
 			       const struct exthdr_desc *desc,
@@ -102,6 +102,7 @@ void exthdr_init_raw(struct expr *expr, uint8_t type,
 
 #define HDR_TEMPLATE(__name, __dtype, __type, __member)			\
 	PROTO_HDR_TEMPLATE(__name, __dtype,				\
+			   BYTEORDER_BIG_ENDIAN,			\
 			   offsetof(__type, __member) * 8,		\
 			   field_sizeof(__type, __member) * 8)
 
@@ -179,10 +180,13 @@ const struct exthdr_desc exthdr_frag = {
 		[FRAGHDR_NEXTHDR]	= FRAG_FIELD("nexthdr", ip6f_nxt, &inet_protocol_type),
 		[FRAGHDR_RESERVED]	= FRAG_FIELD("reserved", ip6f_reserved, &integer_type),
 		[FRAGHDR_FRAG_OFF]	= PROTO_HDR_TEMPLATE("frag-off", &integer_type,
+							  BYTEORDER_BIG_ENDIAN,
 							  16, 13),
 		[FRAGHDR_RESERVED2]	= PROTO_HDR_TEMPLATE("reserved2", &integer_type,
+							  BYTEORDER_BIG_ENDIAN,
 							  29, 2),
 		[FRAGHDR_MFRAGS]	= PROTO_HDR_TEMPLATE("more-fragments", &integer_type,
+							  BYTEORDER_BIG_ENDIAN,
 							  31, 1),
 		[FRAGHDR_ID]		= FRAG_FIELD("id", ip6f_ident, &integer_type),
 	},

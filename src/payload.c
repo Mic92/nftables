@@ -117,7 +117,7 @@ struct expr *payload_expr_alloc(const struct location *loc,
 	}
 
 	expr = expr_alloc(loc, &payload_expr_ops, tmpl->dtype,
-			  tmpl->dtype->byteorder, tmpl->len);
+			  tmpl->byteorder, tmpl->len);
 	expr->flags |= flags;
 
 	expr->payload.desc   = desc;

@@ -38,7 +38,7 @@ const char *proto_base_tokens[] = {
 };
 
 const struct proto_hdr_template proto_unknown_template =
-	PROTO_HDR_TEMPLATE("unknown", &invalid_type, 0, 0);
+	PROTO_HDR_TEMPLATE("unknown", &invalid_type, BYTEORDER_INVALID, 0, 0);
 
 const struct proto_desc proto_unknown = {
 	.name		= "unknown",
@@ -186,13 +186,15 @@ void proto_ctx_update(struct proto_ctx *ctx, enum proto_bases base,
 
 #define HDR_TEMPLATE(__name, __dtype, __type, __member)			\
 	PROTO_HDR_TEMPLATE(__name, __dtype,				\
+			   BYTEORDER_BIG_ENDIAN,			\
 			   offsetof(__type, __member) * 8,		\
 			   field_sizeof(__type, __member) * 8)
 
 #define HDR_FIELD(__name, __struct, __member)				\
 	HDR_TEMPLATE(__name, &integer_type, __struct, __member)
 #define HDR_BITFIELD(__name, __dtype,  __offset, __len)			\
-	PROTO_HDR_TEMPLATE(__name, __dtype, __offset, __len)
+	PROTO_HDR_TEMPLATE(__name, __dtype, BYTEORDER_BIG_ENDIAN,	\
+			   __offset, __len)
 #define HDR_TYPE(__name, __dtype, __struct, __member)			\
 	HDR_TEMPLATE(__name, __dtype, __struct, __member)
 
@@ -785,7 +787,10 @@ const struct datatype ethertype_type = {
 #define ETHHDR_TYPE(__name, __member) \
 	ETHHDR_TEMPLATE(__name, &ethertype_type, __member)
 #define ETHHDR_ADDR(__name, __member) \
-	ETHHDR_TEMPLATE(__name, &etheraddr_type, __member)
+	PROTO_HDR_TEMPLATE(__name, &etheraddr_type,		\
+			   BYTEORDER_HOST_ENDIAN,		\
+			   offsetof(struct ether_header, __member) * 8,	\
+			   field_sizeof(struct ether_header, __member) * 8)
 
 const struct proto_desc proto_eth = {
 	.name		= "ether",
