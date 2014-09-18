@@ -513,7 +513,8 @@ static void location_update(struct location *loc, struct location *rhs, int n)
 %destructor { expr_free($$); }	ct_expr
 %type <val>			ct_key
 
-%type <val>			export_format	output_format	monitor_event monitor_object
+%type <val>			export_format
+%type <val>			monitor_event	monitor_object		monitor_format
 
 %%
 
@@ -780,7 +781,7 @@ export_cmd		:	export_format
 			}
 			;
 
-monitor_cmd		:	monitor_event	monitor_object	output_format
+monitor_cmd		:	monitor_event	monitor_object	monitor_format
 			{
 				struct handle h = { .family = NFPROTO_UNSPEC };
 				$$ = cmd_alloc(CMD_MONITOR, CMD_OBJ_RULESET, &h, &@$, NULL);
@@ -860,19 +861,20 @@ monitor_object		:	/* empty */
 			}
 			;
 
+monitor_format		:	/* empty */	{ $$ = NFT_OUTPUT_DEFAULT; }
+			|	export_format
+			;
+
+export_format		: 	XML 		{ $$ = NFT_OUTPUT_XML; }
+			|	JSON		{ $$ = NFT_OUTPUT_JSON; }
+			;
+
 describe_cmd		:	primary_expr
 			{
 				struct handle h = { .family = NFPROTO_UNSPEC };
 				$$ = cmd_alloc(CMD_DESCRIBE, CMD_OBJ_EXPR, &h, &@$, NULL);
 				$$->expr = $1;
 			}
-			;
-
-output_format		:	/* empty */
-			{
-				$$ = NFT_OUTPUT_DEFAULT;
-			}
-			|	export_format
 			;
 
 table_block_alloc	:	/* empty */
@@ -2168,7 +2170,4 @@ mh_hdr_field		:	NEXTHDR		{ $$ = MHHDR_NEXTHDR; }
 			|	CHECKSUM	{ $$ = MHHDR_CHECKSUM; }
 			;
 
-export_format		: 	XML 		{ $$ = NFT_OUTPUT_XML; }
-			|	JSON		{ $$ = NFT_OUTPUT_JSON; }
-			;
 %%
