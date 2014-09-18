@@ -1,0 +1,141 @@
+Author: Ana Rey <anarey@gmail.com>
+Date: 18/Sept/2014
+
+Here, the automated regression testing for nftables and some test
+files.
+
+This script checks that the rule input and output of nft matches.
+More details here below.
+
+A) What is this testing?
+
+This script tests two different paths:
+
+* The rule input from the command-line. This checks the different steps
+  from the command line to the kernel. This includes the parsing,
+  evaluation and netlink generation steps.
+
+* The output listing that is obtained from the kernel. This checks the
+  different steps from the kernel to the command line: The netlink
+  message parsing, postprocess and textify steps to display the rule
+  listing.
+
+As a final step, this script compares that the rule that is added can
+be listed by nft.
+
+B) What options are available?
+
+The script offers the following options:
+
+* Execute test files:
+
+./nft-test.py                           # Run all test files
+./nft-test.py path/file.t               # Run this test file
+
+If there is a problem, it shows the differences between the rule that
+is added and the rule that is listed by nft.
+
+In case you hit an error, the script doesn't keep testing for more
+families. Unless you specify the --force-family option.
+
+* Execute broken tests:
+
+./nft-test.sh -e
+
+This runs tests for rules that need a fix: This mode runs the lines that
+that start with a "-" symbol.
+
+* Debugging:
+
+./nft-test.sh -d
+
+This shows all the commands that the script executes, so you can watch
+its internal behaviour.
+
+* Keep testing all families on error.
+
+./nft-test.sh -f
+
+Don't stop testing for more families in case of error.
+
+C) What is the structure of the test file?
+
+A test file contains a set of rules that are added in the system.
+
+Here, an example of a test file:
+
+   *ip;test-ipv4                               # line 1
+   *ip6;test-ipv6                              # line 2
+   *inet;test-inet                             # line 3
+
+   :input;type filter hook input priority 0    # line 4
+
+   ah hdrlength != 11-23;ok;ah hdrlength < 11 ah hdrlength > 23   # line 5
+   - tcp dport != {22-25}                                         # line 6
+
+   !set1 ipv4_addr;ok                          # line 7
+   ?set1 192.168.3.8 192.168.3.9;ok            # line 8
+   # This is a commented-line.                 # line 9
+
+Line 1 defines a table. The name of the table is 'test-ip' and the
+family is ip. Lines 2 and 3 defines more tables for different families
+so the rules in this test file are also tested there.
+
+Line 4 defines the chain. The name of this chain is "input". The type is
+"filter", the hook is "input" and the priority is 0.
+
+Line 5 defines the rule, the ";" character is used as separator of several
+parts:
+
+* Part 1: "ah hdrlength != 11-23" is the rule to check.
+* Part 2: "ok" is the result expected with the execute of this rule.
+* Part 3: "ah hdrlength < 11 ah hdrlength > 23". This is the expected
+  output. You can leave this empty if the output is the same as the
+  input.
+
+Line 6 is a marked line. This means that this rule is tested if
+'-e' is passed as argument to nft-test.py.
+
+Line 7 adds a new set. The name of this set is "set1" and the type
+of this set is "ipv4_add".
+
+Line 8 adds two elements into the 'set1' set: "192.168.3.8" and
+"192.168.3.9". A whitespace separates the elements of the set.
+
+Line 9 uses the "#" symbol that means that this line is commented out.
+
+D) The test folders
+
+The test files are divided in several directories: ip, ip6, inet, arp,
+bridge and any.
+
+ * "ip" folder contains the test files that are executed in ip and inet
+   table.
+
+ * "ip" folder contains the test files that are executed in ip6 and inet
+   table.
+
+ * "inet" folder contains the test files that are executed in the ip, ip6
+    and inet table.
+
+ * "arp" folder contains the test files that are executed in the arp
+   table.
+
+ * "bridge" folder: Here are the test files are executed in bridge
+   tables.
+
+ * "any" folder: Here are the test files are executed in ip, ip6, inet,
+   arp and bridge tables.
+
+E) Meaning of messages:
+
+* A warning message means the rule input and output of nft mismatches.
+* An error message means the nft-tool shows an error when we add it or
+  the listing is broken after the rule is added.
+
+F) Acknowledgements
+
+Thanks to the Outreach Program for Women (OPW) for sponsoring this test
+infrastructure and my mentor Pablo Neira.
+
+-EOF-
