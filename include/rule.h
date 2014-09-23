@@ -180,6 +180,8 @@ enum set_flags {
  * @datatype:	mapping data type
  * @datalen:	mapping data len
  * @init:	initializer
+ * @policy:	set mechanism policy
+ * @desc:	set mechanism desc
  */
 struct set {
 	struct list_head	list;
@@ -192,6 +194,10 @@ struct set {
 	const struct datatype	*datatype;
 	unsigned int		datalen;
 	struct expr		*init;
+	uint32_t		policy;
+	struct {
+		uint32_t	size;
+	} desc;
 };
 
 extern struct set *set_alloc(const struct location *loc);

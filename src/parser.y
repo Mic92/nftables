@@ -20,6 +20,7 @@
 #include <linux/netfilter/nf_tables.h>
 #include <linux/netfilter/nf_conntrack_tuple_common.h>
 #include <libnftnl/common.h>
+#include <libnftnl/set.h>
 
 #include <rule.h>
 #include <statement.h>
@@ -200,6 +201,11 @@ static void location_update(struct location *loc, struct location *rhs, int n)
 %token CONSTANT			"constant"
 %token INTERVAL			"interval"
 %token ELEMENTS			"elements"
+
+%token POLICY			"policy"
+%token MEMORY			"memory"
+%token PERFORMANCE		"performance"
+%token SIZE			"size"
 
 %token <val> NUM		"number"
 %token <string> STRING		"string"
@@ -400,6 +406,8 @@ static void location_update(struct location *loc, struct location *rhs, int n)
 %destructor { rule_free($$); }	rule
 
 %type <val>			set_flag_list	set_flag
+
+%type <val>			set_policy_spec
 
 %type <set>			set_block_alloc set_block
 %destructor { set_free($$); }	set_block_alloc
@@ -967,6 +975,7 @@ set_block		:	/* empty */	{ $$ = $<set>-1; }
 				$1->init = $4;
 				$$ = $1;
 			}
+			|	set_block	set_mechanism	stmt_seperator
 			;
 
 set_flag_list		:	set_flag_list	COMMA		set_flag
@@ -1020,6 +1029,21 @@ map_block		:	/* empty */	{ $$ = $<set>-1; }
 				$1->init = $4;
 				$$ = $1;
 			}
+			|	map_block	set_mechanism	stmt_seperator
+			;
+
+set_mechanism		:	POLICY		set_policy_spec
+			{
+				$<set>0->policy = $2;
+			}
+			|	SIZE		NUM
+			{
+				$<set>0->desc.size = $2;
+			}
+			;
+
+set_policy_spec		:	PERFORMANCE	{ $$ = NFT_SET_POL_PERFORMANCE; }
+			|	MEMORY		{ $$ = NFT_SET_POL_MEMORY; }
 			;
 
 hook_spec		:	TYPE		STRING		HOOK		STRING		PRIORITY	NUM

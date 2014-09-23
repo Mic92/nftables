@@ -271,6 +271,11 @@ addrstring	({macaddr}|{ip4addr}|{ip6addr})
 "interval"		{ return INTERVAL; }
 "elements"		{ return ELEMENTS; }
 
+"policy"		{ return POLICY; }
+"size"			{ return SIZE; }
+"performance"		{ return PERFORMANCE; }
+"memory"		{ return MEMORY; }
+
 "counter"		{ return COUNTER; }
 "packets"		{ return PACKETS; }
 "bytes"			{ return BYTES; }

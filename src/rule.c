@@ -90,6 +90,8 @@ struct set *set_clone(const struct set *set)
 	newset->datatype = set->datatype;
 	newset->datalen = set->datalen;
 	newset->init = expr_clone(set->init);
+	newset->policy = set->policy;
+	newset->desc.size = set->desc.size;
 
 	return newset;
 }
@@ -134,6 +136,18 @@ struct print_fmt_options {
 	const char	*stmt_separator;
 };
 
+static const char *set_policy2str(uint32_t policy)
+{
+	switch (policy) {
+	case NFT_SET_POL_PERFORMANCE:
+		return "performance";
+	case NFT_SET_POL_MEMORY:
+		return "memory";
+	default:
+		return "unknown";
+	}
+}
+
 static void do_set_print(const struct set *set, struct print_fmt_options *opts)
 {
 	const char *delim = "";
@@ -153,7 +167,21 @@ static void do_set_print(const struct set *set, struct print_fmt_options *opts)
 	printf("%s%stype %s", opts->tab, opts->tab, set->keytype->name);
 	if (set->flags & SET_F_MAP)
 		printf(" : %s", set->datatype->name);
+
 	printf("%s", opts->stmt_separator);
+
+	if (!(set->flags & (SET_F_CONSTANT))) {
+		if (set->policy != NFT_SET_POL_PERFORMANCE) {
+			printf("%s%spolicy %s%s", opts->tab, opts->tab,
+			       set_policy2str(set->policy),
+			       opts->stmt_separator);
+		}
+
+		if (set->desc.size > 0) {
+			printf("%s%ssize %u%s", opts->tab, opts->tab,
+			       set->desc.size, opts->stmt_separator);
+		}
+	}
 
 	if (set->flags & (SET_F_CONSTANT | SET_F_INTERVAL)) {
 		printf("%s%sflags ", opts->tab, opts->tab);

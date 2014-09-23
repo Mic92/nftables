@@ -1050,6 +1050,13 @@ static struct set *netlink_delinearize_set(struct netlink_ctx *ctx,
 		set->datalen = data_len * BITS_PER_BYTE;
 	}
 
+	if (nft_set_attr_is_set(nls, NFT_SET_ATTR_POLICY))
+		set->policy = nft_set_attr_get_u32(nls, NFT_SET_ATTR_POLICY);
+
+	if (nft_set_attr_is_set(nls, NFT_SET_ATTR_DESC_SIZE))
+		set->desc.size = nft_set_attr_get_u32(nls,
+						      NFT_SET_ATTR_DESC_SIZE);
+
 	return set;
 }
 
@@ -1108,6 +1115,19 @@ static int netlink_add_set_batch(struct netlink_ctx *ctx,
 	}
 	set->handle.set_id = ++set_id;
 	nft_set_attr_set_u32(nls, NFT_SET_ATTR_ID, set->handle.set_id);
+
+	if (!(set->flags & (SET_F_CONSTANT))) {
+		if (set->policy != NFT_SET_POL_PERFORMANCE) {
+			nft_set_attr_set_u32(nls, NFT_SET_ATTR_POLICY,
+					     set->policy);
+		}
+
+		if (set->desc.size != 0) {
+			nft_set_attr_set_u32(nls, NFT_SET_ATTR_DESC_SIZE,
+					     set->desc.size);
+		}
+	}
+
 	netlink_dump_set(nls);
 
 	err = mnl_nft_set_batch_add(nf_sock, nls, NLM_F_EXCL, ctx->seqnum);
