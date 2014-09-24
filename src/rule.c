@@ -749,11 +749,42 @@ static void table_cleanup(struct table *table)
 	}
 }
 
+static int do_list_table(struct netlink_ctx *ctx, struct cmd *cmd,
+			 struct table *table)
+{
+	struct rule *rule, *nrule;
+	struct chain *chain;
+
+	if (do_list_sets(ctx, &cmd->location, table) < 0)
+		goto err;
+	if (netlink_list_chains(ctx, &cmd->handle, &cmd->location) < 0)
+		goto err;
+	list_splice_tail_init(&ctx->list, &table->chains);
+	if (netlink_list_table(ctx, &cmd->handle, &cmd->location) < 0)
+		goto err;
+
+	list_for_each_entry_safe(rule, nrule, &ctx->list, list) {
+		table = table_lookup(&rule->handle);
+		chain = chain_lookup(table, &rule->handle);
+		if (chain == NULL) {
+			chain = chain_alloc(rule->handle.chain);
+			chain_add_hash(chain, table);
+		}
+
+		list_move_tail(&rule->list, &chain->rules);
+	}
+
+	table_print(table);
+	table_cleanup(table);
+	return 0;
+err:
+	table_cleanup(table);
+	return -1;
+}
+
 static int do_command_list(struct netlink_ctx *ctx, struct cmd *cmd)
 {
 	struct table *table = NULL;
-	struct chain *chain;
-	struct rule *rule, *nrule;
 	struct set *set;
 
 	/* No need to allocate the table object when listing all tables */
@@ -781,24 +812,9 @@ static int do_command_list(struct netlink_ctx *ctx, struct cmd *cmd)
 			}
 			return 0;
 		}
-		/* List content of this table */
-		if (do_list_sets(ctx, &cmd->location, table) < 0)
-			goto err;
-		if (netlink_list_chains(ctx, &cmd->handle, &cmd->location) < 0)
-			goto err;
-		list_splice_tail_init(&ctx->list, &table->chains);
-		if (netlink_list_table(ctx, &cmd->handle, &cmd->location) < 0)
-			goto err;
-		break;
+		return do_list_table(ctx, cmd, table);
 	case CMD_OBJ_CHAIN:
-		if (do_list_sets(ctx, &cmd->location, table) < 0)
-			goto err;
-		if (netlink_list_chains(ctx, &cmd->handle, &cmd->location) < 0)
-			goto err;
-		list_splice_tail_init(&ctx->list, &table->chains);
-		if (netlink_list_table(ctx, &cmd->handle, &cmd->location) < 0)
-			goto err;
-		break;
+		return do_list_table(ctx, cmd, table);
 	case CMD_OBJ_SETS:
 		if (netlink_list_sets(ctx, &cmd->handle, &cmd->location) < 0)
 			goto err;
@@ -825,19 +841,6 @@ static int do_command_list(struct netlink_ctx *ctx, struct cmd *cmd)
 		BUG("invalid command object type %u\n", cmd->obj);
 	}
 
-	list_for_each_entry_safe(rule, nrule, &ctx->list, list) {
-		table = table_lookup(&rule->handle);
-		chain = chain_lookup(table, &rule->handle);
-		if (chain == NULL) {
-			chain = chain_alloc(rule->handle.chain);
-			chain_add_hash(chain, table);
-		}
-
-		list_move_tail(&rule->list, &chain->rules);
-	}
-
-	table_print(table);
-	table_cleanup(table);
 	return 0;
 err:
 	table_cleanup(table);
