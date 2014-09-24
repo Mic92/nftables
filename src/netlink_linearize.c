@@ -687,21 +687,27 @@ static void netlink_gen_queue_stmt(struct netlink_linearize_ctx *ctx,
 {
 	struct nft_rule_expr *nle;
 	uint16_t total_queues;
+	mpz_t low, high;
+
+	mpz_init2(low, 16);
+	mpz_init2(high, 16);
+	if (stmt->queue.queue != NULL) {
+		range_expr_value_low(low, stmt->queue.queue);
+		range_expr_value_high(high, stmt->queue.queue);
+	}
+	total_queues = mpz_get_uint16(high) - mpz_get_uint16(low) + 1;
 
 	nle = alloc_nft_expr("queue");
-
-	nft_rule_expr_set_u16(nle, NFT_EXPR_QUEUE_NUM,
-			      stmt->queue.from);
-
-	total_queues = stmt->queue.to - stmt->queue.from;
-	nft_rule_expr_set_u16(nle, NFT_EXPR_QUEUE_TOTAL,
-			      total_queues + 1);
-
+	nft_rule_expr_set_u16(nle, NFT_EXPR_QUEUE_NUM, mpz_get_uint16(low));
+	nft_rule_expr_set_u16(nle, NFT_EXPR_QUEUE_TOTAL, total_queues);
 	if (stmt->queue.flags) {
 		nft_rule_expr_set_u16(nle, NFT_EXPR_QUEUE_FLAGS,
 				      stmt->queue.flags);
 	}
 	nft_rule_add_expr(ctx->nlr, nle);
+
+	mpz_clear(low);
+	mpz_clear(high);
 }
 
 static void netlink_gen_ct_stmt(struct netlink_linearize_ctx *ctx,

@@ -368,8 +368,8 @@ static void location_update(struct location *loc, struct location *rhs, int n)
 
 %token QUEUE			"queue"
 %token QUEUENUM			"num"
-%token QUEUEBYPASS		"bypass"
-%token QUEUECPUFANOUT		"fanout"
+%token BYPASS			"bypass"
+%token FANOUT			"fanout"
 
 %token POSITION			"position"
 %token COMMENT			"comment"
@@ -427,9 +427,9 @@ static void location_update(struct location *loc, struct location *rhs, int n)
 %destructor { stmt_free($$); }	reject_stmt
 %type <stmt>			nat_stmt nat_stmt_alloc
 %destructor { stmt_free($$); }	nat_stmt nat_stmt_alloc
-%type <stmt>			queue_stmt queue_stmt_alloc queue_range
+%type <stmt>			queue_stmt queue_stmt_alloc
 %destructor { stmt_free($$); }	queue_stmt queue_stmt_alloc
-%type <val>			queue_flags queue_flag
+%type <val>			queue_stmt_flags queue_stmt_flag
 
 %type <expr>			symbol_expr verdict_expr integer_expr
 %destructor { expr_free($$); }	symbol_expr verdict_expr integer_expr
@@ -1381,7 +1381,7 @@ nat_stmt_args		:	expr
 			;
 
 queue_stmt		:	queue_stmt_alloc
-			|	queue_stmt_alloc		queue_args
+			|	queue_stmt_alloc	queue_stmt_args
 			;
 
 queue_stmt_alloc	:	QUEUE
@@ -1390,61 +1390,32 @@ queue_stmt_alloc	:	QUEUE
 			}
 			;
 
-queue_args		:	QUEUENUM	queue_range	queue_flags
+queue_stmt_args		:	queue_stmt_arg
 			{
-				$<stmt>0->queue.from = $2->queue.from;
-				$<stmt>0->queue.to = $2->queue.to;
-				$<stmt>0->queue.flags = $3;
+				$<stmt>$	= $<stmt>0;
 			}
-			|	QUEUENUM	queue_range
+			|	queue_stmt_args	queue_stmt_arg
+			;
+
+queue_stmt_arg		:	QUEUENUM	expr
 			{
-				$<stmt>0->queue.from = $2->queue.from;
-				$<stmt>0->queue.to = $2->queue.to;
+				$<stmt>0->queue.queue = $2;
 			}
-			|	queue_flags
+			|	queue_stmt_flags
 			{
-				$<stmt>0->queue.flags = $1;
+				$<stmt>0->queue.flags |= $1;
 			}
 			;
 
-queue_range		:	NUM
+queue_stmt_flags	:	queue_stmt_flag
+			|	queue_stmt_flags	COMMA	queue_stmt_flag
 			{
-				$<stmt>0->queue.from = $1;
-				$<stmt>0->queue.to = $1;
-				$$ = $<stmt>0;
-			}
-			|	NUM	DASH	NUM
-			{
-				if ($3 < $1) {
-					erec_queue(error(&@1,
-							 "invalid range %d-%d",
-							 $1, $3), state->msgs);
-					YYERROR;
-				}
-				$<stmt>0->queue.from = $1;
-				$<stmt>0->queue.to = $3;
-				$$ = $<stmt>0;
+				$$ = $1 | $3;
 			}
 			;
 
-queue_flags		:	queue_flag
-			{
-				$$ = $1;
-			}
-			|	queue_flags	queue_flag
-			{
-				$$ |= $1 | $2;
-			}
-			;
-
-queue_flag		:	QUEUEBYPASS
-			{
-				$$ = NFT_QUEUE_FLAG_BYPASS;
-			}
-			|	QUEUECPUFANOUT
-			{
-				$$ = NFT_QUEUE_FLAG_CPU_FANOUT;
-			}
+queue_stmt_flag		:	BYPASS	{ $$ = NFT_QUEUE_FLAG_BYPASS; }
+			|	FANOUT	{ $$ = NFT_QUEUE_FLAG_CPU_FANOUT; }
 			;
 
 match_stmt		:	relational_expr

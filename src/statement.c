@@ -197,14 +197,19 @@ struct stmt *limit_stmt_alloc(const struct location *loc)
 
 static void queue_stmt_print(const struct stmt *stmt)
 {
-	printf("queue num %u",
-		stmt->queue.from);
-	if (stmt->queue.to && stmt->queue.to != stmt->queue.from)
-		printf("-%u", stmt->queue.to);
-	if (stmt->queue.flags & NFT_QUEUE_FLAG_BYPASS)
-		printf(" bypass");
+	const char *delim = " ";
+
+	printf("queue");
+	if (stmt->queue.queue != NULL) {
+		printf(" num ");
+		expr_print(stmt->queue.queue);
+	}
+	if (stmt->queue.flags & NFT_QUEUE_FLAG_BYPASS) {
+		printf("%sbypass", delim);
+		delim = ",";
+	}
 	if (stmt->queue.flags & NFT_QUEUE_FLAG_CPU_FANOUT)
-		printf(" fanout");
+		printf("%sfanout", delim);
 
 }
 

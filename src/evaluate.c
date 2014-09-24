@@ -1180,6 +1180,19 @@ static int stmt_evaluate_ct(struct eval_ctx *ctx, struct stmt *stmt)
 	return 0;
 }
 
+static int stmt_evaluate_queue(struct eval_ctx *ctx, struct stmt *stmt)
+{
+	if (stmt->queue.queue != NULL) {
+		expr_set_context(&ctx->ectx, &integer_type, 16);
+		if (expr_evaluate(ctx, &stmt->queue.queue) < 0)
+			return -1;
+		if (!expr_is_constant(stmt->queue.queue))
+			return expr_error(ctx->msgs, stmt->queue.queue,
+					  "queue number is not constant");
+	}
+	return 0;
+}
+
 static int stmt_evaluate_log(struct eval_ctx *ctx, struct stmt *stmt)
 {
 	if (stmt->log.flags & STMT_LOG_LEVEL &&
@@ -1219,7 +1232,7 @@ static int stmt_evaluate(struct eval_ctx *ctx, struct stmt *stmt)
 	case STMT_NAT:
 		return stmt_evaluate_nat(ctx, stmt);
 	case STMT_QUEUE:
-		return 0;
+		return stmt_evaluate_queue(ctx, stmt);
 	case STMT_CT:
 		return stmt_evaluate_ct(ctx, stmt);
 	default:
