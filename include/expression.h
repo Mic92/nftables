@@ -351,4 +351,8 @@ extern struct expr *map_expr_alloc(const struct location *loc,
 extern struct expr *set_ref_expr_alloc(const struct location *loc,
 				       struct set *set);
 
+
+extern void range_expr_value_low(mpz_t rop, const struct expr *expr);
+extern void range_expr_value_high(mpz_t rop, const struct expr *expr);
+
 #endif /* NFTABLES_EXPRESSION_H */

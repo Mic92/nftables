@@ -256,44 +256,6 @@ static void ei_insert(struct seg_tree *tree, struct elementary_interval *new)
 	mpz_clear(p);
 }
 
-static void range_low(mpz_t rop, struct expr *expr)
-{
-	switch (expr->ops->type) {
-	case EXPR_VALUE:
-		return mpz_set(rop, expr->value);
-	case EXPR_PREFIX:
-		return range_low(rop, expr->prefix);
-	case EXPR_RANGE:
-		return range_low(rop, expr->left);
-	case EXPR_MAPPING:
-		return range_low(rop, expr->left);
-	default:
-		BUG("invalid range expression type %s\n", expr->ops->name);
-	}
-}
-
-static void range_high(mpz_t rop, const struct expr *expr)
-{
-	mpz_t tmp;
-
-	switch (expr->ops->type) {
-	case EXPR_VALUE:
-		return mpz_set(rop, expr->value);
-	case EXPR_PREFIX:
-		range_low(rop, expr->prefix);
-		mpz_init_bitmask(tmp, expr->len - expr->prefix_len);
-		mpz_add(rop, rop, tmp);
-		mpz_clear(tmp);
-		return;
-	case EXPR_RANGE:
-		return range_high(rop, expr->right);
-	case EXPR_MAPPING:
-		return range_high(rop, expr->left);
-	default:
-		BUG("invalid range expression type %s\n", expr->ops->name);
-	}
-}
-
 /*
  * Sort intervals according to their priority, which is defined inversely to
  * their size.
@@ -353,8 +315,8 @@ static int set_to_segtree(struct list_head *msgs, struct expr *set,
 	 */
 	n = 0;
 	list_for_each_entry_safe(i, next, &set->expressions, list) {
-		range_low(low, i);
-		range_high(high, i);
+		range_expr_value_low(low, i);
+		range_expr_value_high(high, i);
 		ei = ei_alloc(low, high, i, 0);
 		intervals[n++] = ei;
 

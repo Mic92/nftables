@@ -879,3 +879,41 @@ struct expr *set_ref_expr_alloc(const struct location *loc, struct set *set)
 	expr->flags |= EXPR_F_CONSTANT;
 	return expr;
 }
+
+void range_expr_value_low(mpz_t rop, const struct expr *expr)
+{
+	switch (expr->ops->type) {
+	case EXPR_VALUE:
+		return mpz_set(rop, expr->value);
+	case EXPR_PREFIX:
+		return range_expr_value_low(rop, expr->prefix);
+	case EXPR_RANGE:
+		return range_expr_value_low(rop, expr->left);
+	case EXPR_MAPPING:
+		return range_expr_value_low(rop, expr->left);
+	default:
+		BUG("invalid range expression type %s\n", expr->ops->name);
+	}
+}
+
+void range_expr_value_high(mpz_t rop, const struct expr *expr)
+{
+	mpz_t tmp;
+
+	switch (expr->ops->type) {
+	case EXPR_VALUE:
+		return mpz_set(rop, expr->value);
+	case EXPR_PREFIX:
+		range_expr_value_low(rop, expr->prefix);
+		mpz_init_bitmask(tmp, expr->len - expr->prefix_len);
+		mpz_add(rop, rop, tmp);
+		mpz_clear(tmp);
+		return;
+	case EXPR_RANGE:
+		return range_expr_value_high(rop, expr->right);
+	case EXPR_MAPPING:
+		return range_expr_value_high(rop, expr->left);
+	default:
+		BUG("invalid range expression type %s\n", expr->ops->name);
+	}
+}
