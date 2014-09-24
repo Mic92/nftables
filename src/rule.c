@@ -733,7 +733,7 @@ static int do_command_export(struct netlink_ctx *ctx, struct cmd *cmd)
 	return 0;
 }
 
-static void do_command_list_cleanup(struct table *table)
+static void table_cleanup(struct table *table)
 {
 	struct chain *chain, *nchain;
 	struct set *set, *nset;
@@ -837,10 +837,10 @@ static int do_command_list(struct netlink_ctx *ctx, struct cmd *cmd)
 	}
 
 	table_print(table);
-	do_command_list_cleanup(table);
+	table_cleanup(table);
 	return 0;
 err:
-	do_command_list_cleanup(table);
+	table_cleanup(table);
 	return -1;
 }
 
