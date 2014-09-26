@@ -782,6 +782,32 @@ err:
 	return -1;
 }
 
+static int do_list_ruleset(struct netlink_ctx *ctx, struct cmd *cmd)
+{
+	struct table *table, *next;
+	LIST_HEAD(tables);
+
+	if (netlink_list_tables(ctx, &cmd->handle, &cmd->location) < 0)
+		return -1;
+
+	list_splice_tail_init(&ctx->list, &tables);
+
+	list_for_each_entry_safe(table, next, &tables, list) {
+		table_add_hash(table);
+
+		cmd->handle.family = table->handle.family;
+		cmd->handle.table = xstrdup(table->handle.table);
+
+		if (do_list_table(ctx, cmd, table) < 0)
+			return -1;
+
+		list_del(&table->list);
+		table_free(table);
+	}
+
+	return 0;
+}
+
 static int do_command_list(struct netlink_ctx *ctx, struct cmd *cmd)
 {
 	struct table *table = NULL;
@@ -837,6 +863,8 @@ static int do_command_list(struct netlink_ctx *ctx, struct cmd *cmd)
 			set_print(set);
 		}
 		return 0;
+	case CMD_OBJ_RULESET:
+		return do_list_ruleset(ctx, cmd);
 	default:
 		BUG("invalid command object type %u\n", cmd->obj);
 	}
