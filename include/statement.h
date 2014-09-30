@@ -166,6 +166,7 @@ struct stmt {
 
 extern struct stmt *stmt_alloc(const struct location *loc,
 			       const struct stmt_ops *ops);
+int stmt_evaluate(struct eval_ctx *ctx, struct stmt *stmt);
 extern void stmt_free(struct stmt *stmt);
 extern void stmt_list_free(struct list_head *list);
 extern void stmt_print(const struct stmt *stmt);

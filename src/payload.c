@@ -21,6 +21,7 @@
 
 #include <rule.h>
 #include <expression.h>
+#include <statement.h>
 #include <payload.h>
 #include <gmputil.h>
 #include <utils.h>
@@ -160,12 +161,13 @@ void payload_init_raw(struct expr *expr, enum proto_bases base,
  *   in the input path though.
  */
 int payload_gen_dependency(struct eval_ctx *ctx, const struct expr *expr,
-			   struct expr **res)
+			   struct stmt **res)
 {
 	const struct hook_proto_desc *h = &hook_proto_desc[ctx->pctx.family];
 	const struct proto_desc *desc;
 	const struct proto_hdr_template *tmpl;
 	struct expr *dep, *left, *right;
+	struct stmt *stmt;
 	int protocol;
 	uint16_t type;
 
@@ -186,7 +188,12 @@ int payload_gen_dependency(struct eval_ctx *ctx, const struct expr *expr,
 					    2 * BITS_PER_BYTE, &type);
 
 		dep = relational_expr_alloc(&expr->location, OP_EQ, left, right);
-		*res = dep;
+		stmt = expr_stmt_alloc(&dep->location, dep);
+		if (stmt_evaluate(ctx, stmt) < 0) {
+			return expr_error(ctx->msgs, expr,
+					  "dependency statement is invalid");
+		}
+		*res = stmt;
 		return 0;
 	}
 
@@ -220,8 +227,13 @@ int payload_gen_dependency(struct eval_ctx *ctx, const struct expr *expr,
 				    constant_data_ptr(protocol, tmpl->len));
 
 	dep = relational_expr_alloc(&expr->location, OP_EQ, left, right);
+	stmt = expr_stmt_alloc(&dep->location, dep);
+	if (stmt_evaluate(ctx, stmt) < 0) {
+		return expr_error(ctx->msgs, expr,
+					  "dependency statement is invalid");
+	}
 	left->ops->pctx_update(&ctx->pctx, dep);
-	*res = dep;
+	*res = stmt;
 	return 0;
 }
 

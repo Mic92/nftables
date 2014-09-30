@@ -26,7 +26,6 @@
 #include <utils.h>
 
 static int expr_evaluate(struct eval_ctx *ctx, struct expr **expr);
-static int stmt_evaluate(struct eval_ctx *ctx, struct stmt *stmt);
 
 static const char *byteorder_names[] = {
 	[BYTEORDER_INVALID]		= "invalid",
@@ -271,13 +270,9 @@ static int expr_evaluate_payload(struct eval_ctx *ctx, struct expr **expr)
 	struct expr *payload = *expr;
 	enum proto_bases base = payload->payload.base;
 	struct stmt *nstmt;
-	struct expr *nexpr;
 
 	if (ctx->pctx.protocol[base].desc == NULL) {
-		if (payload_gen_dependency(ctx, payload, &nexpr) < 0)
-			return -1;
-		nstmt = expr_stmt_alloc(&nexpr->location, nexpr);
-		if (stmt_evaluate(ctx, nstmt) < 0)
+		if (payload_gen_dependency(ctx, payload, &nstmt) < 0)
 			return -1;
 		list_add_tail(&nstmt->list, &ctx->stmt->list);
 	} else if (ctx->pctx.protocol[base].desc != payload->payload.desc)
@@ -1205,7 +1200,7 @@ static int stmt_evaluate_log(struct eval_ctx *ctx, struct stmt *stmt)
 	return 0;
 }
 
-static int stmt_evaluate(struct eval_ctx *ctx, struct stmt *stmt)
+int stmt_evaluate(struct eval_ctx *ctx, struct stmt *stmt)
 {
 #ifdef DEBUG
 	if (debug_level & DEBUG_EVALUATION) {
