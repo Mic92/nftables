@@ -14,6 +14,9 @@
 #include <string.h>
 #include <limits.h>
 #include <linux/netfilter/nf_tables.h>
+#include <arpa/inet.h>
+#include <linux/netfilter.h>
+#include <net/ethernet.h>
 #include <netlink.h>
 #include <rule.h>
 #include <statement.h>
@@ -472,8 +475,15 @@ static void netlink_parse_reject(struct netlink_parse_ctx *ctx,
 				 const struct nft_rule_expr *expr)
 {
 	struct stmt *stmt;
+	uint8_t icmp_code;
 
 	stmt = reject_stmt_alloc(loc);
+	stmt->reject.type = nft_rule_expr_get_u32(expr, NFT_EXPR_REJECT_TYPE);
+	icmp_code = nft_rule_expr_get_u8(expr, NFT_EXPR_REJECT_CODE);
+	stmt->reject.icmp_code = icmp_code;
+	stmt->reject.expr = constant_expr_alloc(loc, &integer_type,
+						BYTEORDER_HOST_ENDIAN, 8,
+						&icmp_code);
 	list_add_tail(&stmt->list, &ctx->rule->stmts);
 }
 
@@ -899,6 +909,60 @@ static void expr_postprocess(struct rule_pp_ctx *ctx,
 	}
 }
 
+static void stmt_reject_postprocess(struct rule_pp_ctx rctx, struct stmt *stmt)
+{
+	const struct proto_desc *desc, *base;
+	int protocol;
+
+	switch (rctx.pctx.family) {
+	case NFPROTO_IPV4:
+		stmt->reject.family = rctx.pctx.family;
+		stmt->reject.expr->dtype = &icmp_code_type;
+		break;
+	case NFPROTO_IPV6:
+		stmt->reject.family = rctx.pctx.family;
+		stmt->reject.expr->dtype = &icmpv6_code_type;
+		break;
+	case NFPROTO_INET:
+		if (stmt->reject.type == NFT_REJECT_ICMPX_UNREACH)
+			break;
+		base = rctx.pctx.protocol[PROTO_BASE_LL_HDR].desc;
+		desc = rctx.pctx.protocol[PROTO_BASE_NETWORK_HDR].desc;
+		protocol = proto_find_num(base, desc);
+		switch (protocol) {
+		case NFPROTO_IPV4:
+			stmt->reject.expr->dtype = &icmp_code_type;
+			break;
+		case NFPROTO_IPV6:
+			stmt->reject.expr->dtype = &icmpv6_code_type;
+			break;
+		}
+		stmt->reject.family = protocol;
+		break;
+	case NFPROTO_BRIDGE:
+		if (stmt->reject.type == NFT_REJECT_ICMPX_UNREACH)
+			break;
+		base = rctx.pctx.protocol[PROTO_BASE_LL_HDR].desc;
+		desc = rctx.pctx.protocol[PROTO_BASE_NETWORK_HDR].desc;
+		protocol = proto_find_num(base, desc);
+		switch (protocol) {
+		case __constant_htons(ETH_P_IP):
+			stmt->reject.family = NFPROTO_IPV4;
+			stmt->reject.expr->dtype = &icmp_code_type;
+			break;
+		case __constant_htons(ETH_P_IPV6):
+			stmt->reject.family = NFPROTO_IPV6;
+			stmt->reject.expr->dtype = &icmpv6_code_type;
+			break;
+		default:
+			break;
+		}
+		break;
+	default:
+		break;
+	}
+}
+
 static void rule_parse_postprocess(struct netlink_parse_ctx *ctx, struct rule *rule)
 {
 	struct rule_pp_ctx rctx;
@@ -925,6 +989,9 @@ static void rule_parse_postprocess(struct netlink_parse_ctx *ctx, struct rule *r
 				expr_postprocess(&rctx, stmt, &stmt->nat.addr);
 			if (stmt->nat.proto != NULL)
 				expr_postprocess(&rctx, stmt, &stmt->nat.proto);
+			break;
+		case STMT_REJECT:
+			stmt_reject_postprocess(rctx, stmt);
 			break;
 		default:
 			break;

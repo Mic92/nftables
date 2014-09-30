@@ -24,6 +24,9 @@
 #include <gmputil.h>
 #include <erec.h>
 
+#include <netinet/ip_icmp.h>
+#include <netinet/icmp6.h>
+
 static const struct datatype *datatypes[TYPE_MAX + 1] = {
 	[TYPE_INVALID]		= &invalid_type,
 	[TYPE_VERDICT]		= &verdict_type,
@@ -41,6 +44,9 @@ static const struct datatype *datatypes[TYPE_MAX + 1] = {
 	[TYPE_TIME]		= &time_type,
 	[TYPE_MARK]		= &mark_type,
 	[TYPE_ARPHRD]		= &arphrd_type,
+	[TYPE_ICMP_CODE]	= &icmp_code_type,
+	[TYPE_ICMPV6_CODE]	= &icmpv6_code_type,
+	[TYPE_ICMPX_CODE]	= &icmpx_code_type,
 };
 
 void datatype_register(const struct datatype *dtype)
@@ -683,6 +689,105 @@ const struct datatype mark_type = {
 	.print		= mark_type_print,
 	.parse		= mark_type_parse,
 	.flags		= DTYPE_F_PREFIX,
+};
+
+static const struct symbol_table icmp_code_tbl = {
+	.symbols	= {
+		SYMBOL("net-unreachable",	ICMP_NET_UNREACH),
+		SYMBOL("host-unreachable",	ICMP_HOST_UNREACH),
+		SYMBOL("prot-unreachable",	ICMP_PROT_UNREACH),
+		SYMBOL("port-unreachable",	ICMP_PORT_UNREACH),
+		SYMBOL("net-prohibited",	ICMP_NET_ANO),
+		SYMBOL("host-prohibited",	ICMP_HOST_ANO),
+		SYMBOL("admin-prohibited",	ICMP_PKT_FILTERED),
+		SYMBOL_LIST_END
+	},
+};
+
+static void icmp_code_type_print(const struct expr *expr)
+{
+	return symbolic_constant_print(&icmp_code_tbl, expr);
+}
+
+static struct error_record *icmp_code_type_parse(const struct expr *sym,
+						 struct expr **res)
+{
+	return symbolic_constant_parse(sym, &icmp_code_tbl, res);
+}
+
+const struct datatype icmp_code_type = {
+	.type		= TYPE_ICMP_CODE,
+	.name		= "icmp code",
+	.desc		= "icmp code",
+	.size		= BITS_PER_BYTE,
+	.byteorder	= BYTEORDER_BIG_ENDIAN,
+	.basetype	= &integer_type,
+	.print		= icmp_code_type_print,
+	.parse		= icmp_code_type_parse,
+};
+
+static const struct symbol_table icmpv6_code_tbl = {
+	.symbols	= {
+		SYMBOL("no-route",		ICMP6_DST_UNREACH_NOROUTE),
+		SYMBOL("admin-prohibited",	ICMP6_DST_UNREACH_ADMIN),
+		SYMBOL("addr-unreachable",	ICMP6_DST_UNREACH_ADDR),
+		SYMBOL("port-unreachable",	ICMP6_DST_UNREACH_NOPORT),
+		SYMBOL_LIST_END
+	},
+};
+
+static void icmpv6_code_type_print(const struct expr *expr)
+{
+	return symbolic_constant_print(&icmpv6_code_tbl, expr);
+}
+
+static struct error_record *icmpv6_code_type_parse(const struct expr *sym,
+						   struct expr **res)
+{
+	return symbolic_constant_parse(sym, &icmpv6_code_tbl, res);
+}
+
+const struct datatype icmpv6_code_type = {
+	.type		= TYPE_ICMPV6_CODE,
+	.name		= "icmpv6 code",
+	.desc		= "icmpv6 code",
+	.size		= BITS_PER_BYTE,
+	.byteorder	= BYTEORDER_BIG_ENDIAN,
+	.basetype	= &integer_type,
+	.print		= icmpv6_code_type_print,
+	.parse		= icmpv6_code_type_parse,
+};
+
+static const struct symbol_table icmpx_code_tbl = {
+	.symbols	= {
+		SYMBOL("port-unreachable",	NFT_REJECT_ICMPX_PORT_UNREACH),
+		SYMBOL("admin-prohibited",	NFT_REJECT_ICMPX_ADMIN_PROHIBITED),
+		SYMBOL("no-route",		NFT_REJECT_ICMPX_NO_ROUTE),
+		SYMBOL("host-unreachable",	NFT_REJECT_ICMPX_HOST_UNREACH),
+		SYMBOL_LIST_END
+	},
+};
+
+static void icmpx_code_type_print(const struct expr *expr)
+{
+	return symbolic_constant_print(&icmpx_code_tbl, expr);
+}
+
+static struct error_record *icmpx_code_type_parse(const struct expr *sym,
+						  struct expr **res)
+{
+	return symbolic_constant_parse(sym, &icmpx_code_tbl, res);
+}
+
+const struct datatype icmpx_code_type = {
+	.type		= TYPE_ICMPX_CODE,
+	.name		= "icmpx code",
+	.desc		= "icmpx code",
+	.size		= BITS_PER_BYTE,
+	.byteorder	= BYTEORDER_BIG_ENDIAN,
+	.basetype	= &integer_type,
+	.print		= icmpx_code_type_print,
+	.parse		= icmpx_code_type_parse,
 };
 
 static void time_type_print(const struct expr *expr)

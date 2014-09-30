@@ -17,6 +17,8 @@
 #include <linux/netfilter.h>
 #include <linux/netfilter_arp.h>
 #include <linux/netfilter/nf_tables.h>
+#include <netinet/ip_icmp.h>
+#include <netinet/icmp6.h>
 
 #include <expression.h>
 #include <statement.h>
@@ -1126,10 +1128,190 @@ static int stmt_evaluate_meta(struct eval_ctx *ctx, struct stmt *stmt)
 	return 0;
 }
 
-static int stmt_evaluate_reject(struct eval_ctx *ctx, struct stmt *stmt)
+static int reject_payload_gen_dependency_tcp(struct eval_ctx *ctx,
+					     struct stmt *stmt,
+					     struct expr **payload)
 {
+	const struct proto_desc *desc;
+
+	desc = ctx->pctx.protocol[PROTO_BASE_TRANSPORT_HDR].desc;
+	if (desc != NULL)
+		return 0;
+	*payload = payload_expr_alloc(&stmt->location, &proto_tcp,
+				      TCPHDR_UNSPEC);
+	return 0;
+}
+
+static int reject_payload_gen_dependency_family(struct eval_ctx *ctx,
+						struct stmt *stmt,
+						struct expr **payload)
+{
+	const struct proto_desc *base;
+
+	base = ctx->pctx.protocol[PROTO_BASE_NETWORK_HDR].desc;
+	if (base != NULL)
+		return 0;
+
+	if (stmt->reject.icmp_code < 0)
+		return stmt_error(ctx, stmt, "missing icmp error type");
+
+	/* Generate a network dependency */
+	switch (stmt->reject.family) {
+	case NFPROTO_IPV4:
+		*payload = payload_expr_alloc(&stmt->location, &proto_ip,
+					     IPHDR_PROTOCOL);
+		break;
+	case NFPROTO_IPV6:
+		*payload = payload_expr_alloc(&stmt->location, &proto_ip6,
+					     IP6HDR_NEXTHDR);
+		break;
+	default:
+		BUG("unknown reject family");
+	}
+	return 0;
+}
+
+static int stmt_reject_gen_dependency(struct eval_ctx *ctx, struct stmt *stmt,
+				      struct expr *expr)
+{
+	struct expr *payload = NULL;
+	struct stmt *nstmt;
+
+	switch (stmt->reject.type) {
+	case NFT_REJECT_TCP_RST:
+		if (reject_payload_gen_dependency_tcp(ctx, stmt, &payload) < 0)
+			return -1;
+		break;
+	case NFT_REJECT_ICMP_UNREACH:
+		if (reject_payload_gen_dependency_family(ctx, stmt,
+							 &payload) < 0)
+			return -1;
+		break;
+	default:
+		BUG("cannot generate reject dependency for type %d",
+		    stmt->reject.type);
+	}
+
+	if (payload_gen_dependency(ctx, payload, &nstmt) < 0)
+		return -1;
+
+	list_add(&nstmt->list, &ctx->cmd->rule->stmts);
+	return 0;
+}
+
+static int stmt_evaluate_reject_family(struct eval_ctx *ctx, struct stmt *stmt,
+				       struct expr *expr)
+{
+	switch (ctx->pctx.family) {
+	case NFPROTO_ARP:
+		return stmt_error(ctx, stmt, "cannot use reject with arp");
+	case NFPROTO_IPV4:
+	case NFPROTO_IPV6:
+		switch (stmt->reject.type) {
+		case NFT_REJECT_TCP_RST:
+			if (stmt_reject_gen_dependency(ctx, stmt, expr) < 0)
+				return -1;
+			break;
+		case NFT_REJECT_ICMPX_UNREACH:
+			return stmt_error(ctx, stmt,
+				   "abstracted ICMP unreachable not supported");
+		case NFT_REJECT_ICMP_UNREACH:
+			if (stmt->reject.family != ctx->pctx.family)
+				return stmt_error(ctx, stmt,
+				  "conflicting protocols specified: ip vs ip6");
+			break;
+		}
+		break;
+	case NFPROTO_INET:
+	case NFPROTO_BRIDGE:
+		if (stmt->reject.type == NFT_REJECT_ICMPX_UNREACH)
+			break;
+		if (stmt_reject_gen_dependency(ctx, stmt, expr) < 0)
+			return -1;
+		break;
+	}
+
 	stmt->flags |= STMT_F_TERMINAL;
 	return 0;
+}
+
+static int stmt_evaluate_reject_default(struct eval_ctx *ctx,
+					  struct stmt *stmt)
+{
+	switch (ctx->pctx.family) {
+	case NFPROTO_IPV4:
+	case NFPROTO_IPV6:
+		stmt->reject.type = NFT_REJECT_ICMP_UNREACH;
+		stmt->reject.family = ctx->pctx.family;
+		if (ctx->pctx.family == NFPROTO_IPV4)
+			stmt->reject.icmp_code = ICMP_PORT_UNREACH;
+		else
+			stmt->reject.icmp_code = ICMP6_DST_UNREACH_NOPORT;
+		break;
+	case NFPROTO_INET:
+	case NFPROTO_BRIDGE:
+		stmt->reject.type = NFT_REJECT_ICMPX_UNREACH;
+		stmt->reject.icmp_code = NFT_REJECT_ICMPX_PORT_UNREACH;
+		break;
+	}
+	return 0;
+}
+
+static int stmt_evaluate_reject_icmp(struct eval_ctx *ctx, struct stmt *stmt)
+{
+	struct error_record *erec;
+	struct expr *code;
+
+	erec = symbol_parse(stmt->reject.expr, &code);
+	if (erec != NULL) {
+		erec_queue(erec, ctx->msgs);
+		return -1;
+	}
+	stmt->reject.icmp_code = mpz_get_uint8(code->value);
+	return 0;
+}
+
+static int stmt_evaluate_reset(struct eval_ctx *ctx, struct stmt *stmt)
+{
+	int protonum;
+	const struct proto_desc *desc, *base;
+	struct proto_ctx *pctx = &ctx->pctx;
+
+	base = pctx->protocol[PROTO_BASE_NETWORK_HDR].desc;
+	desc = pctx->protocol[PROTO_BASE_TRANSPORT_HDR].desc;
+	if (desc == NULL)
+		return 0;
+
+	protonum = proto_find_num(base, desc);
+	switch (protonum) {
+	case IPPROTO_TCP:
+		break;
+	default:
+		if (stmt->reject.type == NFT_REJECT_TCP_RST) {
+			return stmt_error(ctx, stmt,
+				 "you cannot use tcp reset with this protocol");
+		}
+		break;
+	}
+	return 0;
+}
+
+static int stmt_evaluate_reject(struct eval_ctx *ctx, struct stmt *stmt)
+{
+	struct expr *expr = ctx->cmd->expr;
+
+	if (stmt->reject.icmp_code < 0) {
+		if (stmt_evaluate_reject_default(ctx, stmt) < 0)
+			return -1;
+	} else if (stmt->reject.expr != NULL) {
+		if (stmt_evaluate_reject_icmp(ctx, stmt) < 0)
+			return -1;
+	} else {
+		if (stmt_evaluate_reset(ctx, stmt) < 0)
+			return -1;
+	}
+
+	return stmt_evaluate_reject_family(ctx, stmt, expr);
 }
 
 static int stmt_evaluate_nat(struct eval_ctx *ctx, struct stmt *stmt)

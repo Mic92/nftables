@@ -252,6 +252,7 @@ enum udp_hdr_fields {
 
 enum tcp_hdr_fields {
 	TCPHDR_INVALID,
+	TCPHDR_UNSPEC = TCPHDR_INVALID,
 	TCPHDR_SPORT,
 	TCPHDR_DPORT,
 	TCPHDR_SEQ,

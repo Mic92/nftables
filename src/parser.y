@@ -19,6 +19,8 @@
 #include <linux/netfilter.h>
 #include <linux/netfilter/nf_tables.h>
 #include <linux/netfilter/nf_conntrack_tuple_common.h>
+#include <netinet/ip_icmp.h>
+#include <netinet/icmp6.h>
 #include <libnftnl/common.h>
 #include <libnftnl/set.h>
 
@@ -368,6 +370,9 @@ static void location_update(struct location *loc, struct location *rhs, int n)
 %token WEEK			"week"
 
 %token _REJECT			"reject"
+%token RESET			"reset"
+%token WITH			"with"
+%token ICMPX			"icmpx"
 
 %token SNAT			"snat"
 %token DNAT			"dnat"
@@ -431,8 +436,8 @@ static void location_update(struct location *loc, struct location *rhs, int n)
 %type <stmt>			limit_stmt
 %destructor { stmt_free($$); }	limit_stmt
 %type <val>			time_unit
-%type <stmt>			reject_stmt
-%destructor { stmt_free($$); }	reject_stmt
+%type <stmt>			reject_stmt reject_stmt_alloc
+%destructor { stmt_free($$); }	reject_stmt reject_stmt_alloc
 %type <stmt>			nat_stmt nat_stmt_alloc
 %destructor { stmt_free($$); }	nat_stmt nat_stmt_alloc
 %type <stmt>			queue_stmt queue_stmt_alloc
@@ -1374,9 +1379,52 @@ time_unit		:	SECOND		{ $$ = 1ULL; }
 			|	WEEK		{ $$ = 1ULL * 60 * 60 * 24 * 7; }
 			;
 
-reject_stmt		:	_REJECT
+reject_stmt		:	reject_stmt_alloc	reject_opts
+			;
+
+reject_stmt_alloc	:	_REJECT
 			{
 				$$ = reject_stmt_alloc(&@$);
+			}
+			;
+
+reject_opts		:       /* empty */
+			{
+				$<stmt>0->reject.type = -1;
+				$<stmt>0->reject.icmp_code = -1;
+			}
+			|	WITH	ICMP	TYPE	STRING
+			{
+				$<stmt>0->reject.family = NFPROTO_IPV4;
+				$<stmt>0->reject.type = NFT_REJECT_ICMP_UNREACH;
+				$<stmt>0->reject.expr =
+					symbol_expr_alloc(&@$, SYMBOL_VALUE,
+							  current_scope(state),
+							  $4);
+				$<stmt>0->reject.expr->dtype = &icmp_code_type;
+			}
+			|	WITH	ICMP6	TYPE	STRING
+			{
+				$<stmt>0->reject.family = NFPROTO_IPV6;
+				$<stmt>0->reject.type = NFT_REJECT_ICMP_UNREACH;
+				$<stmt>0->reject.expr =
+					symbol_expr_alloc(&@$, SYMBOL_VALUE,
+							  current_scope(state),
+							  $4);
+				$<stmt>0->reject.expr->dtype = &icmpv6_code_type;
+			}
+			|	WITH	ICMPX	TYPE	STRING
+			{
+				$<stmt>0->reject.type = NFT_REJECT_ICMPX_UNREACH;
+				$<stmt>0->reject.expr =
+					symbol_expr_alloc(&@$, SYMBOL_VALUE,
+							  current_scope(state),
+							  $4);
+				$<stmt>0->reject.expr->dtype = &icmpx_code_type;
+			}
+			|	WITH	TCP	RESET
+			{
+				$<stmt>0->reject.type = NFT_REJECT_TCP_RST;
 			}
 			;
 

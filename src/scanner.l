@@ -313,6 +313,9 @@ addrstring	({macaddr}|{ip4addr}|{ip6addr})
 "week"			{ return WEEK; }
 
 "reject"		{ return _REJECT; }
+"with"			{ return WITH; }
+"reset"			{ return RESET; }
+"icmpx"			{ return ICMPX; }
 
 "snat"			{ return SNAT; }
 "dnat"			{ return DNAT; }

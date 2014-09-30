@@ -16,6 +16,10 @@
 #include <string.h>
 #include <syslog.h>
 
+#include <arpa/inet.h>
+#include <linux/netfilter.h>
+#include <netinet/ip_icmp.h>
+#include <netinet/icmp6.h>
 #include <statement.h>
 #include <utils.h>
 #include <list.h>
@@ -227,6 +231,33 @@ struct stmt *queue_stmt_alloc(const struct location *loc)
 static void reject_stmt_print(const struct stmt *stmt)
 {
 	printf("reject");
+	switch (stmt->reject.type) {
+	case NFT_REJECT_TCP_RST:
+		printf(" with tcp reset");
+		break;
+	case NFT_REJECT_ICMPX_UNREACH:
+		if (stmt->reject.icmp_code == NFT_REJECT_ICMPX_PORT_UNREACH)
+			break;
+		printf(" with icmpx type ");
+		expr_print(stmt->reject.expr);
+		break;
+	case NFT_REJECT_ICMP_UNREACH:
+		switch (stmt->reject.family) {
+		case NFPROTO_IPV4:
+			if (stmt->reject.icmp_code == ICMP_PORT_UNREACH)
+				break;
+			printf(" with icmp type ");
+			expr_print(stmt->reject.expr);
+			break;
+		case NFPROTO_IPV6:
+			if (stmt->reject.icmp_code == ICMP6_DST_UNREACH_NOPORT)
+				break;
+			printf(" with icmpv6 type ");
+			expr_print(stmt->reject.expr);
+			break;
+		}
+		break;
+	}
 }
 
 static const struct stmt_ops reject_stmt_ops = {

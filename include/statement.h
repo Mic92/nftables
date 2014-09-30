@@ -56,7 +56,10 @@ struct limit_stmt {
 extern struct stmt *limit_stmt_alloc(const struct location *loc);
 
 struct reject_stmt {
+	struct expr		*expr;
 	enum nft_reject_types	type;
+	int8_t			icmp_code;
+	unsigned int		family;
 };
 
 extern struct stmt *reject_stmt_alloc(const struct location *loc);

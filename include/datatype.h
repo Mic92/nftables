@@ -36,6 +36,9 @@
  * @TYPE_ICMP6_TYPE:	ICMPv6 type codes (integer subtype)
  * @TYPE_CT_LABEL:	Conntrack Label (bitmask subtype)
  * @TYPE_PKTTYPE:	packet type (integer subtype)
+ * @TYPE_ICMP_CODE:	icmp code (integer subtype)
+ * @TYPE_ICMPV6_CODE:	icmpv6 code (integer subtype)
+ * @TYPE_ICMPX_CODE:	icmpx code (integer subtype)
  */
 enum datatypes {
 	TYPE_INVALID,
@@ -70,6 +73,9 @@ enum datatypes {
 	TYPE_ICMP6_TYPE,
 	TYPE_CT_LABEL,
 	TYPE_PKTTYPE,
+	TYPE_ICMP_CODE,
+	TYPE_ICMPV6_CODE,
+	TYPE_ICMPX_CODE,
 	__TYPE_MAX
 };
 #define TYPE_MAX		(__TYPE_MAX - 1)
@@ -194,6 +200,9 @@ extern const struct datatype arphrd_type;
 extern const struct datatype inet_protocol_type;
 extern const struct datatype inet_service_type;
 extern const struct datatype mark_type;
+extern const struct datatype icmp_code_type;
+extern const struct datatype icmpv6_code_type;
+extern const struct datatype icmpx_code_type;
 extern const struct datatype time_type;
 
 extern const struct datatype *concat_type_alloc(const struct expr *expr);

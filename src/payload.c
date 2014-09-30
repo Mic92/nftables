@@ -198,11 +198,32 @@ int payload_gen_dependency(struct eval_ctx *ctx, const struct expr *expr,
 	}
 
 	desc = ctx->pctx.protocol[expr->payload.base - 1].desc;
-	/* Special case for mixed IPv4/IPv6 tables: use meta L4 proto */
-	if (desc == NULL &&
-	    ctx->pctx.family == NFPROTO_INET &&
-	    expr->payload.base == PROTO_BASE_TRANSPORT_HDR)
-		desc = &proto_inet_service;
+	/* Special case for mixed IPv4/IPv6 and bridge tables */
+	if (desc == NULL) {
+		switch (ctx->pctx.family) {
+		case NFPROTO_INET:
+			switch (expr->payload.base) {
+			case PROTO_BASE_TRANSPORT_HDR:
+				desc = &proto_inet_service;
+				break;
+			case PROTO_BASE_LL_HDR:
+				desc = &proto_inet;
+				break;
+			default:
+				break;
+			}
+			break;
+		case NFPROTO_BRIDGE:
+			switch (expr->payload.base) {
+			case PROTO_BASE_LL_HDR:
+				desc = &proto_eth;
+				break;
+			default:
+				break;
+			}
+			break;
+		}
+	}
 
 	if (desc == NULL)
 		return expr_error(ctx->msgs, expr,
