@@ -112,6 +112,7 @@ struct error_record *symbolic_constant_parse(const struct expr *sym,
 {
 	const struct symbolic_constant *s;
 	const struct datatype *dtype;
+	struct error_record *erec;
 
 	for (s = tbl->symbols; s->identifier != NULL; s++) {
 		if (!strcmp(sym->identifier, s->identifier))
@@ -119,8 +120,16 @@ struct error_record *symbolic_constant_parse(const struct expr *sym,
 	}
 
 	dtype = sym->dtype;
-	if (s->identifier == NULL)
+	if (s->identifier == NULL) {
+		*res = NULL;
+		erec = sym->dtype->basetype->parse(sym, res);
+		if (erec != NULL)
+			return erec;
+		if (*res)
+			return NULL;
+
 		return error(&sym->location, "Could not parse %s", dtype->desc);
+	}
 
 	*res = constant_expr_alloc(&sym->location, dtype,
 				   dtype->byteorder, dtype->size,
@@ -660,25 +669,6 @@ static void mark_type_print(const struct expr *expr)
 static struct error_record *mark_type_parse(const struct expr *sym,
 					    struct expr **res)
 {
-	struct error_record *erec;
-	const struct symbolic_constant *s;
-
-	for (s = mark_tbl->symbols; s->identifier != NULL; s++) {
-		if (!strcmp(sym->identifier, s->identifier)) {
-			*res = constant_expr_alloc(&sym->location, sym->dtype,
-						   sym->dtype->byteorder,
-						   sym->dtype->size,
-						   &s->value);
-			return NULL;
-		}
-	}
-
-	*res = NULL;
-	erec = sym->dtype->basetype->parse(sym, res);
-	if (erec != NULL)
-		return erec;
-	if (*res)
-		return NULL;
 	return symbolic_constant_parse(sym, mark_tbl, res);
 }
 
