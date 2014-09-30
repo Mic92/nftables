@@ -192,33 +192,20 @@ static void nft_batch_continue(void)
 		nft_batch_page_add();
 }
 
-static uint32_t mnl_batch_put(int type)
-{
-	struct nlmsghdr *nlh;
-	struct nfgenmsg *nfg;
-
-	nlh = mnl_nlmsg_put_header(nft_nlmsg_batch_current());
-	nlh->nlmsg_type = type;
-	nlh->nlmsg_flags = NLM_F_REQUEST;
-	nlh->nlmsg_seq = mnl_seqnum_alloc();
-
-	nfg = mnl_nlmsg_put_extra_header(nlh, sizeof(*nfg));
-	nfg->nfgen_family = AF_INET;
-	nfg->version = NFNETLINK_V0;
-	nfg->res_id = NFNL_SUBSYS_NFTABLES;
-	nft_batch_continue();
-
-	return nlh->nlmsg_seq;
-}
-
 uint32_t mnl_batch_begin(void)
 {
-	return mnl_batch_put(NFNL_MSG_BATCH_BEGIN);
+	uint32_t seq = mnl_seqnum_alloc();
+
+	nft_batch_begin(nft_nlmsg_batch_current(), seq);
+	nft_batch_continue();
+
+	return seq;
 }
 
 void mnl_batch_end(void)
 {
-	mnl_batch_put(NFNL_MSG_BATCH_END);
+	nft_batch_end(nft_nlmsg_batch_current(), mnl_seqnum_alloc());
+	nft_batch_continue();
 }
 
 bool mnl_batch_ready(void)
