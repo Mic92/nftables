@@ -634,6 +634,9 @@ static void netlink_gen_nat_stmt(struct netlink_linearize_ctx *ctx,
 	family = nft_rule_attr_get_u32(ctx->nlr, NFT_RULE_ATTR_FAMILY);
 	nft_rule_expr_set_u32(nle, NFT_EXPR_NAT_FAMILY, family);
 
+	if (stmt->nat.flags != 0)
+		nft_rule_expr_set_u32(nle, NFT_EXPR_NAT_FLAGS, stmt->nat.flags);
+
 	if (stmt->nat.addr) {
 		amin_reg = get_register(ctx);
 		registers++;

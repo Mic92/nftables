@@ -319,6 +319,9 @@ addrstring	({macaddr}|{ip4addr}|{ip6addr})
 
 "snat"			{ return SNAT; }
 "dnat"			{ return DNAT; }
+"random"		{ return RANDOM; }
+"random-fully"		{ return RANDOM_FULLY; }
+"persistent"		{ return PERSISTENT; }
 
 "ll"			{ return LL_HDR; }
 "nh"			{ return NETWORK_HDR; }

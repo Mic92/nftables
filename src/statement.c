@@ -24,6 +24,9 @@
 #include <utils.h>
 #include <list.h>
 
+#include <netinet/in.h>
+#include <linux/netfilter/nf_nat.h>
+
 struct stmt *stmt_alloc(const struct location *loc,
 			const struct stmt_ops *ops)
 {
@@ -271,6 +274,27 @@ struct stmt *reject_stmt_alloc(const struct location *loc)
 	return stmt_alloc(loc, &reject_stmt_ops);
 }
 
+static void print_nf_nat_flags(uint32_t flags)
+{
+	const char *delim = " ";
+
+	if (flags == 0)
+		return;
+
+	if (flags & NF_NAT_RANGE_PROTO_RANDOM) {
+		printf("%srandom", delim);
+		delim = ",";
+	}
+
+	if (flags & NF_NAT_RANGE_PROTO_RANDOM_FULLY) {
+		printf("%srandom-fully", delim);
+		delim = ",";
+	}
+
+	if (flags & NF_NAT_RANGE_PERSISTENT)
+		printf("%spersistent", delim);
+}
+
 static void nat_stmt_print(const struct stmt *stmt)
 {
 	static const char *nat_types[] = {
@@ -285,6 +309,8 @@ static void nat_stmt_print(const struct stmt *stmt)
 		printf(":");
 		expr_print(stmt->nat.proto);
 	}
+
+	print_nf_nat_flags(stmt->nat.flags);
 }
 
 static void nat_stmt_destroy(struct stmt *stmt)

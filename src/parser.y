@@ -19,6 +19,7 @@
 #include <linux/netfilter.h>
 #include <linux/netfilter/nf_tables.h>
 #include <linux/netfilter/nf_conntrack_tuple_common.h>
+#include <linux/netfilter/nf_nat.h>
 #include <netinet/ip_icmp.h>
 #include <netinet/icmp6.h>
 #include <libnftnl/common.h>
@@ -376,6 +377,9 @@ static void location_update(struct location *loc, struct location *rhs, int n)
 
 %token SNAT			"snat"
 %token DNAT			"dnat"
+%token RANDOM			"random"
+%token RANDOM_FULLY		"random-fully"
+%token PERSISTENT		"persistent"
 
 %token QUEUE			"queue"
 %token QUEUENUM			"num"
@@ -440,6 +444,7 @@ static void location_update(struct location *loc, struct location *rhs, int n)
 %destructor { stmt_free($$); }	reject_stmt reject_stmt_alloc
 %type <stmt>			nat_stmt nat_stmt_alloc
 %destructor { stmt_free($$); }	nat_stmt nat_stmt_alloc
+%type <val>			nf_nat_flags nf_nat_flag
 %type <stmt>			queue_stmt queue_stmt_alloc
 %destructor { stmt_free($$); }	queue_stmt queue_stmt_alloc
 %type <val>			queue_stmt_flags queue_stmt_flag
@@ -1456,6 +1461,22 @@ nat_stmt_args		:	expr
 			{
 				$<stmt>0->nat.proto = $2;
 			}
+			|	nat_stmt_args	nf_nat_flags
+			{
+				$<stmt>0->nat.flags = $2;
+			}
+			;
+
+nf_nat_flags		:	nf_nat_flag
+			|	nf_nat_flags	COMMA	nf_nat_flag
+			{
+				$$ = $1 | $3;
+			}
+			;
+
+nf_nat_flag		:	RANDOM		{ $$ = NF_NAT_RANGE_PROTO_RANDOM; }
+			|	RANDOM_FULLY	{ $$ = NF_NAT_RANGE_PROTO_RANDOM_FULLY; }
+			|	PERSISTENT 	{ $$ = NF_NAT_RANGE_PERSISTENT; }
 			;
 
 queue_stmt		:	queue_stmt_alloc

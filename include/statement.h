@@ -68,6 +68,7 @@ struct nat_stmt {
 	enum nft_nat_types	type;
 	struct expr		*addr;
 	struct expr		*proto;
+	uint32_t		flags;
 };
 
 extern struct stmt *nat_stmt_alloc(const struct location *loc);

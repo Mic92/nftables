@@ -501,6 +501,10 @@ static void netlink_parse_nat(struct netlink_parse_ctx *ctx,
 
 	family = nft_rule_expr_get_u32(nle, NFT_EXPR_NAT_FAMILY);
 
+	if (nft_rule_expr_is_set(nle, NFT_EXPR_NAT_FLAGS))
+		stmt->nat.flags = nft_rule_expr_get_u32(nle,
+							NFT_EXPR_NAT_FLAGS);
+
 	reg1 = nft_rule_expr_get_u32(nle, NFT_EXPR_NAT_REG_ADDR_MIN);
 	if (reg1) {
 		addr = netlink_get_register(ctx, loc, reg1);
