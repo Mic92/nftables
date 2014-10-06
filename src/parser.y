@@ -198,9 +198,6 @@ static void location_update(struct location *loc, struct location *rhs, int n)
 %token GOTO			"goto"
 %token RETURN			"return"
 
-%token NEW			"new"
-%token DESTROY			"destroy"
-
 %token CONSTANT			"constant"
 %token INTERVAL			"interval"
 %token ELEMENTS			"elements"
@@ -532,7 +529,9 @@ static void location_update(struct location *loc, struct location *rhs, int n)
 %type <val>			ct_key
 
 %type <val>			export_format
-%type <val>			monitor_event	monitor_object		monitor_format
+%type <string>			monitor_event
+%destructor { xfree($$); }	monitor_event
+%type <val>			monitor_object	monitor_format
 
 %%
 
@@ -798,89 +797,30 @@ rename_cmd		:	CHAIN		chain_spec	identifier
 export_cmd		:	export_format
 			{
 				struct handle h = { .family = NFPROTO_UNSPEC };
-				$$ = cmd_alloc(CMD_EXPORT, CMD_OBJ_RULESET, &h, &@$, NULL);
-				$$->format = $1;
+				struct export *export = export_alloc($1);
+				$$ = cmd_alloc(CMD_EXPORT, CMD_OBJ_EXPORT, &h, &@$, export);
 			}
 			;
 
 monitor_cmd		:	monitor_event	monitor_object	monitor_format
 			{
 				struct handle h = { .family = NFPROTO_UNSPEC };
-				$$ = cmd_alloc(CMD_MONITOR, CMD_OBJ_RULESET, &h, &@$, NULL);
-				$$->monitor_flags = $1 & $2;
-				$$->format = $3;
+				struct monitor *m = monitor_alloc($3, $2, $1);
+				m->location = @1;
+				$$ = cmd_alloc(CMD_MONITOR, CMD_OBJ_MONITOR, &h, &@$, m);
 			}
 			;
 
-monitor_event		:	/* empty */
-			{
-				$$ = (1 << NFT_MSG_NEWRULE)	|
-				     (1 << NFT_MSG_DELRULE)	|
-				     (1 << NFT_MSG_NEWSET)	|
-				     (1 << NFT_MSG_DELSET)	|
-				     (1 << NFT_MSG_NEWSETELEM)	|
-				     (1 << NFT_MSG_DELSETELEM)	|
-				     (1 << NFT_MSG_NEWCHAIN)	|
-				     (1 << NFT_MSG_DELCHAIN)	|
-				     (1 << NFT_MSG_NEWTABLE)	|
-				     (1 << NFT_MSG_DELTABLE);
-			}
-			|	NEW
-			{
-				$$ = (1 << NFT_MSG_NEWTABLE)	|
-				     (1 << NFT_MSG_NEWCHAIN)	|
-				     (1 << NFT_MSG_NEWRULE)	|
-				     (1 << NFT_MSG_NEWSET)	|
-				     (1 << NFT_MSG_NEWSETELEM);
-			}
-			|	DESTROY
-			{
-				$$ = (1 << NFT_MSG_DELTABLE)	|
-				     (1 << NFT_MSG_DELCHAIN)	|
-				     (1 << NFT_MSG_DELRULE)	|
-				     (1 << NFT_MSG_DELSET)	|
-				     (1 << NFT_MSG_DELSETELEM);
-			}
+monitor_event		:	/* empty */	{ $$ = NULL; }
+			|       STRING		{ $$ = $1; }
 			;
 
-monitor_object		:	/* empty */
-			{
-				$$ = (1 << NFT_MSG_NEWRULE)	|
-				     (1 << NFT_MSG_DELRULE)	|
-				     (1 << NFT_MSG_NEWSET)	|
-				     (1 << NFT_MSG_DELSET)	|
-				     (1 << NFT_MSG_NEWSETELEM)	|
-				     (1 << NFT_MSG_DELSETELEM)	|
-				     (1 << NFT_MSG_NEWCHAIN)	|
-				     (1 << NFT_MSG_DELCHAIN)	|
-				     (1 << NFT_MSG_NEWTABLE)	|
-				     (1 << NFT_MSG_DELTABLE);
-			}
-			|	TABLES
-			{
-				$$ = (1 << NFT_MSG_NEWTABLE) |
-				     (1 << NFT_MSG_DELTABLE);
-			}
-			|	CHAINS
-			{
-				$$ = (1 << NFT_MSG_NEWCHAIN) |
-				     (1 << NFT_MSG_DELCHAIN);
-			}
-			|	SETS
-			{
-				$$ = (1 << NFT_MSG_NEWSET) |
-				     (1 << NFT_MSG_DELSET);
-			}
-			|	RULES
-			{
-				$$ = (1 << NFT_MSG_NEWRULE) |
-				     (1 << NFT_MSG_DELRULE);
-			}
-			|	ELEMENTS
-			{
-				$$ = (1 << NFT_MSG_NEWSETELEM) |
-				     (1 << NFT_MSG_DELSETELEM);
-			}
+monitor_object		:	/* empty */	{ $$ = CMD_MONITOR_OBJ_ANY; }
+			| 	TABLES		{ $$ = CMD_MONITOR_OBJ_TABLES; }
+			| 	CHAINS		{ $$ = CMD_MONITOR_OBJ_CHAINS; }
+			| 	SETS		{ $$ = CMD_MONITOR_OBJ_SETS; }
+			|	RULES		{ $$ = CMD_MONITOR_OBJ_RULES; }
+			|	ELEMENTS	{ $$ = CMD_MONITOR_OBJ_ELEMS; }
 			;
 
 monitor_format		:	/* empty */	{ $$ = NFT_OUTPUT_DEFAULT; }

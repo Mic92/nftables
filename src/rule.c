@@ -556,6 +556,39 @@ struct cmd *cmd_alloc(enum cmd_ops op, enum cmd_obj obj,
 	return cmd;
 }
 
+struct export *export_alloc(uint32_t format)
+{
+	struct export *export;
+
+	export = xmalloc(sizeof(struct export));
+	export->format = format;
+
+	return export;
+}
+
+void export_free(struct export *e)
+{
+	xfree(e);
+}
+
+struct monitor *monitor_alloc(uint32_t format, uint32_t type, const char *event)
+{
+	struct monitor *mon;
+
+	mon = xmalloc(sizeof(struct monitor));
+	mon->format = format;
+	mon->type = type;
+	mon->event = event;
+	mon->flags = 0;
+
+	return mon;
+}
+
+void monitor_free(struct monitor *m)
+{
+	xfree(m);
+}
+
 void cmd_free(struct cmd *cmd)
 {
 	handle_free(&cmd->handle);
@@ -578,6 +611,12 @@ void cmd_free(struct cmd *cmd)
 			break;
 		case CMD_OBJ_EXPR:
 			expr_free(cmd->expr);
+			break;
+		case CMD_OBJ_MONITOR:
+			monitor_free(cmd->monitor);
+			break;
+		case CMD_OBJ_EXPORT:
+			export_free(cmd->export);
 			break;
 		default:
 			BUG("invalid command object type %u\n", cmd->obj);
@@ -726,7 +765,7 @@ static int do_command_export(struct netlink_ctx *ctx, struct cmd *cmd)
 	if (rs == NULL)
 		return -1;
 
-	nft_ruleset_fprintf(stdout, rs, cmd->format, 0);
+	nft_ruleset_fprintf(stdout, rs, cmd->export->format, 0);
 	fprintf(stdout, "\n");
 
 	nft_ruleset_free(rs);
@@ -929,9 +968,9 @@ static int do_command_monitor(struct netlink_ctx *ctx, struct cmd *cmd)
 	 *  - new rules in default format
 	 *  - new elements
 	 */
-	if (((cmd->monitor_flags & (1 << NFT_MSG_NEWRULE)) &&
-	    (cmd->format == NFT_OUTPUT_DEFAULT)) ||
-	    (cmd->monitor_flags & (1 << NFT_MSG_NEWSETELEM)))
+	if (((cmd->monitor->flags & (1 << NFT_MSG_NEWRULE)) &&
+	    (cmd->monitor->format == NFT_OUTPUT_DEFAULT)) ||
+	    (cmd->monitor->flags & (1 << NFT_MSG_NEWSETELEM)))
 		monhandler.cache_needed = true;
 	else
 		monhandler.cache_needed = false;
@@ -963,8 +1002,8 @@ static int do_command_monitor(struct netlink_ctx *ctx, struct cmd *cmd)
 		}
 	}
 
-	monhandler.monitor_flags = cmd->monitor_flags;
-	monhandler.format = cmd->format;
+	monhandler.monitor_flags = cmd->monitor->flags;
+	monhandler.format = cmd->monitor->format;
 	monhandler.ctx = ctx;
 	monhandler.loc = &cmd->location;
 

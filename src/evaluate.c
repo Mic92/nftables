@@ -59,6 +59,8 @@ static int __fmtstring(4, 5) __stmt_binary_error(struct eval_ctx *ctx,
 	__stmt_binary_error(ctx, &(s1)->location, &(s2)->location, fmt, ## args)
 #define chain_error(ctx, s1, fmt, args...) \
 	__stmt_binary_error(ctx, &(s1)->location, NULL, fmt, ## args)
+#define monitor_error(ctx, s1, fmt, args...) \
+	__stmt_binary_error(ctx, &(s1)->location, NULL, fmt, ## args)
 
 static int __fmtstring(3, 4) set_error(struct eval_ctx *ctx,
 				       const struct set *set,
@@ -1610,6 +1612,72 @@ static int cmd_evaluate_delete(struct eval_ctx *ctx, struct cmd *cmd)
 	}
 }
 
+enum {
+	CMD_MONITOR_EVENT_ANY,
+	CMD_MONITOR_EVENT_NEW,
+	CMD_MONITOR_EVENT_DEL,
+	CMD_MONITOR_EVENT_MAX
+};
+
+static uint32_t monitor_flags[CMD_MONITOR_EVENT_MAX][CMD_MONITOR_OBJ_MAX] = {
+	[CMD_MONITOR_EVENT_ANY] = {
+		[CMD_MONITOR_OBJ_ANY]		= 0xffffffff,
+		[CMD_MONITOR_OBJ_TABLES]	= (1 << NFT_MSG_NEWTABLE) |
+						  (1 << NFT_MSG_DELTABLE),
+		[CMD_MONITOR_OBJ_CHAINS]	= (1 << NFT_MSG_NEWCHAIN) |
+						  (1 << NFT_MSG_DELCHAIN),
+		[CMD_MONITOR_OBJ_RULES]		= (1 << NFT_MSG_NEWRULE) |
+						  (1 << NFT_MSG_DELRULE),
+		[CMD_MONITOR_OBJ_SETS]		= (1 << NFT_MSG_NEWSET) |
+						  (1 << NFT_MSG_DELSET),
+		[CMD_MONITOR_OBJ_ELEMS]		= (1 << NFT_MSG_NEWSETELEM) |
+						  (1 << NFT_MSG_DELSETELEM),
+	},
+	[CMD_MONITOR_EVENT_NEW] = {
+		[CMD_MONITOR_OBJ_ANY]		= (1 << NFT_MSG_NEWTABLE) |
+						  (1 << NFT_MSG_NEWCHAIN) |
+						  (1 << NFT_MSG_NEWRULE)  |
+						  (1 << NFT_MSG_NEWSET)   |
+						  (1 << NFT_MSG_NEWSETELEM),
+		[CMD_MONITOR_OBJ_TABLES]	= (1 << NFT_MSG_NEWTABLE),
+		[CMD_MONITOR_OBJ_CHAINS]	= (1 << NFT_MSG_NEWCHAIN),
+		[CMD_MONITOR_OBJ_RULES]		= (1 << NFT_MSG_NEWRULE),
+		[CMD_MONITOR_OBJ_SETS]		= (1 << NFT_MSG_NEWSET),
+		[CMD_MONITOR_OBJ_ELEMS]		= (1 << NFT_MSG_NEWSETELEM),
+	},
+	[CMD_MONITOR_EVENT_DEL] = {
+		[CMD_MONITOR_OBJ_ANY]		= (1 << NFT_MSG_DELTABLE) |
+						  (1 << NFT_MSG_DELCHAIN) |
+						  (1 << NFT_MSG_DELRULE)  |
+						  (1 << NFT_MSG_DELSET)   |
+						  (1 << NFT_MSG_DELSETELEM),
+		[CMD_MONITOR_OBJ_TABLES]	= (1 << NFT_MSG_DELTABLE),
+		[CMD_MONITOR_OBJ_CHAINS]	= (1 << NFT_MSG_DELCHAIN),
+		[CMD_MONITOR_OBJ_RULES]		= (1 << NFT_MSG_DELRULE),
+		[CMD_MONITOR_OBJ_SETS]		= (1 << NFT_MSG_DELSET),
+		[CMD_MONITOR_OBJ_ELEMS]		= (1 << NFT_MSG_DELSETELEM),
+	},
+};
+
+static int cmd_evaluate_monitor(struct eval_ctx *ctx, struct cmd *cmd)
+{
+	uint32_t event;
+
+	if (cmd->monitor->event == NULL)
+		event = CMD_MONITOR_EVENT_ANY;
+	else if (strcmp(cmd->monitor->event, "new") == 0)
+		event = CMD_MONITOR_EVENT_NEW;
+	else if (strcmp(cmd->monitor->event, "destroy") == 0)
+		event = CMD_MONITOR_EVENT_DEL;
+	else {
+		return monitor_error(ctx, cmd->monitor, "invalid event %s",
+				     cmd->monitor->event);
+	}
+
+	cmd->monitor->flags = monitor_flags[event][cmd->monitor->type];
+	return 0;
+}
+
 int cmd_evaluate(struct eval_ctx *ctx, struct cmd *cmd)
 {
 #ifdef DEBUG
@@ -1632,9 +1700,10 @@ int cmd_evaluate(struct eval_ctx *ctx, struct cmd *cmd)
 	case CMD_FLUSH:
 	case CMD_RENAME:
 	case CMD_EXPORT:
-	case CMD_MONITOR:
 	case CMD_DESCRIBE:
 		return 0;
+	case CMD_MONITOR:
+		return cmd_evaluate_monitor(ctx, cmd);
 	default:
 		BUG("invalid command operation %u\n", cmd->op);
 	};

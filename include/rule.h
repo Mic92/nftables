@@ -252,6 +252,8 @@ enum cmd_ops {
  * @CMD_OBJ_TABLE:	table
  * @CMD_OBJ_RULESET:	ruleset
  * @CMD_OBJ_EXPR:	expression
+ * @CMD_OBJ_MONITOR:	monitor
+ * @CMD_OBJ_EXPORT:	export
  */
 enum cmd_obj {
 	CMD_OBJ_INVALID,
@@ -263,7 +265,37 @@ enum cmd_obj {
 	CMD_OBJ_TABLE,
 	CMD_OBJ_RULESET,
 	CMD_OBJ_EXPR,
+	CMD_OBJ_MONITOR,
+	CMD_OBJ_EXPORT,
 };
+
+struct export {
+	uint32_t	format;
+};
+
+struct export *export_alloc(uint32_t format);
+void export_free(struct export *e);
+
+enum {
+	CMD_MONITOR_OBJ_ANY,
+	CMD_MONITOR_OBJ_TABLES,
+	CMD_MONITOR_OBJ_CHAINS,
+	CMD_MONITOR_OBJ_RULES,
+	CMD_MONITOR_OBJ_SETS,
+	CMD_MONITOR_OBJ_ELEMS,
+	CMD_MONITOR_OBJ_MAX
+};
+
+struct monitor {
+	struct location	location;
+	uint32_t	format;
+	uint32_t	flags;
+	uint32_t	type;
+	const char	*event;
+};
+
+struct monitor *monitor_alloc(uint32_t format, uint32_t type, const char *event);
+void monitor_free(struct monitor *m);
 
 /**
  * struct cmd - command statement
@@ -292,10 +324,10 @@ struct cmd {
 		struct rule	*rule;
 		struct chain	*chain;
 		struct table	*table;
+		struct monitor	*monitor;
+		struct export	*export;
 	};
 	const void		*arg;
-	uint32_t		format;
-	uint32_t		monitor_flags;
 };
 
 extern struct cmd *cmd_alloc(enum cmd_ops op, enum cmd_obj obj,
