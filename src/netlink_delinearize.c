@@ -568,6 +568,21 @@ static void netlink_parse_nat(struct netlink_parse_ctx *ctx,
 	list_add_tail(&stmt->list, &ctx->rule->stmts);
 }
 
+static void netlink_parse_masq(struct netlink_parse_ctx *ctx,
+			       const struct location *loc,
+			       const struct nft_rule_expr *nle)
+{
+	struct stmt *stmt;
+
+	stmt = masq_stmt_alloc(loc);
+
+	if (nft_rule_expr_is_set(nle, NFT_EXPR_MASQ_FLAGS))
+		stmt->masq.flags = nft_rule_expr_get_u32(nle,
+							 NFT_EXPR_MASQ_FLAGS);
+
+	list_add_tail(&stmt->list, &ctx->rule->stmts);
+}
+
 static void netlink_parse_queue(struct netlink_parse_ctx *ctx,
 			      const struct location *loc,
 			      const struct nft_rule_expr *nle)
@@ -614,6 +629,7 @@ static const struct {
 	{ .name = "limit",	.parse = netlink_parse_limit },
 	{ .name = "reject",	.parse = netlink_parse_reject },
 	{ .name = "nat",	.parse = netlink_parse_nat },
+	{ .name = "masq",	.parse = netlink_parse_masq },
 	{ .name = "queue",	.parse = netlink_parse_queue },
 };
 

@@ -688,6 +688,19 @@ static void netlink_gen_nat_stmt(struct netlink_linearize_ctx *ctx,
 	nft_rule_add_expr(ctx->nlr, nle);
 }
 
+static void netlink_gen_masq_stmt(struct netlink_linearize_ctx *ctx,
+				  const struct stmt *stmt)
+{
+	struct nft_rule_expr *nle;
+
+	nle = alloc_nft_expr("masq");
+	if (stmt->masq.flags != 0)
+		nft_rule_expr_set_u32(nle, NFT_EXPR_MASQ_FLAGS,
+				      stmt->masq.flags);
+
+	nft_rule_add_expr(ctx->nlr, nle);
+}
+
 static void netlink_gen_queue_stmt(struct netlink_linearize_ctx *ctx,
 				 const struct stmt *stmt)
 {
@@ -752,6 +765,8 @@ static void netlink_gen_stmt(struct netlink_linearize_ctx *ctx,
 		return netlink_gen_reject_stmt(ctx, stmt);
 	case STMT_NAT:
 		return netlink_gen_nat_stmt(ctx, stmt);
+	case STMT_MASQ:
+		return netlink_gen_masq_stmt(ctx, stmt);
 	case STMT_QUEUE:
 		return netlink_gen_queue_stmt(ctx, stmt);
 	case STMT_CT:

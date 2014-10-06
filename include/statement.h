@@ -73,6 +73,12 @@ struct nat_stmt {
 
 extern struct stmt *nat_stmt_alloc(const struct location *loc);
 
+struct masq_stmt {
+	uint32_t		flags;
+};
+
+extern struct stmt *masq_stmt_alloc(const struct location *loc);
+
 struct queue_stmt {
 	struct expr		*queue;
 	uint16_t		flags;
@@ -103,6 +109,7 @@ extern struct stmt *ct_stmt_alloc(const struct location *loc,
  * @STMT_LOG:		log statement
  * @STMT_REJECT:	REJECT statement
  * @STMT_NAT:		NAT statement
+ * @STMT_MASQ:		masquerade statement
  * @STMT_QUEUE:		QUEUE statement
  * @STMT_CT:		conntrack statement
  */
@@ -116,6 +123,7 @@ enum stmt_types {
 	STMT_LOG,
 	STMT_REJECT,
 	STMT_NAT,
+	STMT_MASQ,
 	STMT_QUEUE,
 	STMT_CT,
 };
@@ -163,6 +171,7 @@ struct stmt {
 		struct limit_stmt	limit;
 		struct reject_stmt	reject;
 		struct nat_stmt		nat;
+		struct masq_stmt	masq;
 		struct queue_stmt	queue;
 		struct ct_stmt		ct;
 	};

@@ -1350,6 +1350,31 @@ static int stmt_evaluate_nat(struct eval_ctx *ctx, struct stmt *stmt)
 	return 0;
 }
 
+static int stmt_evaluate_masq(struct eval_ctx *ctx, struct stmt *stmt)
+{
+	struct proto_ctx *pctx = &ctx->pctx;
+
+	if (!pctx)
+		goto out;
+
+	switch (pctx->family) {
+	case AF_INET:
+		expr_set_context(&ctx->ectx, &ipaddr_type,
+				4 * BITS_PER_BYTE);
+		break;
+	case AF_INET6:
+		expr_set_context(&ctx->ectx, &ip6addr_type,
+				 16 * BITS_PER_BYTE);
+		break;
+	default:
+		return stmt_error(ctx, stmt, "ip and ip6 support only");
+	}
+
+out:
+	stmt->flags |= STMT_F_TERMINAL;
+	return 0;
+}
+
 static int stmt_evaluate_ct(struct eval_ctx *ctx, struct stmt *stmt)
 {
 	expr_set_context(&ctx->ectx, stmt->ct.tmpl->dtype,
@@ -1410,6 +1435,8 @@ int stmt_evaluate(struct eval_ctx *ctx, struct stmt *stmt)
 		return stmt_evaluate_reject(ctx, stmt);
 	case STMT_NAT:
 		return stmt_evaluate_nat(ctx, stmt);
+	case STMT_MASQ:
+		return stmt_evaluate_masq(ctx, stmt);
 	case STMT_QUEUE:
 		return stmt_evaluate_queue(ctx, stmt);
 	case STMT_CT:

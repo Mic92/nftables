@@ -330,3 +330,21 @@ struct stmt *nat_stmt_alloc(const struct location *loc)
 {
 	return stmt_alloc(loc, &nat_stmt_ops);
 }
+
+static void masq_stmt_print(const struct stmt *stmt)
+{
+	printf("masquerade");
+
+	print_nf_nat_flags(stmt->masq.flags);
+}
+
+static const struct stmt_ops masq_stmt_ops = {
+	.type		= STMT_MASQ,
+	.name		= "masq",
+	.print		= masq_stmt_print,
+};
+
+struct stmt *masq_stmt_alloc(const struct location *loc)
+{
+	return stmt_alloc(loc, &masq_stmt_ops);
+}

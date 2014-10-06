@@ -374,6 +374,7 @@ static void location_update(struct location *loc, struct location *rhs, int n)
 
 %token SNAT			"snat"
 %token DNAT			"dnat"
+%token MASQUERADE		"masquerade"
 %token RANDOM			"random"
 %token RANDOM_FULLY		"random-fully"
 %token PERSISTENT		"persistent"
@@ -439,8 +440,8 @@ static void location_update(struct location *loc, struct location *rhs, int n)
 %type <val>			time_unit
 %type <stmt>			reject_stmt reject_stmt_alloc
 %destructor { stmt_free($$); }	reject_stmt reject_stmt_alloc
-%type <stmt>			nat_stmt nat_stmt_alloc
-%destructor { stmt_free($$); }	nat_stmt nat_stmt_alloc
+%type <stmt>			nat_stmt nat_stmt_alloc masq_stmt masq_stmt_alloc
+%destructor { stmt_free($$); }	nat_stmt nat_stmt_alloc masq_stmt masq_stmt_alloc
 %type <val>			nf_nat_flags nf_nat_flag
 %type <stmt>			queue_stmt queue_stmt_alloc
 %destructor { stmt_free($$); }	queue_stmt queue_stmt_alloc
@@ -1184,6 +1185,7 @@ stmt			:	verdict_stmt
 			|	nat_stmt
 			|	queue_stmt
 			|	ct_stmt
+			|	masq_stmt
 			;
 
 verdict_stmt		:	verdict_expr
@@ -1405,6 +1407,17 @@ nat_stmt_args		:	expr
 			{
 				$<stmt>0->nat.flags = $2;
 			}
+			;
+
+masq_stmt		:	masq_stmt_alloc
+			|	masq_stmt_alloc	nf_nat_flags
+			{
+				$$ = $1;
+				$$->masq.flags = $2;
+			}
+			;
+
+masq_stmt_alloc		:	MASQUERADE 	{ $$ = masq_stmt_alloc(&@$); }
 			;
 
 nf_nat_flags		:	nf_nat_flag
