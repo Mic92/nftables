@@ -57,15 +57,15 @@ meta mark or 0x03 != 0x01;ok;mark | 0x00000003 != 0x00000001
 meta mark xor 0x03 == 0x01;ok;mark 0x00000002
 meta mark xor 0x03 != 0x01;ok;mark != 0x00000002
 
-meta iif wlan0 accept;ok;iif wlan0 accept
 meta iif eth0 accept;ok;iif eth0 accept
-meta iif != wlan0 accept;ok;iif != wlan0 accept
+meta iif eth0 accept;ok;iif eth0 accept
+meta iif != eth0 accept;ok;iif != eth0 accept
 meta iif != eth0 accept;ok;iif != eth0 accept
 
 meta iifname "eth0";ok;iifname "eth0"
 meta iifname != "eth0";ok;iifname != "eth0"
-meta iifname {"eth0", "wlan0"};ok
-- meta iifname != {"eth0", "wlan0"};ok
+meta iifname {"eth0", "lo"};ok
+- meta iifname != {"eth0", "lo"};ok
 
 meta iiftype {ether, ppp, ipip, ipip6, loopback, sit, ipgre};ok
 - meta iiftype != {ether, ppp, ipip, ipip6, loopback, sit, ipgre};ok
@@ -76,13 +76,13 @@ meta iiftype ppp;ok;iiftype ppp
 
 meta oif lo accept;ok;oif lo accept
 meta oif != lo accept;ok;oif != lo accept
-meta oif {wlan0, eth0, lo} accept;ok
-- meta oif != {wlan0, eth0, lo} accept;ok
+meta oif {eth0, lo} accept;ok
+- meta oif != {eth0, lo} accept;ok
 
 meta oifname "eth0";ok;oifname "eth0"
 meta oifname != "eth0";ok;oifname != "eth0"
-meta oifname { "eth0", "wlan0"};ok
-- meta iifname != {"eth0", "wlan0"};ok
+meta oifname { "eth0", "lo"};ok
+- meta iifname != {"eth0", "lo"};ok
 
 meta oiftype {ether, ppp, ipip, ipip6, loopback, sit, ipgre};ok
 - meta oiftype != {ether, ppp, ipip, ipip6, loopback, sit, ipgre};ok
