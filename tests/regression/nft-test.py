@@ -694,7 +694,7 @@ def run_test_file(filename, force_all_family_option, specific_file):
             if line[1:].find("*") != -1:
                 continue
             if need_fix_option:
-                rule[0] = rule[0].rstrip()[1:]
+                rule[0] = rule[0].rstrip()[1:].strip()
                 result = rule_add(rule, table_list, chain_list, filename,
                                   lineno, force_all_family_option)
                 tests += 1
