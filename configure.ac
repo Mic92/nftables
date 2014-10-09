@@ -71,8 +71,14 @@ AC_CHECK_LIB([nftnl], [nft_rule_alloc], ,
 AC_CHECK_LIB([gmp], [__gmpz_init], ,
 	     AC_MSG_ERROR([No suitable version of libgmp found]))
 
+AC_ARG_WITH([cli], [AS_HELP_STRING([--without-cli],
+            [disable interactive CLI (libreadline support)])],
+            [], [with_cli=yes])
+AS_IF([test "x$with_cli" != xno], [
 AC_CHECK_LIB([readline], [readline], ,
 	     AC_MSG_ERROR([No suitable version of libreadline found]))
+])
+AC_SUBST(with_cli)
 
 # Checks for header files.
 AC_HEADER_STDC

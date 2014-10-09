@@ -335,7 +335,11 @@ int main(int argc, char * const *argv)
 		if (scanner_read_file(scanner, filename, &internal_location) < 0)
 			goto out;
 	} else if (interactive) {
-		cli_init(&state);
+		if (cli_init(&state) < 0) {
+			fprintf(stderr, "%s: interactive CLI not supported in this build\n",
+				argv[0]);
+			exit(NFT_EXIT_FAILURE);
+		}
 		return 0;
 	} else {
 		fprintf(stderr, "%s: no command specified\n", argv[0]);

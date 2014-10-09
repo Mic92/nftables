@@ -3,7 +3,9 @@ PROGRAMS		+= nft
 nft-destdir		:= @sbindir@
 
 nft-obj			+= main.o
+ifeq (@with_cli@,yes)
 nft-obj			+= cli.o
+endif
 nft-obj			+= rule.o
 nft-obj			+= statement.o
 nft-obj			+= datatype.o
