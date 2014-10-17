@@ -944,8 +944,10 @@ static void stmt_reject_postprocess(struct rule_pp_ctx rctx, struct stmt *stmt)
 		stmt->reject.expr->dtype = &icmpv6_code_type;
 		break;
 	case NFPROTO_INET:
-		if (stmt->reject.type == NFT_REJECT_ICMPX_UNREACH)
+		if (stmt->reject.type == NFT_REJECT_ICMPX_UNREACH) {
+			stmt->reject.expr->dtype = &icmpx_code_type;
 			break;
+		}
 		base = rctx.pctx.protocol[PROTO_BASE_LL_HDR].desc;
 		desc = rctx.pctx.protocol[PROTO_BASE_NETWORK_HDR].desc;
 		protocol = proto_find_num(base, desc);
@@ -960,8 +962,10 @@ static void stmt_reject_postprocess(struct rule_pp_ctx rctx, struct stmt *stmt)
 		stmt->reject.family = protocol;
 		break;
 	case NFPROTO_BRIDGE:
-		if (stmt->reject.type == NFT_REJECT_ICMPX_UNREACH)
+		if (stmt->reject.type == NFT_REJECT_ICMPX_UNREACH) {
+			stmt->reject.expr->dtype = &icmpx_code_type;
 			break;
+		}
 		base = rctx.pctx.protocol[PROTO_BASE_LL_HDR].desc;
 		desc = rctx.pctx.protocol[PROTO_BASE_NETWORK_HDR].desc;
 		protocol = proto_find_num(base, desc);
