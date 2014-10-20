@@ -1328,10 +1328,15 @@ static int stmt_evaluate_reset(struct eval_ctx *ctx, struct stmt *stmt)
 	const struct proto_desc *desc, *base;
 	struct proto_ctx *pctx = &ctx->pctx;
 
-	base = pctx->protocol[PROTO_BASE_NETWORK_HDR].desc;
 	desc = pctx->protocol[PROTO_BASE_TRANSPORT_HDR].desc;
 	if (desc == NULL)
 		return 0;
+
+	base = pctx->protocol[PROTO_BASE_NETWORK_HDR].desc;
+	if (base == NULL &&
+	    (ctx->pctx.family == NFPROTO_INET ||
+	     ctx->pctx.family == NFPROTO_BRIDGE))
+		base = &proto_inet_service;
 
 	protonum = proto_find_num(base, desc);
 	switch (protonum) {
