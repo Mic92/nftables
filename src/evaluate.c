@@ -1142,7 +1142,7 @@ static int reject_payload_gen_dependency_tcp(struct eval_ctx *ctx,
 		return 0;
 	*payload = payload_expr_alloc(&stmt->location, &proto_tcp,
 				      TCPHDR_UNSPEC);
-	return 0;
+	return 1;
 }
 
 static int reject_payload_gen_dependency_family(struct eval_ctx *ctx,
@@ -1171,7 +1171,7 @@ static int reject_payload_gen_dependency_family(struct eval_ctx *ctx,
 	default:
 		BUG("unknown reject family");
 	}
-	return 0;
+	return 1;
 }
 
 static int stmt_reject_gen_dependency(struct eval_ctx *ctx, struct stmt *stmt,
@@ -1179,21 +1179,21 @@ static int stmt_reject_gen_dependency(struct eval_ctx *ctx, struct stmt *stmt,
 {
 	struct expr *payload = NULL;
 	struct stmt *nstmt;
+	int ret;
 
 	switch (stmt->reject.type) {
 	case NFT_REJECT_TCP_RST:
-		if (reject_payload_gen_dependency_tcp(ctx, stmt, &payload) < 0)
-			return -1;
+		ret = reject_payload_gen_dependency_tcp(ctx, stmt, &payload);
 		break;
 	case NFT_REJECT_ICMP_UNREACH:
-		if (reject_payload_gen_dependency_family(ctx, stmt,
-							 &payload) < 0)
-			return -1;
+		ret = reject_payload_gen_dependency_family(ctx, stmt, &payload);
 		break;
 	default:
 		BUG("cannot generate reject dependency for type %d",
 		    stmt->reject.type);
 	}
+	if (ret <= 0)
+		return ret;
 
 	if (payload_gen_dependency(ctx, payload, &nstmt) < 0)
 		return -1;
