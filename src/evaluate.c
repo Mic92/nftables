@@ -1237,6 +1237,8 @@ static int stmt_evaluate_reject_family(struct eval_ctx *ctx, struct stmt *stmt,
 			case __constant_htons(ETH_P_IP):
 				if (NFPROTO_IPV4 == stmt->reject.family)
 					break;
+				return stmt_error(ctx, stmt,
+				  "conflicting protocols specified: ip vs ip6");
 			case __constant_htons(ETH_P_IPV6):
 				if (NFPROTO_IPV6 == stmt->reject.family)
 					break;
