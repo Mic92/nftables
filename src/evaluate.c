@@ -1357,6 +1357,9 @@ static int stmt_evaluate_reject_family(struct eval_ctx *ctx, struct stmt *stmt,
 static int stmt_evaluate_reject_default(struct eval_ctx *ctx,
 					  struct stmt *stmt)
 {
+	int protocol;
+	const struct proto_desc *desc, *base;
+
 	switch (ctx->pctx.family) {
 	case NFPROTO_IPV4:
 	case NFPROTO_IPV6:
@@ -1368,9 +1371,46 @@ static int stmt_evaluate_reject_default(struct eval_ctx *ctx,
 			stmt->reject.icmp_code = ICMP6_DST_UNREACH_NOPORT;
 		break;
 	case NFPROTO_INET:
+		desc = ctx->pctx.protocol[PROTO_BASE_NETWORK_HDR].desc;
+		if (desc == NULL) {
+			stmt->reject.type = NFT_REJECT_ICMPX_UNREACH;
+			stmt->reject.icmp_code = NFT_REJECT_ICMPX_PORT_UNREACH;
+			break;
+		}
+		stmt->reject.type = NFT_REJECT_ICMP_UNREACH;
+		base = ctx->pctx.protocol[PROTO_BASE_LL_HDR].desc;
+		protocol = proto_find_num(base, desc);
+		switch (protocol) {
+		case NFPROTO_IPV4:
+			stmt->reject.family = NFPROTO_IPV4;
+			stmt->reject.icmp_code = ICMP_PORT_UNREACH;
+			break;
+		case NFPROTO_IPV6:
+			stmt->reject.family = NFPROTO_IPV6;
+			stmt->reject.icmp_code = ICMP6_DST_UNREACH_NOPORT;
+			break;
+		}
+		break;
 	case NFPROTO_BRIDGE:
-		stmt->reject.type = NFT_REJECT_ICMPX_UNREACH;
-		stmt->reject.icmp_code = NFT_REJECT_ICMPX_PORT_UNREACH;
+		desc = ctx->pctx.protocol[PROTO_BASE_NETWORK_HDR].desc;
+		if (desc == NULL) {
+			stmt->reject.type = NFT_REJECT_ICMPX_UNREACH;
+			stmt->reject.icmp_code = NFT_REJECT_ICMPX_PORT_UNREACH;
+			break;
+		}
+		stmt->reject.type = NFT_REJECT_ICMP_UNREACH;
+		base = ctx->pctx.protocol[PROTO_BASE_LL_HDR].desc;
+		protocol = proto_find_num(base, desc);
+		switch (protocol) {
+		case __constant_htons(ETH_P_IP):
+			stmt->reject.family = NFPROTO_IPV4;
+			stmt->reject.icmp_code = ICMP_PORT_UNREACH;
+			break;
+		case __constant_htons(ETH_P_IPV6):
+			stmt->reject.family = NFPROTO_IPV6;
+			stmt->reject.icmp_code = ICMP6_DST_UNREACH_NOPORT;
+			break;
+		}
 		break;
 	}
 	return 0;

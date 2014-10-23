@@ -18,6 +18,9 @@ reject with icmpv6 type port-unreachable;ok;meta nfproto ipv6 reject
 reject with tcp reset;ok;meta l4proto 6 reject with tcp reset
 
 reject;ok
+meta nfproto ipv4 reject;ok
+meta nfproto ipv6 reject;ok
+
 reject with icmpx type host-unreachable;ok
 reject with icmpx type no-route;ok
 reject with icmpx type admin-prohibited;ok

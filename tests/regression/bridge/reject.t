@@ -18,6 +18,9 @@ reject with icmpv6 type port-unreachable;ok;ether type ip6 reject
 ip protocol tcp reject with tcp reset;ok;ip protocol 6 reject with tcp reset
 
 reject;ok
+ether type ip reject;ok
+ether type ip6 reject;ok
+
 reject with icmpx type host-unreachable;ok
 reject with icmpx type no-route;ok
 reject with icmpx type admin-prohibited;ok
