@@ -158,3 +158,24 @@ meta cpu 1-3;ok;cpu >= 1 cpu <= 3
 meta cpu != 1-2;ok;cpu < 1 cpu > 2
 meta cpu { 2,3};ok;cpu { 2, 3}
 -meta cpu != { 2,3};ok
+
+meta iifgroup 0;ok;iifgroup default
+meta iifgroup != 0;ok;iifgroup != default
+meta iifgroup default;ok;iifgroup default
+meta iifgroup != default;ok;iifgroup != default
+meta iifgroup {default};ok;;iifgroup {default}
+- meta iifgroup != {default};ok
+meta iifgroup {11,33};ok;oifgroup {11,33}
+meta iifgroup {11-33};ok
+- meta iifgroup != {11,33};ok
+- meta iifgroup != {11-33};ok
+meta oifgroup 0;ok;oifgroup default
+meta oifgroup != 0;ok;oifgroup != default
+meta oifgroup default;ok;oifgroup default
+meta oifgroup != default;ok;oifgroup != default
+meta oifgroup {default};ok;oifgroup {default}
+- meta oifgroup != {default};ok
+meta oifgroup {11,33};ok;oifgroup {11,33}
+meta oifgroup {11-33};ok
+- meta oifgroup != {11,33};ok
+- meta oifgroup != {11-33};ok
