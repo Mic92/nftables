@@ -324,6 +324,7 @@ static void location_update(struct location *loc, struct location *rhs, int n)
 %token CPU			"cpu"
 %token IIFGROUP			"iifgroup"
 %token OIFGROUP			"oifgroup"
+%token CGROUP			"cgroup"
 
 %token CT			"ct"
 %token DIRECTION		"direction"
@@ -1783,6 +1784,7 @@ meta_key_unqualified	:	MARK		{ $$ = NFT_META_MARK; }
 			|       CPU		{ $$ = NFT_META_CPU; }
 			|       IIFGROUP	{ $$ = NFT_META_IIFGROUP; }
 			|       OIFGROUP	{ $$ = NFT_META_OIFGROUP; }
+			|       CGROUP		{ $$ = NFT_META_CGROUP; }
 			;
 
 meta_stmt		:	META	meta_key	SET	expr

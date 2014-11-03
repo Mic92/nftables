@@ -433,6 +433,7 @@ addrstring	({macaddr}|{ip4addr}|{ip6addr})
 "cpu"			{ return CPU; }
 "iifgroup"		{ return IIFGROUP; }
 "oifgroup"		{ return OIFGROUP; }
+"cgroup"		{ return CGROUP; }
 
 "ct"			{ return CT; }
 "direction"		{ return DIRECTION; }

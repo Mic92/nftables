@@ -179,3 +179,12 @@ meta oifgroup {11,33};ok;oifgroup {11,33}
 meta oifgroup {11-33};ok
 - meta oifgroup != {11,33};ok
 - meta oifgroup != {11-33};ok
+
+meta cgroup 0x100001;ok;cgroup 1048577
+meta cgroup != 0x100001;ok;cgroup != 1048577
+meta cgroup { 0x100001, 0x100002};ok
+# meta cgroup != { 0x100001, 0x100002};ok
+meta cgroup 0x100001 - 0x100003;ok
+# meta cgroup != 0x100001 - 0x100003;ok
+meta cgroup {0x100001 - 0x100003};ok
+# meta cgroup != { 0x100001 - 0x100003};ok

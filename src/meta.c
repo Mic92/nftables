@@ -436,6 +436,9 @@ static const struct meta_template meta_templates[] = {
 	[NFT_META_OIFGROUP]	= META_TEMPLATE("oifgroup", &devgroup_type,
 						4 * BITS_PER_BYTE,
 						BYTEORDER_HOST_ENDIAN),
+	[NFT_META_CGROUP]	= META_TEMPLATE("cgroup",  &integer_type,
+						4 * BITS_PER_BYTE,
+						BYTEORDER_HOST_ENDIAN),
 };
 
 static void meta_expr_print(const struct expr *expr)
