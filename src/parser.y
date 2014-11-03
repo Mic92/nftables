@@ -375,6 +375,7 @@ static void location_update(struct location *loc, struct location *rhs, int n)
 %token SNAT			"snat"
 %token DNAT			"dnat"
 %token MASQUERADE		"masquerade"
+%token REDIRECT			"redirect"
 %token RANDOM			"random"
 %token RANDOM_FULLY		"random-fully"
 %token PERSISTENT		"persistent"
@@ -440,8 +441,8 @@ static void location_update(struct location *loc, struct location *rhs, int n)
 %type <val>			time_unit
 %type <stmt>			reject_stmt reject_stmt_alloc
 %destructor { stmt_free($$); }	reject_stmt reject_stmt_alloc
-%type <stmt>			nat_stmt nat_stmt_alloc masq_stmt masq_stmt_alloc
-%destructor { stmt_free($$); }	nat_stmt nat_stmt_alloc masq_stmt masq_stmt_alloc
+%type <stmt>			nat_stmt nat_stmt_alloc masq_stmt masq_stmt_alloc redir_stmt redir_stmt_alloc
+%destructor { stmt_free($$); }	nat_stmt nat_stmt_alloc masq_stmt masq_stmt_alloc redir_stmt redir_stmt_alloc
 %type <val>			nf_nat_flags nf_nat_flag
 %type <stmt>			queue_stmt queue_stmt_alloc
 %destructor { stmt_free($$); }	queue_stmt queue_stmt_alloc
@@ -1186,6 +1187,7 @@ stmt			:	verdict_stmt
 			|	queue_stmt
 			|	ct_stmt
 			|	masq_stmt
+			|	redir_stmt
 			;
 
 verdict_stmt		:	verdict_expr
@@ -1418,6 +1420,23 @@ masq_stmt		:	masq_stmt_alloc
 			;
 
 masq_stmt_alloc		:	MASQUERADE 	{ $$ = masq_stmt_alloc(&@$); }
+			;
+
+redir_stmt		:	redir_stmt_alloc	redir_stmt_arg
+			|	redir_stmt_alloc
+			;
+
+redir_stmt_alloc	:	REDIRECT	{ $$ = redir_stmt_alloc(&@$); }
+			;
+
+redir_stmt_arg		:	COLON	expr
+			{
+				$<stmt>0->redir.proto = $2;
+			}
+			|	nf_nat_flags
+			{
+				$<stmt>0->redir.flags = $1;
+			}
 			;
 
 nf_nat_flags		:	nf_nat_flag

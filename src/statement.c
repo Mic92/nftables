@@ -348,3 +348,32 @@ struct stmt *masq_stmt_alloc(const struct location *loc)
 {
 	return stmt_alloc(loc, &masq_stmt_ops);
 }
+
+static void redir_stmt_print(const struct stmt *stmt)
+{
+	printf("redirect");
+
+	if (stmt->redir.proto) {
+		printf(" :");
+		expr_print(stmt->redir.proto);
+	}
+
+	print_nf_nat_flags(stmt->redir.flags);
+}
+
+static void redir_stmt_destroy(struct stmt *stmt)
+{
+	expr_free(stmt->redir.proto);
+}
+
+static const struct stmt_ops redir_stmt_ops = {
+	.type		= STMT_REDIR,
+	.name		= "redir",
+	.print		= redir_stmt_print,
+	.destroy	= redir_stmt_destroy,
+};
+
+struct stmt *redir_stmt_alloc(const struct location *loc)
+{
+	return stmt_alloc(loc, &redir_stmt_ops);
+}

@@ -583,6 +583,52 @@ static void netlink_parse_masq(struct netlink_parse_ctx *ctx,
 	list_add_tail(&stmt->list, &ctx->rule->stmts);
 }
 
+static void netlink_parse_redir(struct netlink_parse_ctx *ctx,
+				const struct location *loc,
+				const struct nft_rule_expr *nle)
+{
+	struct stmt *stmt;
+	struct expr *proto;
+	enum nft_registers reg1, reg2;
+	uint32_t flags;
+
+	stmt = redir_stmt_alloc(loc);
+
+	if (nft_rule_expr_is_set(nle, NFT_EXPR_REDIR_FLAGS)) {
+		flags = nft_rule_expr_get_u32(nle, NFT_EXPR_REDIR_FLAGS);
+		stmt->redir.flags = flags;
+	}
+
+	reg1 = nft_rule_expr_get_u32(nle, NFT_EXPR_REDIR_REG_PROTO_MIN);
+	if (reg1) {
+		proto = netlink_get_register(ctx, loc, reg1);
+		if (proto == NULL)
+			return netlink_error(ctx, loc,
+					     "redirect statement has no proto "
+					     "expression");
+
+		expr_set_type(proto, &inet_service_type, BYTEORDER_BIG_ENDIAN);
+		stmt->redir.proto = proto;
+	}
+
+	reg2 = nft_rule_expr_get_u32(nle, NFT_EXPR_REDIR_REG_PROTO_MAX);
+	if (reg2 && reg2 != reg1) {
+		proto = netlink_get_register(ctx, loc, reg2);
+		if (proto == NULL)
+			return netlink_error(ctx, loc,
+					     "redirect statement has no proto "
+					     "expression");
+
+		expr_set_type(proto, &inet_service_type, BYTEORDER_BIG_ENDIAN);
+		if (stmt->redir.proto != NULL)
+			proto = range_expr_alloc(loc, stmt->redir.proto,
+						 proto);
+		stmt->redir.proto = proto;
+	}
+
+	list_add_tail(&stmt->list, &ctx->rule->stmts);
+}
+
 static void netlink_parse_queue(struct netlink_parse_ctx *ctx,
 			      const struct location *loc,
 			      const struct nft_rule_expr *nle)
@@ -630,6 +676,7 @@ static const struct {
 	{ .name = "reject",	.parse = netlink_parse_reject },
 	{ .name = "nat",	.parse = netlink_parse_nat },
 	{ .name = "masq",	.parse = netlink_parse_masq },
+	{ .name = "redir",	.parse = netlink_parse_redir },
 	{ .name = "queue",	.parse = netlink_parse_queue },
 };
 
@@ -1013,6 +1060,11 @@ static void rule_parse_postprocess(struct netlink_parse_ctx *ctx, struct rule *r
 				expr_postprocess(&rctx, stmt, &stmt->nat.addr);
 			if (stmt->nat.proto != NULL)
 				expr_postprocess(&rctx, stmt, &stmt->nat.proto);
+			break;
+		case STMT_REDIR:
+			if (stmt->redir.proto != NULL)
+				expr_postprocess(&rctx, stmt,
+						 &stmt->redir.proto);
 			break;
 		case STMT_REJECT:
 			stmt_reject_postprocess(rctx, stmt);

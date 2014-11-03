@@ -79,6 +79,13 @@ struct masq_stmt {
 
 extern struct stmt *masq_stmt_alloc(const struct location *loc);
 
+struct redir_stmt {
+	struct expr		*proto;
+	uint32_t		flags;
+};
+
+extern struct stmt *redir_stmt_alloc(const struct location *loc);
+
 struct queue_stmt {
 	struct expr		*queue;
 	uint16_t		flags;
@@ -110,6 +117,7 @@ extern struct stmt *ct_stmt_alloc(const struct location *loc,
  * @STMT_REJECT:	REJECT statement
  * @STMT_NAT:		NAT statement
  * @STMT_MASQ:		masquerade statement
+ * @STMT_REDIR:		redirect statement
  * @STMT_QUEUE:		QUEUE statement
  * @STMT_CT:		conntrack statement
  */
@@ -124,6 +132,7 @@ enum stmt_types {
 	STMT_REJECT,
 	STMT_NAT,
 	STMT_MASQ,
+	STMT_REDIR,
 	STMT_QUEUE,
 	STMT_CT,
 };
@@ -172,6 +181,7 @@ struct stmt {
 		struct reject_stmt	reject;
 		struct nat_stmt		nat;
 		struct masq_stmt	masq;
+		struct redir_stmt	redir;
 		struct queue_stmt	queue;
 		struct ct_stmt		ct;
 	};

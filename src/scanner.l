@@ -317,6 +317,7 @@ addrstring	({macaddr}|{ip4addr}|{ip6addr})
 "snat"			{ return SNAT; }
 "dnat"			{ return DNAT; }
 "masquerade"		{ return MASQUERADE; }
+"redirect"		{ return REDIRECT; }
 "random"		{ return RANDOM; }
 "random-fully"		{ return RANDOM_FULLY; }
 "persistent"		{ return PERSISTENT; }
