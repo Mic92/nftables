@@ -18,9 +18,9 @@
 #include <nftables.h>
 #include <utils.h>
 
-void __noreturn memory_allocation_error(void)
+void __noreturn __memory_allocation_error(const char *filename, uint32_t line)
 {
-	fprintf(stderr, "Memory allocation failure\n");
+	fprintf(stderr, "%s:%u: Memory allocation failure\n", filename, line);
 	exit(NFT_EXIT_NOMEM);
 }
 
