@@ -62,11 +62,8 @@ then
 fi
 
 # Checks for libraries.
-AC_CHECK_LIB([mnl], [mnl_socket_open], ,
-	     AC_MSG_ERROR([No suitable version of libmnl found]))
-
-AC_CHECK_LIB([nftnl], [nft_rule_alloc], ,
-	     AC_MSG_ERROR([No suitable version of libnftnl found]))
+PKG_CHECK_MODULES([LIBMNL], [libmnl >= 1.0.3])
+PKG_CHECK_MODULES([LIBNFTNL], [libnftnl >= 1.0.2])
 
 AC_CHECK_LIB([gmp], [__gmpz_init], ,
 	     AC_MSG_ERROR([No suitable version of libgmp found]))
