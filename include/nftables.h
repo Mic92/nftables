@@ -26,6 +26,7 @@ enum debug_level {
 
 extern unsigned int max_errors;
 extern unsigned int numeric_output;
+extern unsigned int ip2name_output;
 extern unsigned int handle_output;
 extern unsigned int debug_level;
 extern const char *include_paths[INCLUDE_PATHS_MAX];

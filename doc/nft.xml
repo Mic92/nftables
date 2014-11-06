@@ -101,9 +101,18 @@ vi:ts=4 sw=4
 					<para>
 						Numeric output: Addresses and other information
 						that might need network traffic to resolve to symbolic names
-						are shown numerically. When used twice, internet services
-						and UIDs/GIDs are also shown numerically. When used thrice,
-						protocol numbers are also shown numerically.
+						are shown numerically (default behaviour). When used twice,
+						internet services are translated. When used twice, internet
+						services and UIDs/GIDs are also shown numerically. When used
+						three times, protocol numbers are also shown numerically.
+					</para>
+				</listitem>
+			</varlistentry>
+			<varlistentry>
+				<term><option>-N</option></term>
+				<listitem>
+					<para>
+						Translate IP addresses to DNS names.
 					</para>
 				</listitem>
 			</varlistentry>

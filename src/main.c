@@ -28,6 +28,7 @@
 
 unsigned int max_errors = 10;
 unsigned int numeric_output;
+unsigned int ip2name_output;
 unsigned int handle_output;
 #ifdef DEBUG
 unsigned int debug_level;
@@ -43,12 +44,13 @@ enum opt_vals {
 	OPT_INTERACTIVE		= 'i',
 	OPT_INCLUDEPATH		= 'I',
 	OPT_NUMERIC		= 'n',
+	OPT_IP2NAME		= 'N',
 	OPT_DEBUG		= 'd',
 	OPT_HANDLE_OUTPUT	= 'a',
 	OPT_INVALID		= '?',
 };
 
-#define OPTSTRING	"hvf:iI:vna"
+#define OPTSTRING	"hvf:iI:vnNa"
 
 static const struct option options[] = {
 	{
@@ -71,6 +73,10 @@ static const struct option options[] = {
 	{
 		.name		= "numeric",
 		.val		= OPT_NUMERIC,
+	},
+	{
+		.name		= "reversedns",
+		.val		= OPT_IP2NAME,
 	},
 	{
 		.name		= "includepath",
@@ -105,10 +111,11 @@ static void show_help(const char *name)
 "  -f/--file <filename>		Read input from <filename>\n"
 "  -i/--interactive		Read input from interactive CLI\n"
 "\n"
-"  -n/--numeric			When specified once, show network addresses numerically.\n"
-"  				When specified twice, also show Internet services,\n"
+"  -n/--numeric			When specified once, show network addresses numerically (default behaviour).\n"
+"  				When specified twice, show Internet services,\n"
 "				user IDs and group IDs numerically.\n"
 "				When specified thrice, also show protocols numerically.\n"
+"  -N				Translate IP addresses to names.\n"
 "  -a/--handle			Output rule handle.\n"
 "  -I/--includepath <directory>	Add <directory> to the paths searched for include files.\n"
 #ifdef DEBUG
@@ -278,6 +285,9 @@ int main(int argc, char * const *argv)
 			break;
 		case OPT_NUMERIC:
 			numeric_output++;
+			break;
+		case OPT_IP2NAME:
+			ip2name_output++;
 			break;
 #ifdef DEBUG
 		case OPT_DEBUG:
