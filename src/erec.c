@@ -8,6 +8,7 @@
  * Development of this code funded by Astaro AG (http://www.astaro.com/)
  */
 
+#include <config.h>
 #include <stdio.h>
 #include <string.h>
 #include <stdarg.h>

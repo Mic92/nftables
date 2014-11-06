@@ -7,6 +7,15 @@ AC_COPYRIGHT([Copyright (c) 2008 Patrick McHardy <kaber@trash.net>])
 AC_INIT([nftables], [0.3], [netfilter-devel@vger.kernel.org])
 AC_DEFINE([RELEASE_NAME], ["Support Edward Snowden"], [Release name])
 
+AC_CONFIG_AUX_DIR([build-aux])
+AC_CANONICAL_HOST
+AC_CONFIG_MACRO_DIR([m4])
+AM_INIT_AUTOMAKE([-Wall foreign subdir-objects
+        tar-pax no-dist-gzip dist-bzip2 1.6])
+
+dnl kernel style compile messages
+m4_ifdef([AM_SILENT_RULES], [AM_SILENT_RULES([yes])])
+
 AC_CONFIG_SRCDIR([src/rule.c])
 AC_CONFIG_HEADER([config.h])
 
@@ -77,8 +86,10 @@ AC_ARG_WITH([cli], [AS_HELP_STRING([--without-cli],
 AS_IF([test "x$with_cli" != xno], [
 AC_CHECK_LIB([readline], [readline], ,
 	     AC_MSG_ERROR([No suitable version of libreadline found]))
+AC_DEFINE([HAVE_LIBREADLINE], [1], [])
 ])
 AC_SUBST(with_cli)
+AM_CONDITIONAL([BUILD_CLI], [test "x$with_cli" != xno])
 
 # Checks for header files.
 AC_HEADER_STDC
@@ -108,6 +119,15 @@ AC_TYPE_UINT64_T
 # Checks for library functions.
 AC_CHECK_FUNCS([memmove memset strchr strdup strerror strtoull])
 
-AC_CONFIG_FILES([Makefile Makefile.defs Makefile.rules])
-AC_CONFIG_FILES([src/Makefile doc/Makefile files/Makefile])
+AC_CONFIG_FILES([					\
+		Makefile				\
+		src/Makefile				\
+		include/Makefile			\
+		include/linux/Makefile			\
+		include/linux/netfilter/Makefile	\
+		])
 AC_OUTPUT
+
+echo "
+nft configuration:
+  cli support:			${with_cli}"

@@ -33,7 +33,6 @@
 #include <erec.h>
 
 #include "parser_bison.h"
-#include "scanner.h"
 
 void parser_init(struct parser_state *state, struct list_head *msgs)
 {

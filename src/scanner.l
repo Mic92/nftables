@@ -169,6 +169,7 @@ ip6addr		({v680}|{v67}|{v66}|{v65}|{v64}|{v63}|{v62}|{v61}|{v60})
 addrstring	({macaddr}|{ip4addr}|{ip6addr})
 
 %option prefix="nft_"
+%option outfile="lex.yy.c"
 %option reentrant
 %option noyywrap
 %option nounput
