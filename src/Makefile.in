@@ -26,8 +26,8 @@ nft-obj			+= utils.o
 nft-obj			+= erec.o
 nft-obj			+= mnl.o
 
-nft-obj			+= parser.o
-nft-extra-clean-files	+= parser.c parser.h
+nft-obj			+= parser_bison.o
+nft-extra-clean-files	+= parser_bison.c parser_bison.h
 
 nft-obj			+= scanner.o
 nft-extra-clean-files	+= scanner.c scanner.h

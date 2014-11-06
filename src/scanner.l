@@ -20,7 +20,7 @@
 #include <erec.h>
 #include <rule.h>
 #include <parser.h>
-#include "parser.h"
+#include "parser_bison.h"
 
 #define YY_NO_INPUT
 
