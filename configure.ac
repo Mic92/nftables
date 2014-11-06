@@ -24,6 +24,21 @@ AC_PROG_CC
 AC_PROG_MKDIR_P
 AC_PROG_INSTALL
 AC_PROG_SED
+AM_PROG_LEX
+AC_PROG_YACC
+
+if test -z "$ac_cv_prog_YACC"
+then
+        echo "*** Error: No suitable bison/yacc found. ***"
+        echo "    Please install the 'bison' package."
+        exit 1
+fi
+if test -z "$ac_cv_prog_LEX"
+then
+        echo "*** Error: No suitable flex/lex found. ***"
+        echo "    Please install the 'flex' package."
+        exit 1
+fi
 
 AC_CHECK_PROG(CONFIG_MAN1, [docbook2x-man], [y], [n])
 if test "$CONFIG_MAN1" == "y"
@@ -47,18 +62,6 @@ AC_CHECK_PROG(CONFIG_PDF, dblatex, y, n)
 if test "$CONFIG_PDF" != "y"
 then
 	AC_MSG_WARN([dblatex not found, no PDF manpages will be built])
-fi
-
-AC_PATH_PROG(LEX, [flex])
-if test -z "$LEX"
-then
-	AC_MSG_ERROR([No suitable version of flex found])
-fi
-
-AC_PATH_PROG(YACC, [bison])
-if test -z "$YACC"
-then
-	AC_MSG_ERROR([No suitable version of bison found])
 fi
 
 # Checks for libraries.
