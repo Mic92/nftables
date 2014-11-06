@@ -25,6 +25,7 @@
 #include <netlink.h>
 #include <erec.h>
 #include <mnl.h>
+#include <cli.h>
 
 unsigned int max_errors = 10;
 unsigned int numeric_output;
