@@ -25,9 +25,11 @@ tcp dport 39128 redirect :993;ok
 redirect :1234;fail
 redirect :12341111;fail
 
-# invalid arguments
-tcp dport 9128 redirect :993 random;fail
-tcp dport 9128 redirect :993 random-fully;fail
+# both port and nf_nat flags
+tcp dport 9128 redirect :993 random;ok
+tcp dport 9128 redirect :993 random-fully,persistent;ok
+
+# nf_nat flags are the last argument
 tcp dport 9128 redirect persistent :123;fail
 tcp dport 9128 redirect random,persistent :123;fail
 

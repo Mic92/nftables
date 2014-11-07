@@ -1437,6 +1437,11 @@ redir_stmt_arg		:	COLON	expr
 			{
 				$<stmt>0->redir.flags = $1;
 			}
+			|	COLON	expr	nf_nat_flags
+			{
+				$<stmt>0->redir.proto = $2;
+				$<stmt>0->redir.flags = $3;
+			}
 			;
 
 nf_nat_flags		:	nf_nat_flag

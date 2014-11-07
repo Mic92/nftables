@@ -24,11 +24,15 @@ tcp dport 39128 redirect :993;ok
 redirect :1234;fail
 redirect :12341111;fail
 
-# invalid arguments
-tcp dport 9128 redirect :993 random;fail
-tcp dport 9128 redirect :993 random-fully;fail
-tcp dport 9128 redirect persistent :123;fail
-tcp dport 9128 redirect random,persistent :123;fail
+# both port and nf_nat flags
+tcp dport 9128 redirect :993 random;ok
+tcp dport 9128 redirect :993 random-fully;ok
+tcp dport 9128 redirect :123 persistent;ok
+tcp dport 9128 redirect :123 random,persistent;ok
+
+# nf_nat flags is the last argument
+udp dport 1234 redirect random :123;fail
+udp dport 21234 redirect persistent,random-fully :431;fail
 
 # redirect is a terminal statement
 tcp dport 22 redirect counter packets 0 bytes 0 accept;fail
