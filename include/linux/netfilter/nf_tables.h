@@ -758,12 +758,12 @@ enum nft_reject_types {
 };
 
 /**
- * enum nft_reject_code - Abstracted reject codes
+ * enum nft_reject_code - Generic reject codes for IPv4/IPv6
  *
- * @NFT_REJECT_ICMPX_NO_ROUTE: no route to host - network unreachable
+ * @NFT_REJECT_ICMPX_NO_ROUTE: no route to host / network unreachable
  * @NFT_REJECT_ICMPX_PORT_UNREACH: port unreachable
  * @NFT_REJECT_ICMPX_HOST_UNREACH: host unreachable
- * @NFT_REJECT_ICMPX_ADMIN_PROHIBITED: administratevely prohibited
+ * @NFT_REJECT_ICMPX_ADMIN_PROHIBITED: administratively prohibited
  *
  * These codes are mapped to real ICMP and ICMPv6 codes.
  */
@@ -774,7 +774,7 @@ enum nft_reject_inet_code {
 	NFT_REJECT_ICMPX_ADMIN_PROHIBITED,
 	__NFT_REJECT_ICMPX_MAX
 };
-#define NFT_REJECT_ICMPX_MAX	(__NFT_REJECT_ICMPX_MAX + 1)
+#define NFT_REJECT_ICMPX_MAX	(__NFT_REJECT_ICMPX_MAX - 1)
 
 /**
  * enum nft_reject_attributes - nf_tables reject expression netlink attributes
@@ -836,6 +836,22 @@ enum nft_masq_attributes {
 	__NFTA_MASQ_MAX
 };
 #define NFTA_MASQ_MAX		(__NFTA_MASQ_MAX - 1)
+
+/**
+ * enum nft_redir_attributes - nf_tables redirect expression netlink attributes
+ *
+ * @NFTA_REDIR_REG_PROTO_MIN: source register of proto range start (NLA_U32: nft_registers)
+ * @NFTA_REDIR_REG_PROTO_MAX: source register of proto range end (NLA_U32: nft_registers)
+ * @NFTA_REDIR_FLAGS: NAT flags (see NF_NAT_RANGE_* in linux/netfilter/nf_nat.h) (NLA_U32)
+ */
+enum nft_redir_attributes {
+	NFTA_REDIR_UNSPEC,
+	NFTA_REDIR_REG_PROTO_MIN,
+	NFTA_REDIR_REG_PROTO_MAX,
+	NFTA_REDIR_FLAGS,
+	__NFTA_REDIR_MAX
+};
+#define NFTA_REDIR_MAX		(__NFTA_REDIR_MAX - 1)
 
 /**
  * enum nft_gen_attributes - nf_tables ruleset generation attributes
