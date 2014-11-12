@@ -121,6 +121,8 @@ AC_CONFIG_FILES([					\
 		include/linux/Makefile			\
 		include/linux/netfilter/Makefile	\
 		doc/Makefile				\
+		files/Makefile				\
+		files/nftables/Makefile			\
 		])
 AC_OUTPUT
 
