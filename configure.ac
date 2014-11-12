@@ -49,29 +49,24 @@ then
         exit 1
 fi
 
-AC_CHECK_PROG(CONFIG_MAN1, [docbook2x-man], [y], [n])
-if test "$CONFIG_MAN1" == "y"
-then
-	CONFIG_MAN=y
-	DB2MAN=docbook2x-man
-else
-	AC_CHECK_PROG(CONFIG_MAN2, [db2x_docbook2man], [y], [n])
-	if test "$CONFIG_MAN2" == "y"
-	then
-		CONFIG_MAN=y
-		DB2MAN=db2x_docbook2man
-	else
-		AC_MSG_WARN([docbookx2-man/db2x_docbook2man not found, no manpages will be built])
-	fi
-fi
-AC_SUBST(CONFIG_MAN)
+AC_CHECK_PROG(DOCBOOK2X_MAN, [docbook2x-man], [docbook2x-man], [no])
+AC_CHECK_PROG(DOCBOOK2MAN, [docbook2man], [docbook2man], [no])
+AC_CHECK_PROG(DB2X_DOCBOOK2MAN, [db2x_docbook2man], [db2x_docbook2man], [no])
+AS_IF([test "$DOCBOOK2X_MAN" != "no"], [DB2MAN="$DOCBOOK2X_MAN"],
+	[AS_IF([test "$DOCBOOK2MAN" != "no"], [DB2MAN="$DOCBOOK2MAN"],
+		[AS_IF([test "$DB2X_DOCBOOK2MAN" != "no"], [DB2MAN="$DB2X_DOCBOOK2MAN"],
+			[AC_MSG_WARN([docbookx2-man/db2x_docbook2man not found, no manpages will be built])]
+		)]
+	)]
+)
 AC_SUBST(DB2MAN)
+AM_CONDITIONAL([BUILD_MAN], [test -n "$DB2MAN"])
 
-AC_CHECK_PROG(CONFIG_PDF, dblatex, y, n)
-if test "$CONFIG_PDF" != "y"
-then
-	AC_MSG_WARN([dblatex not found, no PDF manpages will be built])
-fi
+AC_CHECK_PROG(DBLATEX, [dblatex], [found], [no])
+AS_IF([test "$DBLATEX" == "no"],
+	[AC_MSG_WARN([dblatex not found, no PDF manpages will be built])]
+)
+AM_CONDITIONAL([BUILD_PDF], [test "$DBLATEX" == "found"])
 
 # Checks for libraries.
 PKG_CHECK_MODULES([LIBMNL], [libmnl >= 1.0.3])
@@ -125,6 +120,7 @@ AC_CONFIG_FILES([					\
 		include/Makefile			\
 		include/linux/Makefile			\
 		include/linux/netfilter/Makefile	\
+		doc/Makefile				\
 		])
 AC_OUTPUT
 
