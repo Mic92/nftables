@@ -2030,7 +2030,7 @@ static void netlink_events_cache_update(struct netlink_mon_handler *monh,
 static int netlink_events_cb(const struct nlmsghdr *nlh, void *data)
 {
 	int ret = MNL_CB_OK;
-	int type = nlh->nlmsg_type & 0xFF;
+	uint16_t type = NFNL_MSG_TYPE(nlh->nlmsg_type);
 	struct netlink_mon_handler *monh = (struct netlink_mon_handler *)data;
 
 	netlink_events_cache_update(monh, nlh, type);
@@ -2058,9 +2058,6 @@ static int netlink_events_cb(const struct nlmsghdr *nlh, void *data)
 	case NFT_MSG_NEWRULE:
 	case NFT_MSG_DELRULE:
 		ret = netlink_events_rule_cb(nlh, type, monh);
-		break;
-	default:
-		BUG("Unknow event received from netlink.\n");
 		break;
 	}
 
