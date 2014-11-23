@@ -305,7 +305,7 @@ def set_add_elements(set_element, set_name, set_all, state, table_list,
                 element = element + ", " + e
 
         set_text = set_name + " { " + element + " }"
-        cmd = "nft add element -nnn" + table_info + set_text
+        cmd = "nft add element" + table_info + set_text
         ret = execute_cmd(cmd, filename, lineno)
 
         if (state == "fail" and ret == 0) or (state == "ok" and ret != 0):
@@ -331,7 +331,7 @@ def set_delete_elements(set_element, set_name, table, filename=None,
 
     for element in set_element:
         set_text = set_name + " {" + element + "}"
-        cmd = "nft delete element -nnn" + table_info + set_text
+        cmd = "nft delete element" + table_info + set_text
         ret = execute_cmd(cmd, filename, lineno)
         if ret != 0:
             reason = "I cannot delete an element" + element + \
@@ -447,7 +447,7 @@ def rule_add(rule, table_list, chain_list, filename, lineno,
             unit_tests += 1
             table_flush(table, filename, lineno)
             table_info = " " + table[0] + " " + table[1] + " "
-            cmd = "nft add rule -nnn" + table_info + chain + " " + rule[0]
+            cmd = "nft add rule" + table_info + chain + " " + rule[0]
 
             ret = execute_cmd(cmd, filename, lineno)
 
