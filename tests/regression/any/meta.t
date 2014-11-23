@@ -165,7 +165,7 @@ meta iifgroup default;ok;iifgroup default
 meta iifgroup != default;ok;iifgroup != default
 meta iifgroup {default};ok;;iifgroup {default}
 - meta iifgroup != {default};ok
-meta iifgroup {11,33};ok;oifgroup {11,33}
+meta iifgroup { 11,33};ok
 meta iifgroup {11-33};ok
 - meta iifgroup != {11,33};ok
 - meta iifgroup != {11-33};ok
@@ -175,7 +175,7 @@ meta oifgroup default;ok;oifgroup default
 meta oifgroup != default;ok;oifgroup != default
 meta oifgroup {default};ok;oifgroup {default}
 - meta oifgroup != {default};ok
-meta oifgroup {11,33};ok;oifgroup {11,33}
+meta oifgroup { 11,33};ok
 meta oifgroup {11-33};ok
 - meta oifgroup != {11,33};ok
 - meta oifgroup != {11-33};ok

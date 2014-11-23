@@ -20,6 +20,6 @@ tcp sport 22 masquerade accept;fail
 ip6 saddr ::1 masquerade drop;fail
 
 # masquerade with sets
-tcp dport {1,2,3,4,5,6,7,8,101,202,303,1001,2002,3003} masquerade;ok
+tcp dport { 1,2,3,4,5,6,7,8,101,202,303,1001,2002,3003} masquerade;ok
 ip6 daddr fe00::1-fe00::200 udp dport 53 counter packets 0 bytes 0 masquerade;ok;ip6 daddr >= fe00::1 ip6 daddr <= fe00::200 udp dport 53 counter packets 0 bytes 0 masquerade
 iifname eth0 ct state new,established tcp dport vmap {22 : drop, 222 : drop } masquerade;ok

@@ -20,6 +20,6 @@ tcp sport 22 masquerade accept;fail
 ip saddr 10.1.1.1 masquerade drop;fail
 
 # masquerade with sets
-tcp dport {1,2,3,4,5,6,7,8,101,202,303,1001,2002,3003} masquerade;ok
+tcp dport { 1,2,3,4,5,6,7,8,101,202,303,1001,2002,3003} masquerade;ok
 ip daddr 10.0.0.0-10.2.3.4 udp dport 53 counter packets 0 bytes 0 masquerade;ok;ip daddr >= 10.0.0.0 ip daddr <= 10.2.3.4 udp dport 53 counter packets 0 bytes 0 masquerade
 iifname eth0 ct state new,established tcp dport vmap {22 : drop, 222 : drop } masquerade;ok
