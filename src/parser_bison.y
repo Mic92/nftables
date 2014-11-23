@@ -1211,6 +1211,13 @@ verdict_map_expr	:	'{'	verdict_map_list_expr	'}'
 				$2->location = @$;
 				$$ = $2;
 			}
+			|	AT	identifier
+			{
+				$$ = symbol_expr_alloc(&@$, SYMBOL_SET,
+						       current_scope(state),
+						       $2);
+				xfree($2);
+			}
 			;
 
 verdict_map_list_expr	:	verdict_map_list_member_expr
@@ -1688,6 +1695,10 @@ set_list_member_expr	:	opt_newline	expr	opt_newline
 				$$ = $2;
 			}
 			|	opt_newline	map_lhs_expr	COLON	concat_expr	opt_newline
+			{
+				$$ = mapping_expr_alloc(&@$, $2, $4);
+			}
+			|	opt_newline	map_lhs_expr	COLON	verdict_expr	opt_newline
 			{
 				$$ = mapping_expr_alloc(&@$, $2, $4);
 			}
