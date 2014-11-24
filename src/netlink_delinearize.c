@@ -57,6 +57,9 @@ static void netlink_set_register(struct netlink_parse_ctx *ctx,
 		return;
 	}
 
+	if (ctx->registers[reg] != NULL)
+		expr_free(ctx->registers[reg]);
+
 	ctx->registers[reg] = expr;
 }
 
@@ -72,7 +75,15 @@ static struct expr *netlink_get_register(struct netlink_parse_ctx *ctx,
 	}
 
 	expr = ctx->registers[reg];
-	return expr;
+	return expr_clone(expr);
+}
+
+static void netlink_release_registers(struct netlink_parse_ctx *ctx)
+{
+	int i;
+
+	for (i = 0; i <= NFT_REG_MAX; i++)
+		expr_free(ctx->registers[i]);
 }
 
 static void netlink_parse_immediate(struct netlink_parse_ctx *ctx,
@@ -1109,5 +1120,6 @@ struct rule *netlink_delinearize_rule(struct netlink_ctx *ctx,
 	nft_rule_expr_foreach((struct nft_rule *)nlr, netlink_parse_expr, pctx);
 
 	rule_parse_postprocess(pctx, pctx->rule);
+	netlink_release_registers(pctx);
 	return pctx->rule;
 }
