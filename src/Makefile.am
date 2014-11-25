@@ -3,7 +3,7 @@ sbin_PROGRAMS = nft
 CLEANFILES = scanner.c parser_bison.c
 
 AM_CPPFLAGS = -I$(top_srcdir)/include
-AM_CPPFLAGS += -DDEFAULT_INCLUDE_PATH="\"${sysconfdir}\"" -DDEBUG
+AM_CPPFLAGS += -DDEFAULT_INCLUDE_PATH="\"${sysconfdir}\"" -DDEBUG \
 		${LIBMNL_CFLAGS} ${LIBNFTNL_CFLAGS}
 
 AM_CFLAGS = -Wall								\
