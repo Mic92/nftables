@@ -1277,7 +1277,7 @@ static int stmt_evaluate_reject_bridge_family(struct eval_ctx *ctx,
 		case __constant_htons(ETH_P_IPV6):
 			break;
 		default:
-			return stmt_binary_error(ctx, stmt->reject.expr,
+			return stmt_binary_error(ctx, stmt,
 				    &ctx->pctx.protocol[PROTO_BASE_NETWORK_HDR],
 				    "cannot reject this ether type");
 		}
