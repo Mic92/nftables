@@ -125,21 +125,28 @@ struct error_record *symbolic_constant_parse(const struct expr *sym,
 			break;
 	}
 
+	if (s->identifier != NULL)
+		goto out;
+
 	dtype = sym->dtype;
-	if (s->identifier == NULL) {
-		*res = NULL;
-		erec = sym->dtype->basetype->parse(sym, res);
-		if (erec != NULL)
-			return erec;
-		if (*res)
-			return NULL;
+	*res = NULL;
+	do {
+		if (dtype->basetype->parse) {
+			erec = dtype->basetype->parse(sym, res);
+			if (erec != NULL)
+				return erec;
+			if (*res)
+				return NULL;
+			goto out;
+		}
+	} while ((dtype = dtype->basetype));
 
-		return error(&sym->location, "Could not parse %s", dtype->desc);
-	}
-
-	*res = constant_expr_alloc(&sym->location, dtype,
-				   dtype->byteorder, dtype->size,
-				   constant_data_ptr(s->value, dtype->size));
+	return error(&sym->location, "Could not parse %s", sym->dtype->desc);
+out:
+	*res = constant_expr_alloc(&sym->location, sym->dtype,
+				   sym->dtype->byteorder, sym->dtype->size,
+				   constant_data_ptr(s->value,
+				   sym->dtype->size));
 	return NULL;
 }
 

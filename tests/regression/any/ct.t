@@ -13,6 +13,7 @@ ct state {new,established, related, untracked};ok
 - ct state != {new,established, related, untracked};ok
 ct state invalid drop;ok
 ct state established accept;ok
+ct state 8;ok;ct state new
 
 ct direction original;ok
 ct direction != original;ok
