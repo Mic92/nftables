@@ -14,6 +14,7 @@ ct state {new,established, related, untracked};ok
 ct state invalid drop;ok
 ct state established accept;ok
 ct state 8;ok;ct state new
+ct state xxx;fail
 
 ct direction original;ok
 ct direction != original;ok
@@ -21,12 +22,14 @@ ct direction reply;ok
 ct direction != reply;ok
 ct direction {reply, original};ok
 - ct direction != {reply, original};ok
+ct direction xxx;fail
 
 ct status expected;ok
 ct status != expected;ok
 ct status seen-reply;ok
 ct status != seen-reply;ok
 ct status {expected, seen-reply, assured, confirmed, dying};ok
+ct status xxx;fail
 
 # SYMBOL("snat", IPS_SRC_NAT)
 # SYMBOL("dnat", IPS_DST_NAT)

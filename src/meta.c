@@ -312,32 +312,6 @@ static void pkttype_type_print(const struct expr *expr)
 	return symbolic_constant_print(&pkttype_type_tbl, expr);
 }
 
-static struct error_record *pkttype_type_parse(const struct expr *sym,
-					       struct expr **res)
-{
-	struct error_record *erec;
-	const struct symbolic_constant *s;
-
-	for (s = pkttype_type_tbl.symbols; s->identifier != NULL; s++) {
-		if (!strcmp(sym->identifier, s->identifier)) {
-			*res = constant_expr_alloc(&sym->location, sym->dtype,
-						   sym->dtype->byteorder,
-						   sym->dtype->size,
-						   &s->value);
-			return NULL;
-		}
-	}
-
-	*res = NULL;
-	erec = sym->dtype->basetype->parse(sym, res);
-	if (erec != NULL)
-		return erec;
-	if (*res)
-		return NULL;
-
-	return symbolic_constant_parse(sym, &pkttype_type_tbl, res);
-}
-
 static const struct datatype pkttype_type = {
 	.type		= TYPE_PKTTYPE,
 	.name		= "pkt_type",
@@ -346,7 +320,7 @@ static const struct datatype pkttype_type = {
 	.size		= BITS_PER_BYTE,
 	.basetype	= &integer_type,
 	.print		= pkttype_type_print,
-	.parse		= pkttype_type_parse,
+	.sym_tbl	= &pkttype_type_tbl,
 };
 
 static struct symbol_table *devgroup_tbl;

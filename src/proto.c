@@ -751,20 +751,6 @@ static const struct symbol_table ethertype_tbl = {
 	},
 };
 
-static struct error_record *ethertype_parse(const struct expr *sym,
-					    struct expr **res)
-{
-	struct error_record *erec;
-
-	*res = NULL;
-	erec = sym->dtype->basetype->parse(sym, res);
-	if (erec != NULL)
-		return erec;
-	if (*res)
-		return NULL;
-	return symbolic_constant_parse(sym, &ethertype_tbl, res);
-}
-
 static void ethertype_print(const struct expr *expr)
 {
 	return symbolic_constant_print(&ethertype_tbl, expr);
@@ -779,7 +765,7 @@ const struct datatype ethertype_type = {
 	.basetype	= &integer_type,
 	.basefmt	= "0x%.4Zx",
 	.print		= ethertype_print,
-	.parse		= ethertype_parse,
+	.sym_tbl	= &ethertype_tbl,
 };
 
 #define ETHHDR_TEMPLATE(__name, __dtype, __member) \
