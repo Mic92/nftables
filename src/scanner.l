@@ -47,7 +47,8 @@
 		clearerr(yyin);							\
 	}									\
 	if (result > 1) {							\
-		while (result > 1 && buf[result - 1] != '\n')			\
+		while (result > 1 && 						\
+		       (buf[result - 1] != '\n' &&  buf[result - 1] != ' '))	\
 			result--, n++;						\
 		result--, n++;							\
 		fseek(yyin, -n, SEEK_CUR);					\
