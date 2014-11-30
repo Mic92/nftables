@@ -459,16 +459,20 @@ addrstring	({macaddr}|{ip4addr}|{ip6addr})
 {decstring}		{
 				errno = 0;
 				yylval->val = strtoull(yytext, NULL, 0);
-				if (errno != 0)
-					BUG();
+				if (errno != 0) {
+					yylval->string = xstrdup(yytext);
+					return ERROR;
+				}
 				return NUM;
 			}
 
 {hexstring}		{
 				errno = 0;
 				yylval->val = strtoull(yytext, NULL, 0);
-				if (errno != 0)
-					BUG();
+				if (errno != 0) {
+					yylval->string = xstrdup(yytext);
+					return ERROR;
+				}
 				return NUM;
 			}
 
