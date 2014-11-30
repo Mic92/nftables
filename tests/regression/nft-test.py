@@ -505,15 +505,12 @@ def rule_add(rule, table_list, chain_list, filename, lineno,
                                                         rule_output, cmd)
                                 if not force_all_family_option:
                                     return [ret, warning, error, unit_tests]
-                            if rule[0].find(rule_output.split(" ")[0]) > -1:
-                                warning += 1
-                                print_differences_warning(filename, lineno,
-                                                          rule[0], rule_output,
-                                                          cmd)
-                            else:
-                                error += 1
-                                print_differences_error(filename, lineno,
-                                                        rule_output, cmd)
+
+                            warning += 1
+                            print_differences_warning(filename, lineno,
+                                                      rule[0], rule_output,
+                                                      cmd)
+
                             if not force_all_family_option:
                                 return [ret, warning, error, unit_tests]
 
