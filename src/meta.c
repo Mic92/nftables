@@ -439,6 +439,7 @@ static bool meta_expr_cmp(const struct expr *e1, const struct expr *e2)
 static void meta_expr_clone(struct expr *new, const struct expr *expr)
 {
 	new->meta.key = expr->meta.key;
+	new->meta.base = expr->meta.base;
 }
 
 /**
