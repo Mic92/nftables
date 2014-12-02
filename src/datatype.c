@@ -722,7 +722,7 @@ static struct error_record *icmp_code_type_parse(const struct expr *sym,
 
 const struct datatype icmp_code_type = {
 	.type		= TYPE_ICMP_CODE,
-	.name		= "icmp code",
+	.name		= "icmp_code",
 	.desc		= "icmp code",
 	.size		= BITS_PER_BYTE,
 	.byteorder	= BYTEORDER_BIG_ENDIAN,
@@ -754,7 +754,7 @@ static struct error_record *icmpv6_code_type_parse(const struct expr *sym,
 
 const struct datatype icmpv6_code_type = {
 	.type		= TYPE_ICMPV6_CODE,
-	.name		= "icmpv6 code",
+	.name		= "icmpv6_code",
 	.desc		= "icmpv6 code",
 	.size		= BITS_PER_BYTE,
 	.byteorder	= BYTEORDER_BIG_ENDIAN,
@@ -786,7 +786,7 @@ static struct error_record *icmpx_code_type_parse(const struct expr *sym,
 
 const struct datatype icmpx_code_type = {
 	.type		= TYPE_ICMPX_CODE,
-	.name		= "icmpx code",
+	.name		= "icmpx_code",
 	.desc		= "icmpx code",
 	.size		= BITS_PER_BYTE,
 	.byteorder	= BYTEORDER_BIG_ENDIAN,
