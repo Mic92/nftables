@@ -158,8 +158,8 @@ void symbolic_constant_print(const struct symbol_table *tbl,
 
 	/* Export the data in the correct byteorder for comparison */
 	assert(expr->len / BITS_PER_BYTE <= sizeof(val));
-	mpz_export_data(&val, expr->value, expr->byteorder,
-			expr->len / BITS_PER_BYTE);
+	mpz_export_data(constant_data_ptr(val, expr->len), expr->value,
+			expr->byteorder, expr->len / BITS_PER_BYTE);
 
 	for (s = tbl->symbols; s->identifier != NULL; s++) {
 		if (val == s->value)

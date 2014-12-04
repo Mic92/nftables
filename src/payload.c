@@ -79,8 +79,8 @@ static void payload_expr_pctx_update(struct proto_ctx *ctx,
 
 	/* Export the data in the correct byte order */
 	assert(right->len / BITS_PER_BYTE <= sizeof(proto));
-	mpz_export_data(&proto, right->value, right->byteorder,
-			right->len / BITS_PER_BYTE);
+	mpz_export_data(constant_data_ptr(proto, right->len), right->value,
+			right->byteorder, right->len / BITS_PER_BYTE);
 
 	base = ctx->protocol[left->payload.base].desc;
 	desc = proto_find_upper(base, proto);
