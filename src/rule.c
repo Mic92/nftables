@@ -870,7 +870,7 @@ static int do_command_list(struct netlink_ctx *ctx, struct cmd *cmd)
 
 			if (netlink_list_tables(ctx, &cmd->handle,
 						&cmd->location) < 0)
-				goto err;
+				return -1;
 
 			list_for_each_entry(table, &ctx->list, list) {
 				printf("table %s\n", table->handle.table);
@@ -882,11 +882,12 @@ static int do_command_list(struct netlink_ctx *ctx, struct cmd *cmd)
 		return do_list_table(ctx, cmd, table);
 	case CMD_OBJ_SETS:
 		if (netlink_list_sets(ctx, &cmd->handle, &cmd->location) < 0)
-			goto err;
+			return -1;
+
 		list_for_each_entry(set, &ctx->list, list){
 			if (netlink_get_setelems(ctx, &set->handle,
 						 &cmd->location, set) < 0) {
-				goto err;
+				return -1;
 			}
 			set_print(set);
 		}
