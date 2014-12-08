@@ -742,6 +742,29 @@ static void payload_dependency_store(struct rule_pp_ctx *ctx,
 	ctx->pdep  = stmt;
 }
 
+static void integer_type_postprocess(struct expr *expr)
+{
+	struct expr *i;
+
+	switch (expr->ops->type) {
+	case EXPR_VALUE:
+		if (expr->byteorder == BYTEORDER_HOST_ENDIAN) {
+			uint32_t len = div_round_up(expr->len, BITS_PER_BYTE);
+
+			mpz_switch_byteorder(expr->value, len);
+		}
+		break;
+	case EXPR_SET_REF:
+		list_for_each_entry(i, &expr->set->init->expressions, list) {
+			expr_set_type(i, expr->dtype, expr->byteorder);
+			integer_type_postprocess(i);
+		}
+		break;
+	default:
+		break;
+	}
+}
+
 static void payload_match_postprocess(struct rule_pp_ctx *ctx,
 				      struct stmt *stmt, struct expr *expr)
 {
@@ -804,6 +827,12 @@ static void meta_match_postprocess(struct rule_pp_ctx *ctx,
 		if (ctx->pbase == PROTO_BASE_INVALID &&
 		    left->flags & EXPR_F_PROTOCOL)
 			payload_dependency_store(ctx, stmt, left->meta.base);
+		break;
+	case OP_LOOKUP:
+		expr_set_type(expr->right, expr->left->dtype,
+			      expr->left->byteorder);
+		if (expr->right->dtype == &integer_type)
+			integer_type_postprocess(expr->right);
 		break;
 	default:
 		break;
