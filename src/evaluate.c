@@ -238,6 +238,7 @@ static int expr_evaluate_value(struct eval_ctx *ctx, struct expr **expr)
 			mpz_clear(mask);
 			return -1;
 		}
+		(*expr)->byteorder = ctx->ectx.byteorder;
 		(*expr)->len = ctx->ectx.len;
 		mpz_clear(mask);
 		break;
@@ -261,7 +262,8 @@ static int expr_evaluate_value(struct eval_ctx *ctx, struct expr **expr)
  */
 static int expr_evaluate_primary(struct eval_ctx *ctx, struct expr **expr)
 {
-	expr_set_context(&ctx->ectx, (*expr)->dtype, (*expr)->len);
+	__expr_set_context(&ctx->ectx, (*expr)->dtype, (*expr)->byteorder,
+			   (*expr)->len);
 	return 0;
 }
 
