@@ -709,17 +709,6 @@ static const struct symbol_table icmp_code_tbl = {
 	},
 };
 
-static void icmp_code_type_print(const struct expr *expr)
-{
-	return symbolic_constant_print(&icmp_code_tbl, expr);
-}
-
-static struct error_record *icmp_code_type_parse(const struct expr *sym,
-						 struct expr **res)
-{
-	return symbolic_constant_parse(sym, &icmp_code_tbl, res);
-}
-
 const struct datatype icmp_code_type = {
 	.type		= TYPE_ICMP_CODE,
 	.name		= "icmp_code",
@@ -727,8 +716,7 @@ const struct datatype icmp_code_type = {
 	.size		= BITS_PER_BYTE,
 	.byteorder	= BYTEORDER_BIG_ENDIAN,
 	.basetype	= &integer_type,
-	.print		= icmp_code_type_print,
-	.parse		= icmp_code_type_parse,
+	.sym_tbl	= &icmp_code_tbl,
 };
 
 static const struct symbol_table icmpv6_code_tbl = {
@@ -741,17 +729,6 @@ static const struct symbol_table icmpv6_code_tbl = {
 	},
 };
 
-static void icmpv6_code_type_print(const struct expr *expr)
-{
-	return symbolic_constant_print(&icmpv6_code_tbl, expr);
-}
-
-static struct error_record *icmpv6_code_type_parse(const struct expr *sym,
-						   struct expr **res)
-{
-	return symbolic_constant_parse(sym, &icmpv6_code_tbl, res);
-}
-
 const struct datatype icmpv6_code_type = {
 	.type		= TYPE_ICMPV6_CODE,
 	.name		= "icmpv6_code",
@@ -759,8 +736,7 @@ const struct datatype icmpv6_code_type = {
 	.size		= BITS_PER_BYTE,
 	.byteorder	= BYTEORDER_BIG_ENDIAN,
 	.basetype	= &integer_type,
-	.print		= icmpv6_code_type_print,
-	.parse		= icmpv6_code_type_parse,
+	.sym_tbl	= &icmpv6_code_tbl,
 };
 
 static const struct symbol_table icmpx_code_tbl = {
@@ -773,17 +749,6 @@ static const struct symbol_table icmpx_code_tbl = {
 	},
 };
 
-static void icmpx_code_type_print(const struct expr *expr)
-{
-	return symbolic_constant_print(&icmpx_code_tbl, expr);
-}
-
-static struct error_record *icmpx_code_type_parse(const struct expr *sym,
-						  struct expr **res)
-{
-	return symbolic_constant_parse(sym, &icmpx_code_tbl, res);
-}
-
 const struct datatype icmpx_code_type = {
 	.type		= TYPE_ICMPX_CODE,
 	.name		= "icmpx_code",
@@ -791,8 +756,7 @@ const struct datatype icmpx_code_type = {
 	.size		= BITS_PER_BYTE,
 	.byteorder	= BYTEORDER_BIG_ENDIAN,
 	.basetype	= &integer_type,
-	.print		= icmpx_code_type_print,
-	.parse		= icmpx_code_type_parse,
+	.sym_tbl	= &icmpx_code_tbl,
 };
 
 static void time_type_print(const struct expr *expr)
