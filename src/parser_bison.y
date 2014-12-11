@@ -378,7 +378,7 @@ static void location_update(struct location *loc, struct location *rhs, int n)
 %token MASQUERADE		"masquerade"
 %token REDIRECT			"redirect"
 %token RANDOM			"random"
-%token RANDOM_FULLY		"random-fully"
+%token FULLY_RANDOM		"fully-random"
 %token PERSISTENT		"persistent"
 
 %token QUEUE			"queue"
@@ -1462,7 +1462,7 @@ nf_nat_flags		:	nf_nat_flag
 			;
 
 nf_nat_flag		:	RANDOM		{ $$ = NF_NAT_RANGE_PROTO_RANDOM; }
-			|	RANDOM_FULLY	{ $$ = NF_NAT_RANGE_PROTO_RANDOM_FULLY; }
+			|	FULLY_RANDOM	{ $$ = NF_NAT_RANGE_PROTO_RANDOM_FULLY; }
 			|	PERSISTENT 	{ $$ = NF_NAT_RANGE_PERSISTENT; }
 			;
 

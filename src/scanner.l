@@ -321,7 +321,7 @@ addrstring	({macaddr}|{ip4addr}|{ip6addr})
 "masquerade"		{ return MASQUERADE; }
 "redirect"		{ return REDIRECT; }
 "random"		{ return RANDOM; }
-"random-fully"		{ return RANDOM_FULLY; }
+"fully-random"		{ return FULLY_RANDOM; }
 "persistent"		{ return PERSISTENT; }
 
 "ll"			{ return LL_HDR; }

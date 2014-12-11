@@ -287,7 +287,7 @@ static void print_nf_nat_flags(uint32_t flags)
 	}
 
 	if (flags & NF_NAT_RANGE_PROTO_RANDOM_FULLY) {
-		printf("%srandom-fully", delim);
+		printf("%sfully-random", delim);
 		delim = ",";
 	}
 
