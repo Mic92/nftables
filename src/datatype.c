@@ -87,7 +87,8 @@ void datatype_print(const struct expr *expr)
 			return symbolic_constant_print(dtype->sym_tbl, expr);
 	} while ((dtype = dtype->basetype));
 
-	BUG("datatype has no print method or symbol table\n");
+	BUG("datatype %s has no print method or symbol table\n",
+	    expr->dtype->name);
 }
 
 struct error_record *symbol_parse(const struct expr *sym,
