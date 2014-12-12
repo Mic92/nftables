@@ -6,14 +6,14 @@
 udp dport 53 masquerade;ok
 udp dport 53 masquerade random;ok
 udp dport 53 masquerade random,persistent;ok
-udp dport 53 masquerade random,persistent,random-fully;ok;udp dport 53 masquerade random,random-fully,persistent
-udp dport 53 masquerade random,random-fully;ok
-udp dport 53 masquerade random,random-fully,persistent;ok
+udp dport 53 masquerade random,persistent,fully-random;ok;udp dport 53 masquerade random,fully-random,persistent
+udp dport 53 masquerade random,fully-random;ok
+udp dport 53 masquerade random,fully-random,persistent;ok
 udp dport 53 masquerade persistent;ok
 udp dport 53 masquerade persistent,random;ok;udp dport 53 masquerade random,persistent
-udp dport 53 masquerade persistent,random,random-fully;ok;udp dport 53 masquerade random,random-fully,persistent
-udp dport 53 masquerade persistent,random-fully;ok;udp dport 53 masquerade random-fully,persistent
-udp dport 53 masquerade persistent,random-fully,random;ok;udp dport 53 masquerade random,random-fully,persistent
+udp dport 53 masquerade persistent,random,fully-random;ok;udp dport 53 masquerade random,fully-random,persistent
+udp dport 53 masquerade persistent,fully-random;ok;udp dport 53 masquerade fully-random,persistent
+udp dport 53 masquerade persistent,fully-random,random;ok;udp dport 53 masquerade random,fully-random,persistent
 
 # masquerade is a terminal statement
 tcp dport 22 masquerade counter packets 0 bytes 0 accept;fail

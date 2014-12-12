@@ -9,14 +9,14 @@ ip6 saddr fe00::cafe counter packets 0 bytes 0 redirect;ok
 # nf_nat flags combination
 udp dport 53 redirect random;ok
 udp dport 53 redirect random,persistent;ok
-udp dport 53 redirect random,persistent,random-fully;ok;udp dport 53 redirect random,random-fully,persistent
-udp dport 53 redirect random,random-fully;ok
-udp dport 53 redirect random,random-fully,persistent;ok
+udp dport 53 redirect random,persistent,fully-random;ok;udp dport 53 redirect random,fully-random,persistent
+udp dport 53 redirect random,fully-random;ok
+udp dport 53 redirect random,fully-random,persistent;ok
 udp dport 53 redirect persistent;ok
 udp dport 53 redirect persistent,random;ok;udp dport 53 redirect random,persistent
-udp dport 53 redirect persistent,random,random-fully;ok;udp dport 53 redirect random,random-fully,persistent
-udp dport 53 redirect persistent,random-fully;ok;udp dport 53 redirect random-fully,persistent
-udp dport 53 redirect persistent,random-fully,random;ok;udp dport 53 redirect random,random-fully,persistent
+udp dport 53 redirect persistent,random,fully-random;ok;udp dport 53 redirect random,fully-random,persistent
+udp dport 53 redirect persistent,fully-random;ok;udp dport 53 redirect fully-random,persistent
+udp dport 53 redirect persistent,fully-random,random;ok;udp dport 53 redirect random,fully-random,persistent
 
 # port specification
 udp dport 1234 redirect :1234;ok
@@ -27,7 +27,7 @@ redirect :12341111;fail
 
 # both port and nf_nat flags
 tcp dport 9128 redirect :993 random;ok
-tcp dport 9128 redirect :993 random-fully,persistent;ok
+tcp dport 9128 redirect :993 fully-random,persistent;ok
 
 # nf_nat flags are the last argument
 tcp dport 9128 redirect persistent :123;fail
