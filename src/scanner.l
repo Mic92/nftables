@@ -250,6 +250,7 @@ addrstring	({macaddr}|{ip4addr}|{ip6addr})
 "jump"			{ return JUMP; }
 "goto"			{ return GOTO; }
 "return"		{ return RETURN; }
+"to"			{ return TO; }
 
 "inet"			{ return INET; }
 

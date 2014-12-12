@@ -196,6 +196,7 @@ static void location_update(struct location *loc, struct location *rhs, int n)
 %token JUMP			"jump"
 %token GOTO			"goto"
 %token RETURN			"return"
+%token TO			"to"
 
 %token CONSTANT			"constant"
 %token INTERVAL			"interval"
@@ -1439,7 +1440,7 @@ redir_stmt		:	redir_stmt_alloc	redir_stmt_arg
 redir_stmt_alloc	:	REDIRECT	{ $$ = redir_stmt_alloc(&@$); }
 			;
 
-redir_stmt_arg		:	COLON	expr
+redir_stmt_arg		:	TO	expr
 			{
 				$<stmt>0->redir.proto = $2;
 			}
@@ -1447,7 +1448,7 @@ redir_stmt_arg		:	COLON	expr
 			{
 				$<stmt>0->redir.flags = $1;
 			}
-			|	COLON	expr	nf_nat_flags
+			|	TO	expr	nf_nat_flags
 			{
 				$<stmt>0->redir.proto = $2;
 				$<stmt>0->redir.flags = $3;

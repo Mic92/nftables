@@ -17,22 +17,22 @@ udp dport 53 redirect persistent,fully-random;ok;udp dport 53 redirect fully-ran
 udp dport 53 redirect persistent,fully-random,random;ok;udp dport 53 redirect random,fully-random,persistent
 
 # port specification
-tcp dport 22 redirect :22;ok
-udp dport 1234 redirect :4321;ok
-ip daddr 172.16.0.1 udp dport 9998 redirect :6515;ok
-tcp dport 39128 redirect :993;ok
-redirect :1234;fail
-redirect :12341111;fail
+tcp dport 22 redirect to 22;ok
+udp dport 1234 redirect to 4321;ok
+ip daddr 172.16.0.1 udp dport 9998 redirect to 6515;ok
+tcp dport 39128 redirect to 993;ok
+redirect to 1234;fail
+redirect to 12341111;fail
 
 # both port and nf_nat flags
-tcp dport 9128 redirect :993 random;ok
-tcp dport 9128 redirect :993 fully-random;ok
-tcp dport 9128 redirect :123 persistent;ok
-tcp dport 9128 redirect :123 random,persistent;ok
+tcp dport 9128 redirect to 993 random;ok
+tcp dport 9128 redirect to 993 fully-random;ok
+tcp dport 9128 redirect to 123 persistent;ok
+tcp dport 9128 redirect to 123 random,persistent;ok
 
 # nf_nat flags is the last argument
-udp dport 1234 redirect random :123;fail
-udp dport 21234 redirect persistent,fully-random :431;fail
+udp dport 1234 redirect random to 123;fail
+udp dport 21234 redirect persistent,fully-random to 431;fail
 
 # redirect is a terminal statement
 tcp dport 22 redirect counter packets 0 bytes 0 accept;fail
