@@ -924,25 +924,28 @@ static struct datatype *dtype_alloc(void)
 	return dtype;
 }
 
-const struct datatype *concat_type_alloc(const struct expr *expr)
+const struct datatype *concat_type_alloc(uint32_t type)
 {
+	const struct datatype *i;
 	struct datatype *dtype;
-	struct expr *i;
 	char desc[256] = "concatenation of (";
 	char name[256] = "";
-	unsigned int type = 0, size = 0, subtypes = 0;
+	unsigned int size = 0, subtypes = 0, n;
 
-	list_for_each_entry(i, &expr->expressions, list) {
+	n = div_round_up(fls(type), TYPE_BITS);
+	while ((type >> TYPE_BITS * --n) & TYPE_MASK) {
+		i = datatype_lookup((type >> TYPE_BITS * n) & TYPE_MASK);
+		if (i == NULL)
+			return NULL;
+
 		if (subtypes != 0) {
 			strncat(desc, ", ", sizeof(desc) - strlen(desc) - 1);
 			strncat(name, " . ", sizeof(name) - strlen(name) - 1);
 		}
-		strncat(desc, i->dtype->desc, sizeof(desc) - strlen(desc) - 1);
-		strncat(name, i->dtype->name, sizeof(name) - strlen(name) - 1);
+		strncat(desc, i->desc, sizeof(desc) - strlen(desc) - 1);
+		strncat(name, i->name, sizeof(name) - strlen(name) - 1);
 
-		type <<= TYPE_BITS;
-		type  |= i->dtype->type;
-		size  += i->dtype->size;
+		size += i->size;
 		subtypes++;
 	}
 	strncat(desc, ")", sizeof(desc) - strlen(desc) - 1);

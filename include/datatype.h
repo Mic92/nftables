@@ -212,7 +212,7 @@ extern const struct datatype icmpv6_code_type;
 extern const struct datatype icmpx_code_type;
 extern const struct datatype time_type;
 
-extern const struct datatype *concat_type_alloc(const struct expr *expr);
+extern const struct datatype *concat_type_alloc(uint32_t type);
 extern void concat_type_destroy(const struct datatype *dtype);
 
 #endif /* NFTABLES_DATATYPE_H */
