@@ -132,6 +132,7 @@ static void location_update(struct location *loc, struct location *rhs, int n)
 	struct stmt		*stmt;
 	struct expr		*expr;
 	struct set		*set;
+	const struct datatype	*datatype;
 }
 
 %token TOKEN_EOF 0		"end of file"
@@ -395,6 +396,9 @@ static void location_update(struct location *loc, struct location *rhs, int n)
 
 %type <string>			identifier string comment_spec
 %destructor { xfree($$); }	identifier string comment_spec
+
+%type <val>			type_identifier
+%type <datatype>		data_type
 
 %type <cmd>			line
 %destructor { cmd_free($$); }	line
@@ -915,14 +919,9 @@ set_block_alloc		:	/* empty */
 set_block		:	/* empty */	{ $$ = $<set>-1; }
 			|	set_block	common_block
 			|	set_block	stmt_seperator
-			|	set_block	TYPE		identifier	stmt_seperator
+			|	set_block	TYPE		data_type	stmt_seperator
 			{
-				$1->keytype = datatype_lookup_byname($3);
-				if ($1->keytype == NULL) {
-					erec_queue(error(&@3, "unknown datatype %s", $3),
-						   state->msgs);
-					YYERROR;
-				}
+				$1->keytype = $3;
 				$$ = $1;
 			}
 			|	set_block	FLAGS		set_flag_list	stmt_seperator
@@ -960,23 +959,11 @@ map_block		:	/* empty */	{ $$ = $<set>-1; }
 			|	map_block	common_block
 			|	map_block	stmt_seperator
 			|	map_block	TYPE
-						identifier	COLON	identifier
+						data_type	COLON	data_type
 						stmt_seperator
 			{
-				$1->keytype = datatype_lookup_byname($3);
-				if ($1->keytype == NULL) {
-					erec_queue(error(&@3, "unknown datatype %s", $3),
-						   state->msgs);
-					YYERROR;
-				}
-
-				$1->datatype = datatype_lookup_byname($5);
-				if ($1->datatype == NULL) {
-					erec_queue(error(&@5, "unknown datatype %s", $5),
-						   state->msgs);
-					YYERROR;
-				}
-
+				$1->keytype  = $3;
+				$1->datatype = $5;
 				$$ = $1;
 			}
 			|	map_block	FLAGS		set_flag_list	stmt_seperator
@@ -1004,6 +991,38 @@ set_mechanism		:	POLICY		set_policy_spec
 
 set_policy_spec		:	PERFORMANCE	{ $$ = NFT_SET_POL_PERFORMANCE; }
 			|	MEMORY		{ $$ = NFT_SET_POL_MEMORY; }
+			;
+
+data_type		:	type_identifier
+			{
+				if ($1 & ~TYPE_MASK)
+					$$ = concat_type_alloc($1);
+				else
+					$$ = datatype_lookup($1);
+			}
+			;
+
+type_identifier		:	identifier
+			{
+				const struct datatype *dtype = datatype_lookup_byname($1);
+				if (dtype == NULL) {
+					erec_queue(error(&@1, "unknown datatype %s", $1),
+						   state->msgs);
+					YYERROR;
+				}
+				$$ = dtype->type;
+			}
+			|	type_identifier	DOT		identifier
+			{
+				const struct datatype *dtype = datatype_lookup_byname($3);
+				if (dtype == NULL) {
+					erec_queue(error(&@3, "unknown datatype %s", $3),
+						   state->msgs);
+					YYERROR;
+				}
+				$$ <<= TYPE_BITS;
+				$$ |= dtype->type;
+			}
 			;
 
 hook_spec		:	TYPE		STRING		HOOK		STRING		PRIORITY	NUM
