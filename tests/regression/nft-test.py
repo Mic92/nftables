@@ -830,6 +830,8 @@ def main():
         file_errors = result[3]
         file_unit_run = result[4]
 
+        test_files += 1
+
         if file_warnings == 0 and file_tests == file_passed:
             files_ok += 1
         if file_tests:
@@ -837,7 +839,6 @@ def main():
             passed += file_passed
             errors += file_errors
             warnings += file_warnings
-            test_files += 1
         if force_all_family_option:
             run_total += file_unit_run
 
