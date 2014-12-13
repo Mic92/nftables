@@ -605,10 +605,10 @@ static int expr_evaluate_concat(struct eval_ctx *ctx, struct expr **expr)
 {
 	const struct datatype *dtype = ctx->ectx.dtype, *tmp;
 	unsigned int type = dtype ? dtype->type : 0;
-	int off = dtype ? dtype->size: 0;
+	int off = dtype ? dtype->subtypes : 0;
 	unsigned int flags = EXPR_F_CONSTANT | EXPR_F_SINGLETON;
 	struct expr *i, *next;
-	unsigned int n;
+	unsigned int n, len = 0;
 
 	n = 1;
 	list_for_each_entry_safe(i, next, &(*expr)->expressions, list) {
@@ -624,11 +624,13 @@ static int expr_evaluate_concat(struct eval_ctx *ctx, struct expr **expr)
 			return -1;
 		flags &= i->flags;
 
+		len += i->len;
 		n++;
 	}
 
 	(*expr)->flags |= flags;
 	(*expr)->dtype = concat_type_alloc(*expr);
+	(*expr)->len   = len;
 
 	if (off > 0)
 		return expr_error(ctx->msgs, *expr,

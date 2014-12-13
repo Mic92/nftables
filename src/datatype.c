@@ -929,10 +929,10 @@ const struct datatype *concat_type_alloc(const struct expr *expr)
 	struct expr *i;
 	char desc[256] = "concatenation of (";
 	char name[256] = "";
-	unsigned int type = 0, size = 0;
+	unsigned int type = 0, size = 0, subtypes = 0;
 
 	list_for_each_entry(i, &expr->expressions, list) {
-		if (size != 0) {
+		if (subtypes != 0) {
 			strncat(desc, ", ", sizeof(desc) - strlen(desc) - 1);
 			strncat(name, " . ", sizeof(name) - strlen(name) - 1);
 		}
@@ -941,13 +941,15 @@ const struct datatype *concat_type_alloc(const struct expr *expr)
 
 		type <<= 8;
 		type  |= i->dtype->type;
-		size++;
+		size  += i->dtype->size;
+		subtypes++;
 	}
 	strncat(desc, ")", sizeof(desc) - strlen(desc) - 1);
 
 	dtype		= dtype_alloc();
 	dtype->type	= type;
 	dtype->size	= size;
+	dtype->subtypes = subtypes;
 	dtype->name	= xstrdup(name);
 	dtype->desc	= xstrdup(desc);
 	dtype->parse	= concat_type_parse;

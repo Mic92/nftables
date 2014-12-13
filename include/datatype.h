@@ -115,6 +115,7 @@ enum datatype_flags {
  * @byteorder:	byteorder of type (non-basetypes only)
  * @flags:	flags
  * @size:	type size (fixed sized non-basetypes only)
+ * @subtypes:	number of subtypes (concat type)
  * @name:	type name
  * @desc:	type description
  * @basetype:	basetype for subtypes, determines type compatibilty
@@ -128,6 +129,7 @@ struct datatype {
 	enum byteorder			byteorder;
 	unsigned int			flags;
 	unsigned int			size;
+	unsigned int			subtypes;
 	const char			*name;
 	const char			*desc;
 	const struct datatype		*basetype;
