@@ -692,23 +692,9 @@ def run_test_file(filename, force_all_family_option, specific_file):
                 continue
             if need_fix_option:
                 rule[0] = rule[0].rstrip()[1:].strip()
-                result = rule_add(rule, table_list, chain_list, filename,
-                                  lineno, force_all_family_option)
-                tests += 1
-                warning = result[1]
-                ret = result[0]
-                total_warning += warning
-                total_error += result[2]
-                total_unit_run += result[3]
-
-                if ret != 0:
-                    total_test_passed = False
-                elif warning == 0:
-                    passed += 1
-                continue
             else:
                 continue
-        if need_fix_option:
+        elif need_fix_option:
             continue
 
         result = rule_add(rule, table_list, chain_list, filename, lineno,
