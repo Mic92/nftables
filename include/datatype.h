@@ -82,6 +82,9 @@ enum datatypes {
 };
 #define TYPE_MAX		(__TYPE_MAX - 1)
 
+#define TYPE_BITS		6
+#define TYPE_MASK		((1 << TYPE_BITS) - 1)
+
 /**
  * enum byteorder
  *

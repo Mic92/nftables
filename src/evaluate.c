@@ -617,7 +617,7 @@ static int expr_evaluate_concat(struct eval_ctx *ctx, struct expr **expr)
 						 "unexpected concat component, "
 						 "expecting %s",
 						 dtype->desc);
-		tmp = datatype_lookup((type >> 8 * --off) & 0xff);
+		tmp = datatype_lookup((type >> TYPE_BITS * --off) & TYPE_MASK);
 		expr_set_context(&ctx->ectx, tmp, tmp->size);
 
 		if (list_member_evaluate(ctx, &i) < 0)

@@ -51,6 +51,7 @@ static const struct datatype *datatypes[TYPE_MAX + 1] = {
 
 void datatype_register(const struct datatype *dtype)
 {
+	BUILD_BUG_ON(TYPE_MAX & ~TYPE_MASK);
 	datatypes[dtype->type] = dtype;
 }
 
@@ -939,7 +940,7 @@ const struct datatype *concat_type_alloc(const struct expr *expr)
 		strncat(desc, i->dtype->desc, sizeof(desc) - strlen(desc) - 1);
 		strncat(name, i->dtype->name, sizeof(name) - strlen(name) - 1);
 
-		type <<= 8;
+		type <<= TYPE_BITS;
 		type  |= i->dtype->type;
 		size  += i->dtype->size;
 		subtypes++;
