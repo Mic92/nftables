@@ -324,6 +324,7 @@ const struct datatype string_type = {
 	.type		= TYPE_STRING,
 	.name		= "string",
 	.desc		= "string",
+	.byteorder	= BYTEORDER_HOST_ENDIAN,
 	.print		= string_type_print,
 	.parse		= string_type_parse,
 };
