@@ -24,9 +24,10 @@ AC_DEFINE([_STDC_FORMAT_MACROS], [], [printf-style format macros])
 
 AC_ARG_ENABLE([debug],
 	      AS_HELP_STRING([--enable-debug], [Enable debugging]),
-	      [CONFIG_DEBUG="$(echo $enableval | cut -b1)"],
-	      [CONFIG_DEBUG="y"])
-AC_SUBST([CONFIG_DEBUG])
+	      [with_debug=no],
+	      [with_debug=yes])
+AC_SUBST(with_debug)
+AM_CONDITIONAL([BUILD_DEBUG], [test "x$with_debug" != xno])
 
 # Checks for programs.
 AC_PROG_CC
@@ -128,4 +129,5 @@ AC_OUTPUT
 
 echo "
 nft configuration:
-  cli support:			${with_cli}"
+  cli support:			${with_cli}
+  enable debugging:		${with_debug}"
