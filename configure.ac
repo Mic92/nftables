@@ -4,7 +4,7 @@
 AC_PREREQ(2.61)
 
 AC_COPYRIGHT([Copyright (c) 2008 Patrick McHardy <kaber@trash.net>])
-AC_INIT([nftables], [0.3], [netfilter-devel@vger.kernel.org])
+AC_INIT([nftables], [0.4], [netfilter-devel@vger.kernel.org])
 AC_DEFINE([RELEASE_NAME], ["Support Edward Snowden"], [Release name])
 
 AC_CONFIG_AUX_DIR([build-aux])
