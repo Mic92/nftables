@@ -13,6 +13,8 @@ AC_CONFIG_MACRO_DIR([m4])
 AM_INIT_AUTOMAKE([-Wall foreign subdir-objects
         tar-pax no-dist-gzip dist-bzip2 1.6])
 
+AC_PATH_TOOL(PKGCONFIG, pkg-config)
+
 dnl kernel style compile messages
 m4_ifdef([AM_SILENT_RULES], [AM_SILENT_RULES([yes])])
 
@@ -117,6 +119,30 @@ AC_TYPE_UINT16_T
 AC_TYPE_UINT32_T
 AC_TYPE_UINT64_T
 
+AC_ARG_WITH(systemd, [  --with-systemd          set directory for systemd service files],
+        [systemd_unitdir="$withval"; with_systemd=yes],
+        [systemd_unitdir=""; with_systemd=no])
+AC_SUBST(systemd_unitdir)
+
+AM_CONDITIONAL([INSTALL_SYSTEMD], [test "x$with_systemd" != xno])
+AM_COND_IF([INSTALL_SYSTEMD],
+       [AS_IF([test "x$PKGCONFIG" = "x"],
+             [AC_MSG_ERROR(Need pkg-config to enable systemd support.)],
+
+             [AC_MSG_CHECKING(for systemd)
+              AS_IF([$PKGCONFIG --exists systemd],
+                    [AC_MSG_RESULT(yes)
+                     AS_IF([$PKGCONFIG --exists systemd],
+                           [AS_IF([test "x$systemd_unit_dir" = "x"],
+                                  [ systemd_unitdir="`$PKGCONFIG --variable=systemdsystemunitdir systemd`"])
+                           ])
+                    ]
+                    [AC_MSG_RESULT(no)])
+             ]
+
+       )]
+)
+
 # Checks for library functions.
 AC_CHECK_FUNCS([memmove memset strchr strdup strerror strtoull])
 
@@ -129,6 +155,7 @@ AC_CONFIG_FILES([					\
 		doc/Makefile				\
 		files/Makefile				\
 		files/nftables/Makefile			\
+		files/systemd/Makefile			\
 		])
 AC_OUTPUT
 
@@ -136,4 +163,5 @@ echo "
 nft configuration:
   cli support:			${with_cli}
   enable debugging:		${with_debug}
-  use mini-gmp:			${with_mini_gmp}"
+  use mini-gmp:			${with_mini_gmp}
+  systemd support:		${with_systemd}"
