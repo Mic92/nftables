@@ -25,7 +25,6 @@
 ?set2 192.168.3.8 192.168.3.9;ok
 ?set2 192.168.3.10 192.168.3.11;ok
 
--ip saddr @set1 drop;ok
--ip saddr @set2 drop;ok
--ip saddr @set33 drop;fail
--ip saddr @set21 drop;fail
+ip saddr @set1 drop;ok
+ip saddr @set2 drop;ok
+ip saddr @set33 drop;fail
