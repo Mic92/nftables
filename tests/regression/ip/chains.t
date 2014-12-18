@@ -1,5 +1,4 @@
 *ip;test-ip4
--*inet;test-inet
 
 # filter chains available are: input, output, forward, prerouting, postrouting
 :filter-input;type filter hook input priority 0
@@ -14,9 +13,3 @@
 :nat-post-t;type nat hook postrouting priority 0
 # route chain available are: output
 :route-out-t;type route hook output priority 0
-
-#ip daddr 192.168.0.1-192.168.0.250;ok
-#ip daddr 192.168.0.1;ok
-#ip daddr 192.168.0.1 drop;ok
-#ip daddr 192.168.0.2 log;ok
-#ip daddr 192.168.0.2 log;ok

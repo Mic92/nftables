@@ -1,5 +1,4 @@
 *ip6;test-ip6
--*inet;test-inet
 
 # filter chains available are: input, output, forward, forward, prerouting and postrouting.
 :filter-input;type filter hook input priority 0
