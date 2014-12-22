@@ -931,8 +931,8 @@ const struct datatype *concat_type_alloc(uint32_t type)
 	unsigned int size = 0, subtypes = 0, n;
 
 	n = div_round_up(fls(type), TYPE_BITS);
-	while ((type >> TYPE_BITS * --n) & TYPE_MASK) {
-		i = datatype_lookup((type >> TYPE_BITS * n) & TYPE_MASK);
+	while (concat_subtype_id(type, --n)) {
+		i = concat_subtype_lookup(type, n);
 		if (i == NULL)
 			return NULL;
 

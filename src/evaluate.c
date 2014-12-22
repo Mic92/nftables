@@ -612,25 +612,22 @@ static int expr_evaluate_concat(struct eval_ctx *ctx, struct expr **expr)
 	int off = dtype ? dtype->subtypes : 0;
 	unsigned int flags = EXPR_F_CONSTANT | EXPR_F_SINGLETON;
 	struct expr *i, *next;
-	unsigned int n;
 
-	n = 1;
 	list_for_each_entry_safe(i, next, &(*expr)->expressions, list) {
 		if (dtype && off == 0)
 			return expr_binary_error(ctx->msgs, i, *expr,
 						 "unexpected concat component, "
 						 "expecting %s",
 						 dtype->desc);
-		tmp = datatype_lookup((type >> TYPE_BITS * --off) & TYPE_MASK);
+
+		tmp = concat_subtype_lookup(type, --off);
 		expr_set_context(&ctx->ectx, tmp, tmp->size);
 
 		if (list_member_evaluate(ctx, &i) < 0)
 			return -1;
 		flags &= i->flags;
 
-		ntype <<= TYPE_BITS;
-		ntype  |= i->dtype->type;
-		n++;
+		ntype = concat_subtype_add(ntype, i->dtype->type);
 	}
 
 	(*expr)->flags |= flags;

@@ -215,4 +215,20 @@ extern const struct datatype time_type;
 extern const struct datatype *concat_type_alloc(uint32_t type);
 extern void concat_type_destroy(const struct datatype *dtype);
 
+static inline uint32_t concat_subtype_add(uint32_t type, uint32_t subtype)
+{
+	return type << TYPE_BITS | subtype;
+}
+
+static inline uint32_t concat_subtype_id(uint32_t type, unsigned int n)
+{
+	return (type >> TYPE_BITS * n) & TYPE_MASK;
+}
+
+static inline const struct datatype *
+concat_subtype_lookup(uint32_t type, unsigned int n)
+{
+	return datatype_lookup(concat_subtype_id(type, n));
+}
+
 #endif /* NFTABLES_DATATYPE_H */

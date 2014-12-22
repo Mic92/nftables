@@ -1020,8 +1020,7 @@ type_identifier		:	identifier
 						   state->msgs);
 					YYERROR;
 				}
-				$$ <<= TYPE_BITS;
-				$$ |= dtype->type;
+				$$ = concat_subtype_add($$, dtype->type);
 			}
 			;
 
