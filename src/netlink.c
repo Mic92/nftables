@@ -546,14 +546,10 @@ int netlink_add_chain(struct netlink_ctx *ctx, const struct handle *h,
 		      const struct location *loc, const struct chain *chain,
 		      bool excl)
 {
-	int ret;
-
 	if (ctx->batch_supported)
-		ret = netlink_add_chain_batch(ctx, h, loc, chain, excl);
+		return netlink_add_chain_batch(ctx, h, loc, chain, excl);
 	else
-		ret = netlink_add_chain_compat(ctx, h, loc, chain, excl);
-
-	return ret;
+		return netlink_add_chain_compat(ctx, h, loc, chain, excl);
 }
 
 static int netlink_rename_chain_compat(struct netlink_ctx *ctx,
@@ -600,14 +596,10 @@ static int netlink_rename_chain_batch(struct netlink_ctx *ctx,
 int netlink_rename_chain(struct netlink_ctx *ctx, const struct handle *h,
 			 const struct location *loc, const char *name)
 {
-	int ret;
-
 	if (ctx->batch_supported)
-		ret = netlink_rename_chain_batch(ctx, h, loc, name);
+		return netlink_rename_chain_batch(ctx, h, loc, name);
 	else
-		ret = netlink_rename_chain_compat(ctx, h, loc, name);
-
-	return ret;
+		return netlink_rename_chain_compat(ctx, h, loc, name);
 }
 
 static int netlink_del_chain_compat(struct netlink_ctx *ctx,
@@ -651,14 +643,10 @@ static int netlink_del_chain_batch(struct netlink_ctx *ctx,
 int netlink_delete_chain(struct netlink_ctx *ctx, const struct handle *h,
 			 const struct location *loc)
 {
-	int ret;
-
 	if (ctx->batch_supported)
-		ret = netlink_del_chain_batch(ctx, h, loc);
+		return netlink_del_chain_batch(ctx, h, loc);
 	else
-		ret = netlink_del_chain_compat(ctx, h, loc);
-
-	return ret;
+		return netlink_del_chain_compat(ctx, h, loc);
 }
 
 static struct chain *netlink_delinearize_chain(struct netlink_ctx *ctx,
@@ -823,14 +811,10 @@ int netlink_add_table(struct netlink_ctx *ctx, const struct handle *h,
 		      const struct location *loc,
 		      const struct table *table, bool excl)
 {
-	int ret;
-
 	if (ctx->batch_supported)
-		ret = netlink_add_table_batch(ctx, h, loc, table, excl);
+		return netlink_add_table_batch(ctx, h, loc, table, excl);
 	else
-		ret = netlink_add_table_compat(ctx, h, loc, table, excl);
-
-	return ret;
+		return netlink_add_table_compat(ctx, h, loc, table, excl);
 }
 
 static int netlink_del_table_compat(struct netlink_ctx *ctx,
@@ -871,14 +855,10 @@ static int netlink_del_table_batch(struct netlink_ctx *ctx,
 int netlink_delete_table(struct netlink_ctx *ctx, const struct handle *h,
 			 const struct location *loc)
 {
-	int ret;
-
 	if (ctx->batch_supported)
-		ret = netlink_del_table_batch(ctx, h, loc);
+		return netlink_del_table_batch(ctx, h, loc);
 	else
-		ret = netlink_del_table_compat(ctx, h, loc);
-
-	return ret;
+		return netlink_del_table_compat(ctx, h, loc);
 }
 
 void netlink_dump_table(struct nft_table *nlt)
@@ -1145,14 +1125,10 @@ static int netlink_add_set_batch(struct netlink_ctx *ctx,
 int netlink_add_set(struct netlink_ctx *ctx, const struct handle *h,
 		    struct set *set)
 {
-	int ret;
-
 	if (ctx->batch_supported)
-		ret = netlink_add_set_batch(ctx, h, set);
+		return netlink_add_set_batch(ctx, h, set);
 	else
-		ret = netlink_add_set_compat(ctx, h, set);
-
-	return ret;
+		return netlink_add_set_compat(ctx, h, set);
 }
 
 static int netlink_del_set_compat(struct netlink_ctx *ctx,
@@ -1192,14 +1168,10 @@ static int netlink_del_set_batch(struct netlink_ctx *ctx,
 int netlink_delete_set(struct netlink_ctx *ctx, const struct handle *h,
 		       const struct location *loc)
 {
-	int ret;
-
 	if (ctx->batch_supported)
-		ret = netlink_del_set_batch(ctx, h, loc);
+		return netlink_del_set_batch(ctx, h, loc);
 	else
-		ret = netlink_del_set_compat(ctx, h, loc);
-
-	return ret;
+		return netlink_del_set_compat(ctx, h, loc);
 }
 
 static int list_set_cb(struct nft_set *nls, void *arg)
@@ -1316,14 +1288,10 @@ static int netlink_add_setelems_compat(struct netlink_ctx *ctx,
 int netlink_add_setelems(struct netlink_ctx *ctx, const struct handle *h,
 			 const struct expr *expr)
 {
-	int ret;
-
 	if (ctx->batch_supported)
-		ret = netlink_add_setelems_batch(ctx, h, expr);
+		return netlink_add_setelems_batch(ctx, h, expr);
 	else
-		ret = netlink_add_setelems_compat(ctx, h, expr);
-
-	return ret;
+		return netlink_add_setelems_compat(ctx, h, expr);
 }
 
 static int netlink_del_setelems_batch(struct netlink_ctx *ctx,
@@ -1418,14 +1386,10 @@ out:
 int netlink_delete_setelems(struct netlink_ctx *ctx, const struct handle *h,
 			    const struct expr *expr)
 {
-	int ret;
-
 	if (ctx->batch_supported)
-		ret = netlink_del_setelems_batch(ctx, h, expr);
+		return netlink_del_setelems_batch(ctx, h, expr);
 	else
-		ret = netlink_del_setelems_compat(ctx, h, expr);
-
-	return ret;
+		return netlink_del_setelems_compat(ctx, h, expr);
 }
 
 static int list_setelem_cb(struct nft_set_elem *nlse, void *arg)
