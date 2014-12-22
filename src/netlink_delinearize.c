@@ -342,7 +342,7 @@ static void netlink_parse_exthdr(struct netlink_parse_ctx *ctx,
 			     expr);
 }
 
-static void netlink_parse_meta_dreg(struct netlink_parse_ctx *ctx,
+static void netlink_parse_meta_expr(struct netlink_parse_ctx *ctx,
 				    const struct location *loc,
 				    const struct nft_rule_expr *nle)
 {
@@ -355,7 +355,7 @@ static void netlink_parse_meta_dreg(struct netlink_parse_ctx *ctx,
 			     expr);
 }
 
-static void netlink_parse_meta_sreg(struct netlink_parse_ctx *ctx,
+static void netlink_parse_meta_stmt(struct netlink_parse_ctx *ctx,
 				    const struct location *loc,
 				    const struct nft_rule_expr *nle)
 {
@@ -377,12 +377,12 @@ static void netlink_parse_meta(struct netlink_parse_ctx *ctx,
 			       const struct nft_rule_expr *nle)
 {
 	if (nft_rule_expr_is_set(nle, NFT_EXPR_META_DREG))
-		netlink_parse_meta_dreg(ctx, loc, nle);
+		netlink_parse_meta_expr(ctx, loc, nle);
 	else
-		netlink_parse_meta_sreg(ctx, loc, nle);
+		netlink_parse_meta_stmt(ctx, loc, nle);
 }
 
-static void netlink_parse_ct_sreg(struct netlink_parse_ctx *ctx,
+static void netlink_parse_ct_stmt(struct netlink_parse_ctx *ctx,
 				  const struct location *loc,
 				  const struct nft_rule_expr *nle)
 {
@@ -400,7 +400,7 @@ static void netlink_parse_ct_sreg(struct netlink_parse_ctx *ctx,
 	list_add_tail(&stmt->list, &ctx->rule->stmts);
 }
 
-static void netlink_parse_ct_dreg(struct netlink_parse_ctx *ctx,
+static void netlink_parse_ct_expr(struct netlink_parse_ctx *ctx,
 				  const struct location *loc,
 				  const struct nft_rule_expr *nle)
 {
@@ -417,9 +417,9 @@ static void netlink_parse_ct(struct netlink_parse_ctx *ctx,
 			     const struct nft_rule_expr *nle)
 {
 	if (nft_rule_expr_is_set(nle, NFT_EXPR_CT_DREG))
-		netlink_parse_ct_dreg(ctx, loc, nle);
+		netlink_parse_ct_expr(ctx, loc, nle);
 	else
-		netlink_parse_ct_sreg(ctx, loc, nle);
+		netlink_parse_ct_stmt(ctx, loc, nle);
 }
 
 static void netlink_parse_counter(struct netlink_parse_ctx *ctx,
