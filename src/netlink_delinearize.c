@@ -75,7 +75,10 @@ static struct expr *netlink_get_register(struct netlink_parse_ctx *ctx,
 	}
 
 	expr = ctx->registers[reg];
-	return expr_clone(expr);
+	if (expr != NULL)
+		expr = expr_clone(expr);
+
+	return expr;
 }
 
 static void netlink_release_registers(struct netlink_parse_ctx *ctx)
