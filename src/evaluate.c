@@ -1203,7 +1203,7 @@ static int stmt_reject_gen_dependency(struct eval_ctx *ctx, struct stmt *stmt,
 	if (payload_gen_dependency(ctx, payload, &nstmt) < 0)
 		return -1;
 
-	list_add(&nstmt->list, &ctx->cmd->rule->stmts);
+	list_add(&nstmt->list, &ctx->rule->stmts);
 	return 0;
 }
 
@@ -1722,6 +1722,7 @@ static int rule_evaluate(struct eval_ctx *ctx, struct rule *rule)
 	proto_ctx_init(&ctx->pctx, rule->handle.family);
 	memset(&ctx->ectx, 0, sizeof(ctx->ectx));
 
+	ctx->rule = rule;
 	list_for_each_entry(stmt, &rule->stmts, list) {
 		if (tstmt != NULL)
 			return stmt_binary_error(ctx, stmt, tstmt,

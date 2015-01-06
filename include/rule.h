@@ -344,6 +344,7 @@ extern void cmd_free(struct cmd *cmd);
  * @msgs:	message queue
  * @cmd:	current command
  * @table:	current table
+ * @rule:	current rule
  * @set:	current set
  * @stmt:	current statement
  * @ectx:	expression context
@@ -353,6 +354,7 @@ struct eval_ctx {
 	struct list_head	*msgs;
 	struct cmd		*cmd;
 	struct table		*table;
+	struct rule		*rule;
 	struct set		*set;
 	struct stmt		*stmt;
 	struct expr_ctx		ectx;
