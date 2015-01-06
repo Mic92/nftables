@@ -238,7 +238,7 @@ static void location_update(struct location *loc, struct location *rhs, int n)
 %token OPERATION		"operation"
 
 %token IP			"ip"
-%token VERSION			"version"
+%token HDRVERSION		"version"
 %token HDRLENGTH		"hdrlength"
 %token TOS			"tos"
 %token LENGTH			"length"
@@ -1966,7 +1966,7 @@ ip_hdr_expr		:	IP	ip_hdr_field
 			}
 			;
 
-ip_hdr_field		:	VERSION		{ $$ = IPHDR_VERSION; }
+ip_hdr_field		:	HDRVERSION	{ $$ = IPHDR_VERSION; }
 			|	HDRLENGTH	{ $$ = IPHDR_HDRLENGTH; }
 			|	TOS		{ $$ = IPHDR_TOS; }
 			|	LENGTH		{ $$ = IPHDR_LENGTH; }
@@ -2013,7 +2013,7 @@ ip6_hdr_expr		:	IP6	ip6_hdr_field
 			}
 			;
 
-ip6_hdr_field		:	VERSION		{ $$ = IP6HDR_VERSION; }
+ip6_hdr_field		:	HDRVERSION	{ $$ = IP6HDR_VERSION; }
 			|	PRIORITY	{ $$ = IP6HDR_PRIORITY; }
 			|	FLOWLABEL	{ $$ = IP6HDR_FLOWLABEL; }
 			|	LENGTH		{ $$ = IP6HDR_LENGTH; }

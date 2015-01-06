@@ -349,7 +349,7 @@ addrstring	({macaddr}|{ip4addr}|{ip6addr})
 "operation"		{ return OPERATION; }
 
 "ip"			{ return IP; }
-"version"		{ return VERSION; }
+"version"		{ return HDRVERSION; }
 "hdrlength"		{ return HDRLENGTH; }
 "tos"			{ return TOS; }
 "length"		{ return LENGTH; }
