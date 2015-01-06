@@ -44,6 +44,7 @@ static void erec_destroy(struct error_record *erec)
 	xfree(erec);
 }
 
+__attribute__((format(printf, 3, 0)))
 struct error_record *erec_vcreate(enum error_record_types type,
 				  const struct location *loc,
 				  const char *fmt, va_list ap)
@@ -55,10 +56,13 @@ struct error_record *erec_vcreate(enum error_record_types type,
 	erec->num_locations	= 0;
 	erec_add_location(erec, loc);
 
-	gmp_vasprintf(&erec->msg, fmt, ap);
+	if (vasprintf(&erec->msg, fmt, ap) < 0)
+		erec->msg = NULL;
+
 	return erec;
 }
 
+__attribute__((format(printf, 3, 4)))
 struct error_record *erec_create(enum error_record_types type,
 				 const struct location *loc,
 				 const char *fmt, ...)

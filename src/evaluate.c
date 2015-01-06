@@ -232,9 +232,13 @@ static int expr_evaluate_value(struct eval_ctx *ctx, struct expr **expr)
 	case TYPE_INTEGER:
 		mpz_init_bitmask(mask, ctx->ectx.len);
 		if (mpz_cmp((*expr)->value, mask) > 0) {
+			char *valstr = mpz_get_str(NULL, 10, (*expr)->value);
+			char *rangestr = mpz_get_str(NULL, 10, mask);
 			expr_error(ctx->msgs, *expr,
-				   "Value %Zu exceeds valid range 0-%Zu",
-				   (*expr)->value, mask);
+				   "Value %s exceeds valid range 0-%s",
+				   valstr, rangestr);
+			free(valstr);
+			free(rangestr);
 			mpz_clear(mask);
 			return -1;
 		}
