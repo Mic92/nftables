@@ -2213,6 +2213,9 @@ filter output oif wlan0
 				<member>tc(8)</member>
 			</simplelist>
 		</para>
+		<para>
+			There is an official wiki at: http://wiki.nftables.org
+		</para>
 	</refsect1>
 
 	<refsect1>
