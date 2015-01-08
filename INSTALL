@@ -44,6 +44,13 @@ Installation instructions for nftables
 
 	Disable debugging
 
+ --with-mini-gmp
+
+	Use builtin mini-gmp instead of linking with a shared libgmp.
+	This is useful for embedded platforms optimizing for size and
+	having no other use for libgmp.
+	Note: This decreases the debugging verbosity in some files.
+
  Suggested configuration options: --prefix=/ --datarootdir=/usr/share
 
  Run "make" to compile nftables, "make install" to install it in the

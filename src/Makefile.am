@@ -51,4 +51,8 @@ if BUILD_CLI
 nft_SOURCES +=	cli.c
 endif
 
+if BUILD_MINIGMP
+nft_SOURCES +=	mini-gmp.c
+endif
+
 nft_LDADD	= ${LIBMNL_LIBS} ${LIBNFTNL_LIBS}

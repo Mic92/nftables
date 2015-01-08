@@ -14,11 +14,9 @@
 #include <stdio.h>
 #include <unistd.h>
 #include <string.h>
-#include <gmp.h>
 
 #include <nftables.h>
 #include <datatype.h>
-#include <gmputil.h>
 #include <utils.h>
 
 void mpz_bitmask(mpz_t rop, unsigned int width)
@@ -147,6 +145,62 @@ void mpz_switch_byteorder(mpz_t rop, unsigned int len)
 	mpz_export_data(data, rop, BYTEORDER_BIG_ENDIAN, len);
 	mpz_import_data(rop, data, BYTEORDER_HOST_ENDIAN, len);
 }
+
+#ifndef HAVE_LIBGMP
+/* mini-gmp doesn't have a gmp_printf so we use our own minimal
+ * variant here which is able to format a single mpz_t.
+ */
+int mpz_printf(const char *f, const mpz_t value)
+{
+	int n = 0;
+	while (*f) {
+		if (*f != '%') {
+			if (fputc(*f, stdout) != *f)
+				return -1;
+
+			++n;
+		} else {
+			unsigned long prec = 0;
+			int base;
+			size_t len;
+			char *str;
+			bool ok;
+
+			if (*++f == '.')
+				prec = strtoul(++f, (char**)&f, 10);
+
+			if (*f++ != 'Z')
+				return -1;
+
+			if (*f == 'u')
+				base = 10;
+			else if (*f == 'x')
+				base = 16;
+			else
+				return -1;
+
+			len = mpz_sizeinbase(value, base);
+			while (prec-- > len) {
+				if (fputc('0', stdout) != '0')
+					return -1;
+
+				++n;
+			}
+
+			str = mpz_get_str(NULL, base, value);
+			ok = str && fwrite(str, 1, len, stdout) == len;
+			free(str);
+
+			if (!ok)
+				return -1;
+
+			n += len;
+		}
+		++f;
+	}
+	return n;
+}
+#endif
 
 static void *gmp_xrealloc(void *ptr, size_t old_size, size_t new_size)
 {

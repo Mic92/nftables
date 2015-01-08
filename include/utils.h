@@ -9,14 +9,14 @@
 #include <unistd.h>
 #include <assert.h>
 #include <list.h>
-#include <gmp.h>
+#include <gmputil.h>
 
 #define BITS_PER_BYTE	8
 
-#ifdef DEBUG
+#if defined(DEBUG) && defined(HAVE_LIBGMP)
 #define pr_debug(fmt, arg...) gmp_printf(fmt, ##arg)
 #else
-#define pr_debug(fmt, arg...) ({ if (false) gmp_printf(fmt, ##arg); 0; })
+#define pr_debug(fmt, arg...) ({ if (false) {}; 0; })
 #endif
 
 #define __fmtstring(x, y)	__attribute__((format(printf, x, y)))

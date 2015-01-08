@@ -73,8 +73,13 @@ AM_CONDITIONAL([BUILD_PDF], [test "$DBLATEX" == "found"])
 PKG_CHECK_MODULES([LIBMNL], [libmnl >= 1.0.3])
 PKG_CHECK_MODULES([LIBNFTNL], [libnftnl >= 1.0.2])
 
-AC_CHECK_LIB([gmp], [__gmpz_init], ,
-	     AC_MSG_ERROR([No suitable version of libgmp found]))
+AC_ARG_WITH([mini-gmp], [AS_HELP_STRING([--with-mini-gmp],
+            [Use builtin mini-gmp (for embedded builds)])], [],
+            [with_mini_gmp=no])
+AS_IF([test "x$with_mini_gmp" != xyes], [
+AC_CHECK_LIB([gmp],[__gmpz_init], , AC_MSG_ERROR([No suitable version of libgmp found]))
+])
+AM_CONDITIONAL([BUILD_MINIGMP], [test "x$with_mini_gmp" == xyes])
 
 AC_ARG_WITH([cli], [AS_HELP_STRING([--without-cli],
             [disable interactive CLI (libreadline support)])],
@@ -130,4 +135,5 @@ AC_OUTPUT
 echo "
 nft configuration:
   cli support:			${with_cli}
-  enable debugging:		${with_debug}"
+  enable debugging:		${with_debug}
+  use mini-gmp:			${with_mini_gmp}"

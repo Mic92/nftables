@@ -1,7 +1,17 @@
 #ifndef NFTABLES_GMPUTIL_H
 #define NFTABLES_GMPUTIL_H
 
+#include <config.h>
+
+#ifdef HAVE_LIBGMP
 #include <gmp.h>
+#else
+#include <mini-gmp.h>
+/* mini-gmp doesn't come with gmp_printf, so we use our own minimal variant */
+extern int mpz_printf(const char *format, const mpz_t value);
+#define gmp_printf mpz_printf
+#endif
+
 #include <asm/byteorder.h>
 
 enum mpz_word_order {

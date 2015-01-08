@@ -2,7 +2,7 @@
 #define NFTABLES_EXPRESSION_H
 
 #include <stdbool.h>
-#include <gmp.h>
+#include <gmputil.h>
 #include <linux/netfilter/nf_tables.h>
 
 #include <nftables.h>
