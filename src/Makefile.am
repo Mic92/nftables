@@ -52,6 +52,8 @@ nft_SOURCES +=	cli.c
 endif
 
 if BUILD_MINIGMP
+mini-gmp.o: AM_CFLAGS += -Wno-sign-compare
+
 nft_SOURCES +=	mini-gmp.c
 endif
 
