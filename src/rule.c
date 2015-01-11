@@ -74,6 +74,8 @@ void set_free(struct set *set)
 {
 	if (--set->refcnt > 0)
 		return;
+	if (set->init != NULL)
+		expr_free(set->init);
 	handle_free(&set->handle);
 	xfree(set);
 }

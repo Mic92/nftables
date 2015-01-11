@@ -1724,8 +1724,10 @@ static int netlink_events_set_cb(const struct nlmsghdr *nlh, int type,
 		case NFT_MSG_NEWSET:
 			printf("add ");
 			set = netlink_delinearize_set(monh->ctx, nls);
-			if (set == NULL)
+			if (set == NULL) {
+				nft_set_free(nls);
 				return MNL_CB_ERROR;
+			}
 			set_print_plain(set);
 			set_free(set);
 			printf("\n");
@@ -1940,6 +1942,7 @@ static void netlink_events_cache_addset(struct netlink_mon_handler *monh,
 	t = table_lookup(&s->handle);
 	if (t == NULL) {
 		fprintf(stderr, "W: Unable to cache set: table not found.\n");
+		set_free(s);
 		goto out;
 	}
 
