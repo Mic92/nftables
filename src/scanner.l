@@ -462,7 +462,7 @@ addrstring	({macaddr}|{ip4addr}|{ip6addr})
 				yylval->val = strtoull(yytext, NULL, 0);
 				if (errno != 0) {
 					yylval->string = xstrdup(yytext);
-					return ERROR;
+					return STRING;
 				}
 				return NUM;
 			}
@@ -472,7 +472,7 @@ addrstring	({macaddr}|{ip4addr}|{ip6addr})
 				yylval->val = strtoull(yytext, NULL, 0);
 				if (errno != 0) {
 					yylval->string = xstrdup(yytext);
-					return ERROR;
+					return STRING;
 				}
 				return NUM;
 			}

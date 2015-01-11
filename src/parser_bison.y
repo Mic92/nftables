@@ -211,8 +211,7 @@ static void location_update(struct location *loc, struct location *rhs, int n)
 %token <val> NUM		"number"
 %token <string> STRING		"string"
 %token <string> QUOTED_STRING
-%token <string> ERROR		"error"
-%destructor { xfree($$); }	STRING QUOTED_STRING ERROR
+%destructor { xfree($$); }	STRING QUOTED_STRING
 
 %token LL_HDR			"ll"
 %token NETWORK_HDR		"nh"
@@ -471,8 +470,6 @@ static void location_update(struct location *loc, struct location *rhs, int n)
 %destructor { expr_free($$); }	list_expr
 %type <expr>			concat_expr map_lhs_expr
 %destructor { expr_free($$); }	concat_expr map_lhs_expr
-%type <expr>			error_expr
-%destructor { expr_free($$); }	error_expr
 
 %type <expr>			map_expr
 %destructor { expr_free($$); }	map_expr
@@ -1690,16 +1687,6 @@ expr			:	concat_expr
 			|	set_expr
 			|       map_expr
 			|	multiton_expr
-			|	error_expr
-			;
-
-error_expr		:	ERROR
-			{
-				$$ = NULL;
-				erec_queue(error(&@1, "bad value '%s'", $1),
-					   state->msgs);
-				YYERROR;
-			}
 			;
 
 set_expr		:	'{'	set_list_expr		'}'
