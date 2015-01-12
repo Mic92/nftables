@@ -748,7 +748,7 @@ static int expr_evaluate_map(struct eval_ctx *ctx, struct expr **expr)
 		    map->mappings->ops->name);
 	}
 
-	map->dtype = ctx->ectx.dtype;
+	map->dtype = map->mappings->set->datatype;
 	map->flags |= EXPR_F_CONSTANT;
 
 	/* Data for range lookups needs to be in big endian order */
