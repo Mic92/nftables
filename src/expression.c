@@ -858,6 +858,11 @@ static void set_ref_expr_print(const struct expr *expr)
 		printf("@%s", expr->set->handle.set);
 }
 
+static void set_ref_expr_clone(struct expr *new, const struct expr *expr)
+{
+	new->set = set_get(expr->set);
+}
+
 static void set_ref_expr_destroy(struct expr *expr)
 {
 	set_free(expr->set);
@@ -867,6 +872,7 @@ static const struct expr_ops set_ref_expr_ops = {
 	.type		= EXPR_SET_REF,
 	.name		= "set reference",
 	.print		= set_ref_expr_print,
+	.clone		= set_ref_expr_clone,
 	.destroy	= set_ref_expr_destroy,
 };
 
