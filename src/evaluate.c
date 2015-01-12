@@ -1563,7 +1563,6 @@ static int nat_evaluate_transport(struct eval_ctx *ctx, struct stmt *stmt,
 
 static int stmt_evaluate_nat(struct eval_ctx *ctx, struct stmt *stmt)
 {
-	struct proto_ctx *pctx = &ctx->pctx;
 	int err;
 
 	err = nat_evaluate_family(ctx, stmt);
@@ -1587,7 +1586,6 @@ static int stmt_evaluate_nat(struct eval_ctx *ctx, struct stmt *stmt)
 
 static int stmt_evaluate_masq(struct eval_ctx *ctx, struct stmt *stmt)
 {
-	struct proto_ctx *pctx = &ctx->pctx;
 	int err;
 
 	err = nat_evaluate_family(ctx, stmt);
@@ -1600,7 +1598,6 @@ static int stmt_evaluate_masq(struct eval_ctx *ctx, struct stmt *stmt)
 
 static int stmt_evaluate_redir(struct eval_ctx *ctx, struct stmt *stmt)
 {
-	struct proto_ctx *pctx = &ctx->pctx;
 	int err;
 
 	err = nat_evaluate_family(ctx, stmt);
