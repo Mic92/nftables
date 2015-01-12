@@ -80,24 +80,6 @@ void set_free(struct set *set)
 	xfree(set);
 }
 
-struct set *set_clone(const struct set *set)
-{
-	struct set *newset = set_alloc(&set->location);
-
-	newset->list = set->list;
-	handle_merge(&newset->handle, &set->handle);
-	newset->flags = set->flags;
-	newset->keytype = set->keytype;
-	newset->keylen = set->keylen;
-	newset->datatype = set->datatype;
-	newset->datalen = set->datalen;
-	newset->init = expr_clone(set->init);
-	newset->policy = set->policy;
-	newset->desc.size = set->desc.size;
-
-	return newset;
-}
-
 void set_add_hash(struct set *set, struct table *table)
 {
 	list_add_tail(&set->list, &table->sets);
