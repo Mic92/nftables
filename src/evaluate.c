@@ -738,7 +738,8 @@ static int expr_evaluate_map(struct eval_ctx *ctx, struct expr **expr)
 	case EXPR_SYMBOL:
 		if (expr_evaluate(ctx, &map->mappings) < 0)
 			return -1;
-		if (map->mappings->ops->type != EXPR_SET_REF)
+		if (map->mappings->ops->type != EXPR_SET_REF ||
+		    !(map->mappings->set->flags & NFT_SET_MAP))
 			return expr_error(ctx->msgs, map->mappings,
 					  "Expression is not a map");
 		break;
