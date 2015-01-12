@@ -1135,8 +1135,7 @@ static int stmt_evaluate_arg(struct eval_ctx *ctx, struct stmt *stmt,
 
 static int stmt_evaluate_verdict(struct eval_ctx *ctx, struct stmt *stmt)
 {
-	expr_set_context(&ctx->ectx, &verdict_type, 0);
-	if (expr_evaluate(ctx, &stmt->expr) < 0)
+	if (stmt_evaluate_arg(ctx, stmt, &verdict_type, 0, &stmt->expr) < 0)
 		return -1;
 
 	switch (stmt->expr->ops->type) {
@@ -1625,8 +1624,8 @@ static int stmt_evaluate_redir(struct eval_ctx *ctx, struct stmt *stmt)
 static int stmt_evaluate_queue(struct eval_ctx *ctx, struct stmt *stmt)
 {
 	if (stmt->queue.queue != NULL) {
-		expr_set_context(&ctx->ectx, &integer_type, 16);
-		if (expr_evaluate(ctx, &stmt->queue.queue) < 0)
+		if (stmt_evaluate_arg(ctx, stmt, &integer_type, 16,
+				      &stmt->queue.queue) < 0)
 			return -1;
 		if (!expr_is_constant(stmt->queue.queue))
 			return expr_error(ctx->msgs, stmt->queue.queue,
