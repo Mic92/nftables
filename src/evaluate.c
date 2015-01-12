@@ -748,6 +748,13 @@ static int expr_evaluate_map(struct eval_ctx *ctx, struct expr **expr)
 		    map->mappings->ops->name);
 	}
 
+	if (!datatype_equal(map->map->dtype, map->mappings->set->keytype))
+		return expr_binary_error(ctx->msgs, map->mappings, map->map,
+					 "datatype mismatch, map expects %s, "
+					 "mapping expression has type %s",
+					 map->mappings->set->keytype->desc,
+					 map->map->dtype->desc);
+
 	map->dtype = map->mappings->set->datatype;
 	map->flags |= EXPR_F_CONSTANT;
 
