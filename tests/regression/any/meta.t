@@ -149,7 +149,7 @@ meta pkttype != broadcast;ok;pkttype != broadcast
 meta pkttype != unicast;ok;pkttype != unicast
 meta pkttype != multicast;ok;pkttype != multicast
 meta pkttype broadcastttt;fail
--meta pkttype { broadcast, multicast} accept;ok
+meta pkttype { broadcast, multicast} accept;ok
 
 meta cpu 1;ok;cpu 1
 meta cpu != 1;ok;cpu != 1

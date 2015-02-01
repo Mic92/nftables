@@ -569,4 +569,5 @@ static void __init meta_init(void)
 	datatype_register(&uid_type);
 	datatype_register(&gid_type);
 	datatype_register(&devgroup_type);
+	datatype_register(&pkttype_type);
 }
