@@ -658,14 +658,19 @@ static int do_add_table(struct netlink_ctx *ctx, const struct handle *h,
 	if (netlink_add_table(ctx, h, loc, table, excl) < 0)
 		return -1;
 	if (table != NULL) {
+		list_for_each_entry(chain, &table->chains, list) {
+			if (netlink_add_chain(ctx, &chain->handle,
+					      &chain->location, chain,
+					      excl) < 0)
+				return -1;
+		}
 		list_for_each_entry(set, &table->sets, list) {
 			handle_merge(&set->handle, &table->handle);
 			if (do_add_set(ctx, &set->handle, set) < 0)
 				return -1;
 		}
 		list_for_each_entry(chain, &table->chains, list) {
-			if (do_add_chain(ctx, &chain->handle, &chain->location,
-					 chain, excl) < 0)
+			if (netlink_add_rule_list(ctx, h, &chain->rules) < 0)
 				return -1;
 		}
 	}
