@@ -361,7 +361,7 @@ int main(int argc, char * const *argv)
 		rc = NFT_EXIT_FAILURE;
 out:
 	scanner_destroy(scanner);
-	erec_print_list(stdout, &msgs);
+	erec_print_list(stderr, &msgs);
 
 	xfree(buf);
 	return rc;
