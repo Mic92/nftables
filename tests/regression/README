@@ -112,7 +112,7 @@ bridge and any.
  * "ip" folder contains the test files that are executed in ip and inet
    table.
 
- * "ip" folder contains the test files that are executed in ip6 and inet
+ * "ip6" folder contains the test files that are executed in ip6 and inet
    table.
 
  * "inet" folder contains the test files that are executed in the ip, ip6
