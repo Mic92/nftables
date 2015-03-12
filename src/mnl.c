@@ -707,6 +707,8 @@ int mnl_nft_table_get(struct mnl_socket *nf_sock, struct nft_table *nlt,
 	nlh = nft_table_nlmsg_build_hdr(buf, NFT_MSG_GETTABLE,
 					nft_table_attr_get_u32(nlt, NFT_TABLE_ATTR_FAMILY),
 					NLM_F_ACK, seq);
+	nft_table_nlmsg_build_payload(nlh, nlt);
+
 	return nft_mnl_talk(nf_sock, nlh, nlh->nlmsg_len, table_get_cb, nlt);
 }
 

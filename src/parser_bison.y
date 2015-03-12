@@ -853,9 +853,22 @@ table_block_alloc	:	/* empty */
 			}
 			;
 
+table_options		:	FLAGS		STRING
+			{
+				if (strcmp($2, "dormant") == 0) {
+					$<table>0->flags = TABLE_F_DORMANT;
+				} else {
+					erec_queue(error(&@2, "unknown table option %s", $2),
+						   state->msgs);
+					YYERROR;
+				}
+			}
+			;
+
 table_block		:	/* empty */	{ $$ = $<table>-1; }
 			|	table_block	common_block
 			|	table_block	stmt_seperator
+			|	table_block	table_options	stmt_seperator
 			|	table_block	CHAIN		chain_identifier
 					chain_block_alloc	'{' 	chain_block	'}'
 					stmt_seperator

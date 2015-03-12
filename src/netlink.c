@@ -800,6 +800,11 @@ static int netlink_add_table_batch(struct netlink_ctx *ctx,
 	int err;
 
 	nlt = alloc_nft_table(h);
+	if (table != NULL)
+		nft_table_attr_set_u32(nlt, NFT_TABLE_ATTR_FLAGS, table->flags);
+	else
+		nft_table_attr_set_u32(nlt, NFT_TABLE_ATTR_FLAGS, 0);
+
 	err = mnl_nft_table_batch_add(nlt, excl ? NLM_F_EXCL : 0,
 				      ctx->seqnum);
 	nft_table_free(nlt);
@@ -887,6 +892,8 @@ static struct table *netlink_delinearize_table(struct netlink_ctx *ctx,
 		nft_table_attr_get_u32(nlt, NFT_TABLE_ATTR_FAMILY);
 	table->handle.table  =
 		xstrdup(nft_table_attr_get_str(nlt, NFT_TABLE_ATTR_NAME));
+	table->flags	     =
+		nft_table_attr_get_u32(nlt, NFT_TABLE_ATTR_FLAGS);
 
 	return table;
 }
@@ -923,22 +930,28 @@ int netlink_list_tables(struct netlink_ctx *ctx, const struct handle *h,
 }
 
 int netlink_get_table(struct netlink_ctx *ctx, const struct handle *h,
-		      const struct location *loc)
+		      const struct location *loc, struct table *table)
 {
 	struct nft_table *nlt;
+	struct table *ntable;
 	int err;
 
 	nlt = alloc_nft_table(h);
 	err = mnl_nft_table_get(nf_sock, nlt, 0);
 	nft_table_free(nlt);
 
-	if (err < 0)
+	if (err < 0) {
 		netlink_io_error(ctx, loc,
 				 "Could not receive table from kernel: %s",
 				 strerror(errno));
-	return err;
-}
+		return err;
+	}
 
+	ntable = netlink_delinearize_table(ctx, nlt);
+	table->flags = ntable->flags;
+	xfree(ntable);
+	return 0;
+}
 
 int netlink_list_table(struct netlink_ctx *ctx, const struct handle *h,
 		       const struct location *loc)

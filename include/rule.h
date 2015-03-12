@@ -63,6 +63,10 @@ extern void symbol_bind(struct scope *scope, const char *identifier,
 extern struct symbol *symbol_lookup(const struct scope *scope,
 				    const char *identifier);
 
+enum table_flags {
+	TABLE_F_DORMANT		= (1 << 0),
+};
+
 /**
  * struct table - nftables table
  *
@@ -71,6 +75,7 @@ extern struct symbol *symbol_lookup(const struct scope *scope,
  * @location:	location the table was defined at
  * @chains:	chains contained in the table
  * @sets:	sets contained in the table
+ * @flags:	table flags
  */
 struct table {
 	struct list_head	list;
@@ -79,6 +84,7 @@ struct table {
 	struct scope		scope;
 	struct list_head	chains;
 	struct list_head	sets;
+	enum table_flags 	flags;
 };
 
 extern struct table *table_alloc(void);

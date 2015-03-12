@@ -501,6 +501,32 @@ struct table *table_lookup(const struct handle *h)
 	return NULL;
 }
 
+#define TABLE_FLAGS_MAX 1
+
+const char *table_flags_name[TABLE_FLAGS_MAX] = {
+	"dormant",
+};
+
+static void table_print_options(const struct table *table, const char **delim)
+{
+	uint32_t flags = table->flags;
+	int i;
+
+	if (flags) {
+		printf("\tflags ");
+
+		for (i = 0; i < TABLE_FLAGS_MAX; i++) {
+			if (flags & 0x1)
+				printf("%s", table_flags_name[i]);
+			flags >>= 1;
+			if (flags)
+				printf(",");
+		}
+		printf("\n");
+		*delim = "\n";
+	}
+}
+
 static void table_print(const struct table *table)
 {
 	struct chain *chain;
@@ -509,6 +535,8 @@ static void table_print(const struct table *table)
 	const char *family = family2str(table->handle.family);
 
 	printf("table %s %s {\n", family, table->handle.table);
+	table_print_options(table, &delim);
+
 	list_for_each_entry(set, &table->sets, list) {
 		if (set->flags & SET_F_ANONYMOUS)
 			continue;
@@ -783,6 +811,8 @@ static int do_list_table(struct netlink_ctx *ctx, struct cmd *cmd,
 	struct rule *rule, *nrule;
 	struct chain *chain;
 
+	if (netlink_get_table(ctx, &cmd->handle, &cmd->location, table) < 0)
+		goto err;
 	if (do_list_sets(ctx, &cmd->location, table) < 0)
 		goto err;
 	if (netlink_list_chains(ctx, &cmd->handle, &cmd->location) < 0)

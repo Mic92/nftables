@@ -108,7 +108,7 @@ extern int netlink_delete_table(struct netlink_ctx *ctx, const struct handle *h,
 extern int netlink_list_tables(struct netlink_ctx *ctx, const struct handle *h,
 			       const struct location *loc);
 extern int netlink_get_table(struct netlink_ctx *ctx, const struct handle *h,
-			     const struct location *loc);
+			     const struct location *loc, struct table *table);
 extern int netlink_list_table(struct netlink_ctx *ctx, const struct handle *h,
 			      const struct location *loc);
 extern int netlink_flush_table(struct netlink_ctx *ctx, const struct handle *h,
