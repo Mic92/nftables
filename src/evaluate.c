@@ -1786,6 +1786,7 @@ static uint32_t str2hooknum(uint32_t family, const char *hook)
 			return NF_INET_POST_ROUTING;
 		else if (!strcmp(hook, "output"))
 			return NF_INET_LOCAL_OUT;
+		break;
 	case NFPROTO_ARP:
 		if (!strcmp(hook, "input"))
 			return NF_ARP_IN;
@@ -1793,6 +1794,7 @@ static uint32_t str2hooknum(uint32_t family, const char *hook)
 			return NF_ARP_FORWARD;
 		else if (!strcmp(hook, "output"))
 			return NF_ARP_OUT;
+		break;
 	default:
 		break;
 	}
