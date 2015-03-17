@@ -111,6 +111,7 @@ enum chain_flags {
  * @hookstr:	unified and human readable hook name (base chains)
  * @hooknum:	hook number (base chains)
  * @priority:	hook priority (base chains)
+ * @policy:	default chain policy (base chains)
  * @type:	chain type
  * @rules:	rules contained in the chain
  */
@@ -122,6 +123,7 @@ struct chain {
 	const char		*hookstr;
 	unsigned int		hooknum;
 	int			priority;
+	int			policy;
 	const char		*type;
 	struct scope		scope;
 	struct list_head	rules;

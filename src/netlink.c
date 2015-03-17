@@ -508,6 +508,10 @@ static int netlink_add_chain_compat(struct netlink_ctx *ctx,
 		nft_chain_attr_set_str(nlc, NFT_CHAIN_ATTR_TYPE,
 				       chain->type);
 	}
+	if (chain->policy != -1)
+		nft_chain_attr_set_u32(nlc, NFT_CHAIN_ATTR_POLICY,
+				       chain->policy);
+
 	netlink_dump_chain(nlc);
 	err = mnl_nft_chain_add(nf_sock, nlc, excl ? NLM_F_EXCL : 0);
 	nft_chain_free(nlc);
@@ -535,6 +539,10 @@ static int netlink_add_chain_batch(struct netlink_ctx *ctx,
 		nft_chain_attr_set_str(nlc, NFT_CHAIN_ATTR_TYPE,
 				       chain->type);
 	}
+	if (chain->policy != -1)
+		nft_chain_attr_set_u32(nlc, NFT_CHAIN_ATTR_POLICY,
+				       chain->policy);
+
 	netlink_dump_chain(nlc);
 	err = mnl_nft_chain_batch_add(nlc, excl ? NLM_F_EXCL : 0,
 				      ctx->seqnum);
@@ -665,13 +673,16 @@ static struct chain *netlink_delinearize_chain(struct netlink_ctx *ctx,
 
 	if (nft_chain_attr_is_set(nlc, NFT_CHAIN_ATTR_HOOKNUM) &&
 	    nft_chain_attr_is_set(nlc, NFT_CHAIN_ATTR_PRIO) &&
-	    nft_chain_attr_is_set(nlc, NFT_CHAIN_ATTR_TYPE)) {
+	    nft_chain_attr_is_set(nlc, NFT_CHAIN_ATTR_TYPE) &&
+	    nft_chain_attr_is_set(nlc, NFT_CHAIN_ATTR_POLICY)) {
 		chain->hooknum       =
 			nft_chain_attr_get_u32(nlc, NFT_CHAIN_ATTR_HOOKNUM);
 		chain->priority      =
 			nft_chain_attr_get_s32(nlc, NFT_CHAIN_ATTR_PRIO);
 		chain->type          =
 			xstrdup(nft_chain_attr_get_str(nlc, NFT_CHAIN_ATTR_TYPE));
+		chain->policy          =
+			nft_chain_attr_get_u32(nlc, NFT_CHAIN_ATTR_POLICY);
 		chain->flags        |= CHAIN_F_BASECHAIN;
 	}
 

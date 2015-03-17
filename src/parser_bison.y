@@ -913,6 +913,7 @@ chain_block		:	/* empty */	{ $$ = $<chain>-1; }
 			|	chain_block	common_block
 	     		|	chain_block	stmt_seperator
 			|	chain_block	hook_spec	stmt_seperator
+			|	chain_block	policy_spec	stmt_seperator
 			|	chain_block	rule		stmt_seperator
 			{
 				list_add_tail(&$2->list, &$1->rules);
@@ -1067,6 +1068,26 @@ hook_spec		:	TYPE		STRING		HOOK		STRING		PRIORITY	NUM
 				}
 				$<chain>0->priority	= -$7;
 				$<chain>0->flags	|= CHAIN_F_BASECHAIN;
+			}
+			;
+
+policy_spec		:	POLICY		ACCEPT
+			{
+				if ($<chain>0->policy != -1) {
+					erec_queue(error(&@$, "you cannot set chain policy twice"),
+						   state->msgs);
+					YYERROR;
+				}
+				$<chain>0->policy	= NF_ACCEPT;
+			}
+			|	POLICY		DROP
+			{
+				if ($<chain>0->policy != -1) {
+					erec_queue(error(&@$, "you cannot set chain policy twice"),
+						   state->msgs);
+					YYERROR;
+				}
+				$<chain>0->policy	= NF_DROP;
 			}
 			;
 

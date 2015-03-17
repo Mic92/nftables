@@ -456,6 +456,7 @@ filter input iif $int_ifs accept
 				<arg choice="req"><replaceable>chain</replaceable></arg>
 				<arg choice="req"><replaceable>hook</replaceable></arg>
 				<arg choice="req"><replaceable>priority</replaceable></arg>
+				<arg choice="req"><replaceable>policy</replaceable></arg>
 			</cmdsynopsis>
 			<cmdsynopsis>
 				<group choice="req">

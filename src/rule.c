@@ -336,6 +336,8 @@ struct chain *chain_alloc(const char *name)
 	init_list_head(&chain->scope.symbols);
 	if (name != NULL)
 		chain->handle.chain = xstrdup(name);
+
+	chain->policy = -1;
 	return chain;
 }
 
@@ -425,15 +427,27 @@ static const char *hooknum2str(unsigned int family, unsigned int hooknum)
 	return "unknown";
 }
 
+static const char *chain_policy2str(uint32_t policy)
+{
+	switch (policy) {
+	case NF_DROP:
+		return "drop";
+	case NF_ACCEPT:
+		return "accept";
+	}
+	return "unknown";
+}
+
 static void chain_print(const struct chain *chain)
 {
 	struct rule *rule;
 
 	printf("\tchain %s {\n", chain->handle.chain);
 	if (chain->flags & CHAIN_F_BASECHAIN) {
-		printf("\t\t type %s hook %s priority %d;\n", chain->type,
+		printf("\t\t type %s hook %s priority %d; policy %s;\n",
+		       chain->type,
 		       hooknum2str(chain->handle.family, chain->hooknum),
-		       chain->priority);
+		       chain->priority, chain_policy2str(chain->policy));
 	}
 	list_for_each_entry(rule, &chain->rules, list) {
 		printf("\t\t");
@@ -452,9 +466,10 @@ void chain_print_plain(const struct chain *chain)
 	       chain->handle.table, chain->handle.chain);
 
 	if (chain->flags & CHAIN_F_BASECHAIN) {
-		printf(" { type %s hook %s priority %d; }", chain->type,
+		printf(" { type %s hook %s priority %d; policy %s; }",
+		       chain->type,
 		       hooknum2str(chain->handle.family, chain->hooknum),
-		       chain->priority);
+		       chain->priority, chain_policy2str(chain->policy));
 	}
 
 	printf("\n");
