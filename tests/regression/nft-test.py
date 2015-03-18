@@ -414,10 +414,10 @@ def output_clean(pre_output, chain):
     pre_rule = output_intermediate[brace_start:brace_end]
     if pre_rule[1:].find("{") > -1:  # this rule has a set.
         set = pre_rule[1:].replace("\t", "").replace("\n", "").strip()
-        set = set.split(";")[1].strip() + "}"
+        set = set.split(";")[2].strip() + "}"
         return set
     else:
-        rule = pre_rule.split(";")[1].replace("\t", "").replace("\n", "").strip()
+        rule = pre_rule.split(";")[2].replace("\t", "").replace("\n", "").strip()
     if len(rule) < 0:
         return ""
     return rule
