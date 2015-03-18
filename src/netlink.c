@@ -500,17 +500,19 @@ static int netlink_add_chain_compat(struct netlink_ctx *ctx,
 	int err;
 
 	nlc = alloc_nft_chain(h);
-	if (chain != NULL && chain->flags & CHAIN_F_BASECHAIN) {
-		nft_chain_attr_set_u32(nlc, NFT_CHAIN_ATTR_HOOKNUM,
-				       chain->hooknum);
-		nft_chain_attr_set_s32(nlc, NFT_CHAIN_ATTR_PRIO,
-				       chain->priority);
-		nft_chain_attr_set_str(nlc, NFT_CHAIN_ATTR_TYPE,
-				       chain->type);
+	if (chain != NULL) {
+		if (chain->flags & CHAIN_F_BASECHAIN) {
+			nft_chain_attr_set_u32(nlc, NFT_CHAIN_ATTR_HOOKNUM,
+					       chain->hooknum);
+			nft_chain_attr_set_s32(nlc, NFT_CHAIN_ATTR_PRIO,
+					       chain->priority);
+			nft_chain_attr_set_str(nlc, NFT_CHAIN_ATTR_TYPE,
+					       chain->type);
+		}
+		if (chain->policy != -1)
+			nft_chain_attr_set_u32(nlc, NFT_CHAIN_ATTR_POLICY,
+					       chain->policy);
 	}
-	if (chain->policy != -1)
-		nft_chain_attr_set_u32(nlc, NFT_CHAIN_ATTR_POLICY,
-				       chain->policy);
 
 	netlink_dump_chain(nlc);
 	err = mnl_nft_chain_add(nf_sock, nlc, excl ? NLM_F_EXCL : 0);
@@ -531,17 +533,19 @@ static int netlink_add_chain_batch(struct netlink_ctx *ctx,
 	int err;
 
 	nlc = alloc_nft_chain(h);
-	if (chain != NULL && chain->flags & CHAIN_F_BASECHAIN) {
-		nft_chain_attr_set_u32(nlc, NFT_CHAIN_ATTR_HOOKNUM,
-				       chain->hooknum);
-		nft_chain_attr_set_s32(nlc, NFT_CHAIN_ATTR_PRIO,
-				       chain->priority);
-		nft_chain_attr_set_str(nlc, NFT_CHAIN_ATTR_TYPE,
-				       chain->type);
+	if (chain != NULL) {
+		if (chain->flags & CHAIN_F_BASECHAIN) {
+			nft_chain_attr_set_u32(nlc, NFT_CHAIN_ATTR_HOOKNUM,
+					       chain->hooknum);
+			nft_chain_attr_set_s32(nlc, NFT_CHAIN_ATTR_PRIO,
+					       chain->priority);
+			nft_chain_attr_set_str(nlc, NFT_CHAIN_ATTR_TYPE,
+					       chain->type);
+		}
+		if (chain->policy != -1)
+			nft_chain_attr_set_u32(nlc, NFT_CHAIN_ATTR_POLICY,
+					       chain->policy);
 	}
-	if (chain->policy != -1)
-		nft_chain_attr_set_u32(nlc, NFT_CHAIN_ATTR_POLICY,
-				       chain->policy);
 
 	netlink_dump_chain(nlc);
 	err = mnl_nft_chain_batch_add(nlc, excl ? NLM_F_EXCL : 0,
