@@ -237,11 +237,11 @@ void rule_print(const struct rule *rule)
 	const struct stmt *stmt;
 
 	list_for_each_entry(stmt, &rule->stmts, list) {
-		printf(" ");
 		stmt->ops->print(stmt);
+		printf(" ");
 	}
 	if (handle_output > 0)
-		printf(" # handle %" PRIu64, rule->handle.handle);
+		printf("# handle %" PRIu64, rule->handle.handle);
 }
 
 struct scope *scope_init(struct scope *scope, const struct scope *parent)
