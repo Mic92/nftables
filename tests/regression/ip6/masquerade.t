@@ -1,5 +1,4 @@
 *ip6;test-ip6
-:output;type nat hook output priority 0
 :postrouting;type nat hook postrouting priority 0
 
 # nf_nat flags combination
