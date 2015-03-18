@@ -123,14 +123,14 @@ meta skgid { 2001-2005} accept;ok
 # add rule ip test input meta nftrace 1
 # -^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-meta mark set 0xffffffc8 xor 0x16;ok;meta mark set 0xffffffde
-meta mark set 0x16 and 0x16;ok;meta mark set 0x00000016
-meta mark set 0xffffffe9 or 0x16;ok;meta mark set 0xffffffff
-meta mark set 0xffffffde and 0x16;ok;meta mark set 0x00000016
-meta mark set 0xf045ffde or 0x10;ok;meta mark set 0xf045ffde
-meta mark set 0xffffffde or 0x16;ok;meta mark set 0xffffffde
-meta mark set 0x32 or 0xfffff;ok;meta mark set 0x000fffff
-meta mark set 0xfffe xor 0x16;ok;meta mark set 0x0000ffe8
+meta mark set 0xffffffc8 xor 0x16;ok;mark set 0xffffffde
+meta mark set 0x16 and 0x16;ok;mark set 0x00000016
+meta mark set 0xffffffe9 or 0x16;ok;mark set 0xffffffff
+meta mark set 0xffffffde and 0x16;ok;mark set 0x00000016
+meta mark set 0xf045ffde or 0x10;ok;mark set 0xf045ffde
+meta mark set 0xffffffde or 0x16;ok;mark set 0xffffffde
+meta mark set 0x32 or 0xfffff;ok;mark set 0x000fffff
+meta mark set 0xfffe xor 0x16;ok;mark set 0x0000ffe8
 
 meta iif lo;ok;iif lo
 meta oif lo;ok;oif lo
