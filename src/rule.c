@@ -444,7 +444,7 @@ static void chain_print(const struct chain *chain)
 
 	printf("\tchain %s {\n", chain->handle.chain);
 	if (chain->flags & CHAIN_F_BASECHAIN) {
-		printf("\t\t type %s hook %s priority %d; policy %s;\n",
+		printf("\t\ttype %s hook %s priority %d; policy %s;\n",
 		       chain->type,
 		       hooknum2str(chain->handle.family, chain->hooknum),
 		       chain->priority, chain_policy2str(chain->policy));
